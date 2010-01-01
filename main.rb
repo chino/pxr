@@ -14,6 +14,7 @@ $height = 480
 # globals
 $level = nil
 $rotation_y = 0
+$rotation_x = 0
 $position_x = 0
 $position_z = 0
 
@@ -32,6 +33,7 @@ def update_position
 	GL.LoadIdentity
 	GL.Scale(1,1,-1)
 	GL.Rotatef((360.0-$rotation_y),0,1,0) # rotate scene on y axis from x axis input
+	GL.Rotatef((360.0-$rotation_x),1,0,0) # rotate scene on x axis from y axis input
 	GL.Translatef( -$position_x, 600, -$position_z ) # Translate The Scene Based On Player Position
 	#puts "x: #{-$position_x}, y: #{-$position_z}"
 end
@@ -86,10 +88,14 @@ GLUT.MouseFunc(Proc.new{|button,state,x,y|
 	#puts "mouse button: #{button} #{(state==GLUT::DOWN)?"pressed":"released"} @ #{x},#{y}"
 })
 $last_x = 0
+$last_y = 0
 GLUT.PassiveMotionFunc(Proc.new{|x,y|
 	diff_x = x - $last_x
+	diff_y = y - $last_y
 	$last_x = x
+	$last_y = y
 	$rotation_y += diff_x
+	$rotation_x += diff_y
 })
 
 # setup GL
