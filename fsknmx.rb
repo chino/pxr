@@ -14,7 +14,7 @@ class BinReader
 		str
 	end
 	def read_char
-		read(1).unpack("c")[0]
+		read(1).unpack("C")[0]
 	end
 	def read_int
 		read(4).unpack("v")[0]
@@ -54,12 +54,7 @@ class FsknMx < BinReader
 					group_verts += 1
 					@verts << {
 						:vector => vert,
-						:color => {
-							:blue => blue/255.0,
-							:green => green/255.0,
-							:red => red/255.0,
-							:alpha => alpha/255.0
-						}
+						:rgba => [red,green,blue,alpha]
 					}
 				}
 				read_short.times {|t|

@@ -34,20 +34,11 @@ def set_view mesh
 	)
 end
 
-def set_color color
-	GL.Color4f(
-		color[:red],
-		color[:green],
-		color[:blue],
-		color[:alpha]
-	)
-end
-
 def draw_poly mesh, poly
 	GL.Begin(GL::POLYGON)
 	poly.each do |index|
 		vert = mesh.verts[index]
-		set_color vert[:color]
+		GL.Color4ubv vert[:rgba]
 		x,y,z = vert[:vector]
 		GL.Vertex3f( x, y, z )
 	end
