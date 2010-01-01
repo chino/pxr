@@ -1,35 +1,37 @@
 class BinReader
 	def initialize file
-		@contents = File.read file
+		@file = File.open file
 	end
-	def read_chars count
-		@contents.slice!(0,count).unpack("a#{count}")[0]
+	def read count
+		@file.read(count).to_s
 	end
 	def read_str
-		str = @contents.unpack("Z*")[0]
-		@contents.slice!(0,str.length+1)
+		str = ""
+		while char = @file.read(1)
+			break if char == "\0"
+			str += char
+		end
 		str
 	end
 	def read_int
-		@contents.slice!(0,4).unpack("v")[0]
+		read(4).unpack("v")[0]
 	end
 	def read_short
-		@contents.slice!(0,2).unpack("S")[0]
+		read(2).unpack("S")[0]
 	end
 	def read_float
-		@contents.slice!(0,4).unpack("e")[0]
+		read(4).unpack("e")[0]
 	end
 	def read_close
-		@contents = nil
+		@file.close
 	end
 end
 class FsknMx < BinReader
-	attr_accessor :file, :level, :magic, :version, :textures, :verts, :triangles
+	attr_accessor :level, :magic, :version, :textures, :verts, :triangles
 	def initialize file
-		@file = file
 		@level = File.basename file
 		super file
-		@magic = read_chars 4
+		@magic = read 4
 		@version = read_int
 		@textures = []
 		read_short.times {
@@ -76,7 +78,7 @@ class FsknMx < BinReader
 		read_close
 	end
 	def dump
-		puts "level: #{@file}"
+		puts "level: #{@level}"
 		puts "magic: #{@magic}"
 		puts "version: #{@version}"
 		puts "textures: (#{@textures.length}): #{@textures.join(", ")}"
