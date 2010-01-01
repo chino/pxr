@@ -4,7 +4,9 @@ require "opengl"
 require "fsknmx"
 
 # window settings
-$width, $height = 640, 480
+$title = "Level Viewer"
+$width = 640
+$height = 480
 
 def set_view
 	GL.MatrixMode(GL::PROJECTION)
@@ -14,18 +16,18 @@ def set_view
 	GL.LoadIdentity
 	# invert the z axis
 	GL.Scale(1,1,-1)
-	# look at first vert
-	v = $level.verts[0]
-	x,y,z = v
+	# look at last vert from location of first vert
+	x1,y1,z1 = $level.verts[0]
+	x2,y2,z2 = $level.verts.last
 	GLU.LookAt( 
 		# position
-		x, y, z-900, # distance
+		x1, y1, z1,
 
 		# look at
-		x, y, z, 
+		x2, y2, z2, 
 
 		# up vector
-		0,1,0 
+		0, 1, 0 
 	)
 end
 
@@ -60,27 +62,21 @@ keyboard = Proc.new { |key,x,y|
     case (key)
         when 27 # ESCAPE
         	exit 0
-        when 'f'[0]
-	        GLUT.ReshapeWindow(640,480)
     end
 }
 
 reshape = Proc.new { |w,h|
 	h = 1 if h == 0
 	$width, $height = w,h
-	GL.Viewport(0, 0, $width, $height);              
-	# Re-initialize the window (same lines from InitGL)
-	GL.MatrixMode(GL::PROJECTION);
-	GL.LoadIdentity;
-	GLU.Perspective(45.0, $width/$height, 0.1, 100.0);
-	GL.MatrixMode(GL::MODELVIEW);
+	GL.Viewport(0, 0, $width, $height);
+	set_view
 }
 
 # setup GLUT
 GLUT.Init
 GLUT.InitDisplayMode(GLUT::DOUBLE | GLUT::RGB | GLUT::DEPTH)
 GLUT.InitWindowSize($width, $height)
-GLUT.CreateWindow($0)
+GLUT.CreateWindow($title)
 
 # glut callbacks
 GLUT.ReshapeFunc(reshape)
@@ -97,8 +93,8 @@ GL.FrontFace(GL::CW)
 GL.Disable(GL::LIGHTING)
 
 # wireframe mode
-GL.PolygonMode(GL::FRONT, GL::LINE)
-GL.PolygonMode(GL::BACK, GL::LINE)
+#GL.PolygonMode(GL::FRONT, GL::LINE)
+#GL.PolygonMode(GL::BACK, GL::LINE)
 
 # load level
 puts "loading level"
@@ -106,6 +102,9 @@ time = Time.now
 $level = FsknMx.new("ship.mxv")
 seconds = (Time.now - time)
 puts "level loaded in #{seconds} seconds"
+
+#
+reshape.call($width,$height)
 
 # start main loop
 GLUT.MainLoop()
