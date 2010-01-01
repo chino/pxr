@@ -34,30 +34,13 @@ def set_view mesh
 	)
 end
 
-def draw_poly mesh, poly
-	GL.Begin(GL::POLYGON)
-	poly.each do |index|
-		vert = mesh.verts[index]
-		GL.Color4ubv vert[:rgba]
-		x,y,z = vert[:vector]
-		GL.Vertex3f( x, y, z )
-	end
-	GL.End
-end
-
-def draw_mesh mesh
-	mesh.triangles.each do |triangle|
-		draw_poly mesh, triangle
-	end
-end
-
 # GLUT callbacks
 
 display = Proc.new {
 	GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT);
 	GL.ClearDepth(1.0)
 	set_view $level
-	draw_mesh $level
+	$level.draw
 	GL.Flush
 	GLUT.SwapBuffers
 	GLUT.PostRedisplay
@@ -102,14 +85,7 @@ GL.Disable(GL::LIGHTING)
 #GL.PolygonMode(GL::BACK, GL::LINE)
 
 # load level
-puts "loading level"
-time = Time.now
 $level = FsknMx.new("ship.mxv")
-seconds = (Time.now - time)
-puts "level loaded in #{seconds} seconds"
-
-#
-reshape.call($width,$height)
 
 # start main loop
 GLUT.MainLoop()
