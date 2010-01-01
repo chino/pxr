@@ -11,65 +11,50 @@ $title = "Level Viewer"
 $width = 640
 $height = 480
 
-def set_view mesh
-	GL.MatrixMode(GL::PROJECTION)
-	GL.LoadIdentity
-	GLU.Perspective(45.0, $width/$height, 10.0, 100000.0)
+# look at something in a sane way
+def look_at position, lookat
 	GL.MatrixMode(GL::MODELVIEW)
 	GL.LoadIdentity
-	# invert the z axis
 	GL.Scale(1,1,-1)
-	# look at last vert from location of first vert
-	x1,y1,z1 = mesh.verts[0][:vector]
-	x2,y2,z2 = mesh.verts.last[:vector]
 	GLU.LookAt( 
-		# position
-		x1, y1, z1,
-
-		# look at
-		x2, y2, z2, 
-
-		# up vector
-		0, 1, 0 
+		position[0], position[1], position[2],
+		lookat[0], lookat[1], lookat[2],
+		0, 1, 0	# up vector
 	)
 end
 
-# GLUT callbacks
-
-display = Proc.new {
-	GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT);
-	GL.ClearDepth(1.0)
-	set_view $level
-	$level.draw
-	GL.Flush
-	GLUT.SwapBuffers
-	GLUT.PostRedisplay
-}
-
-keyboard = Proc.new { |key,x,y|
-    case (key)
-        when 27 # ESCAPE
-        	exit 0
-    end
-}
-
-reshape = Proc.new { |w,h|
+# reshape viewport
+def reshape w, h
 	h = 1 if h == 0
 	$width, $height = w,h
 	GL.Viewport(0, 0, $width, $height);
-	set_view $level
-}
+	GL.MatrixMode(GL::PROJECTION)
+	GL.LoadIdentity
+	GLU.Perspective(45.0, $width/$height, 10.0, 100000.0)
+end
 
 # setup GLUT
 GLUT.Init
 GLUT.InitDisplayMode(GLUT::DOUBLE | GLUT::RGB | GLUT::DEPTH)
 GLUT.InitWindowSize($width, $height)
 GLUT.CreateWindow($title)
-
-# glut callbacks
-GLUT.ReshapeFunc(reshape)
-GLUT.DisplayFunc(display)
-GLUT.KeyboardFunc(keyboard)
+GLUT.ReshapeFunc(Proc.new {|w,h| reshape w, h })
+GLUT.DisplayFunc(Proc.new {
+	GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT);
+	GL.ClearDepth(1.0)
+	$level.draw
+	GL.Flush
+	GLUT.SwapBuffers
+	GLUT.PostRedisplay
+})
+GLUT.KeyboardFunc(Proc.new {|key,x,y|
+	case (key)
+        when 27 # ESCAPE
+        	exit 0
+	else
+		puts key
+	end
+})
 
 # setup GL
 GL.Enable(GL::DEPTH_TEST)
@@ -85,8 +70,17 @@ GL.Disable(GL::LIGHTING)
 #GL.PolygonMode(GL::BACK, GL::LINE)
 
 # load level
-$level = FsknMx.new("ship.mxv")
+$level = FsknMx.new "ship.mxv"
+
+# setup initial shape
+reshape $width, $height
+
+# look at last vert from location of first vert
+look_at(
+	$level.verts.first[:vector], 
+	$level.verts.last[:vector]
+)
 
 # start main loop
-GLUT.MainLoop()
+GLUT.MainLoop
 
