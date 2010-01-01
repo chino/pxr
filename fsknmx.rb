@@ -1,5 +1,5 @@
 class BinReader
-	def initialize file
+	def open file
 		@file = File.open file
 	end
 	def read count
@@ -30,39 +30,27 @@ class FsknMx < BinReader
 	attr_accessor :level, :magic, :version, :textures, :verts, :triangles
 	def initialize file
 		@level = File.basename file
-		super file
+		open file
 		@magic = read 4
 		@version = read_int
 		@textures = []
-		read_short.times {
-			@textures << read_str
-		}
+		read_short.times { @textures << read_str }
 		@verts = []
 		@triangles = []
 		vert_offset = 0
 		@groups = read_short
 		@groups.times {|g|
-			verts = 0	
-			exelists = read_short
-			exelists.times {|e|
+			group_verts = 0
+			read_short.times {|e|
 				exec_type = read_int
-				verts = read_short
-				verts.times {|v|
+				read_short.times {|v|
 					@verts << [ read_float, read_float, read_float ]
-					reserved = read_int
-					color = read_int
-					specular = read_int
-					tu = read_float
-					tv = read_float
+					reserved, color, specular, tu, tv = read_int, read_int, read_int, read_float, read_float
+					group_verts += 1
 				}
-				texture_groups = read_short
-				texture_groups.times {|t|
-					texture_type = read_short
-					start_vert = read_short
-					num_verts = read_short
-					texture_number = read_short
-					triangles = read_short
-					triangles.times {|tr|
+				read_short.times {|t|
+					texture_type, start_vert, nverts, texture = read_short, read_short, read_short, read_short
+					read_short.times {|tr|
 						@triangles << [
 							read_short + vert_offset,
 							read_short + vert_offset,
@@ -73,7 +61,7 @@ class FsknMx < BinReader
 					}
 				}
 			}
-			vert_offset += verts
+			vert_offset += group_verts
 		}
 		read_close
 	end
