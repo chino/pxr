@@ -9,17 +9,24 @@ $width, $height = 640, 480
 def set_view
 	GL.MatrixMode(GL::PROJECTION)
 	GL.LoadIdentity
-	GLU.Perspective(45.0, $width/$height, 10.0, 32767.0)
+	GLU.Perspective(45.0, $width/$height, 10.0, 100000.0)
 	GL.MatrixMode(GL::MODELVIEW)
-	# attempt to look at first vert
+	GL.LoadIdentity
+	# invert the z axis
+	GL.Scale(1,1,-1)
+	# look at first vert
 	v = $level.verts[0]
 	x,y,z = v
 	GLU.LookAt( 
-		x+10,y+10,z+10, 
-		x,y,z,
-		0,0,0 
+		# position
+		x, y, z-900, # distance
+
+		# look at
+		x, y, z, 
+
+		# up vector
+		0,1,0 
 	)
-	GL.Scale(1,1,-1)
 end
 
 def draw_poly poly
@@ -95,7 +102,10 @@ GL.PolygonMode(GL::BACK, GL::LINE)
 
 # load level
 puts "loading level"
+time = Time.now
 $level = FsknMx.new("ship.mxv")
+seconds = (Time.now - time)
+puts "level loaded in #{seconds} seconds"
 
 # start main loop
 GLUT.MainLoop()
