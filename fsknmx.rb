@@ -13,6 +13,9 @@ class BinReader
 		end
 		str
 	end
+	def read_char
+		read(1).unpack("c")[0]
+	end
 	def read_int
 		read(4).unpack("v")[0]
 	end
@@ -44,9 +47,20 @@ class FsknMx < BinReader
 			read_short.times {|e|
 				exec_type = read_int
 				read_short.times {|v|
-					@verts << [ read_float, read_float, read_float ]
-					reserved, color, specular, tu, tv = read_int, read_int, read_int, read_float, read_float
+					vert = [ read_float, read_float, read_float ]
+					reserved = read_int
+					blue, green, red, alpha = read_char, read_char, read_char, read_char 
+					specular, tu, tv = read_int, read_float, read_float
 					group_verts += 1
+					@verts << {
+						:vector => vert,
+						:color => {
+							:blue => blue/255.0,
+							:green => green/255.0,
+							:red => red/255.0,
+							:alpha => alpha/255.0
+						}
+					}
 				}
 				read_short.times {|t|
 					texture_type, start_vert, nverts, texture = read_short, read_short, read_short, read_short
@@ -80,8 +94,8 @@ class FsknMx < BinReader
 	def dump_tri tri
 		tri.map{|indice| dump_vert @verts[indice]}.join ", "
 	end
-	def dump_vert v
-		x,y,z = v
-		sprintf "(%f,%f,%f)", x, y, z
+	def dump_vert vert
+		x,y,z = vert[:vector]
+		sprintf "(%f,%f,%f) color=%d", x, y, z, vert[:color]
 	end
 end

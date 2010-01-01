@@ -17,8 +17,8 @@ def set_view
 	# invert the z axis
 	GL.Scale(1,1,-1)
 	# look at last vert from location of first vert
-	x1,y1,z1 = $level.verts[0]
-	x2,y2,z2 = $level.verts.last
+	x1,y1,z1 = $level.verts[0][:vector]
+	x2,y2,z2 = $level.verts.last[:vector]
 	GLU.LookAt( 
 		# position
 		x1, y1, z1,
@@ -31,10 +31,21 @@ def set_view
 	)
 end
 
+def set_color color
+	GL.Color4f(
+		color[:red],
+		color[:green],
+		color[:blue],
+		color[:alpha]
+	)
+end
+
 def draw_poly poly
 	GL.Begin(GL::POLYGON)
 	poly.each do |index|
-		x,y,z = $level.verts[index]
+		vert = $level.verts[index]
+		set_color vert[:color]
+		x,y,z = vert[:vector]
 		GL.Vertex3f( x, y, z )
 	end
 	GL.End
