@@ -69,6 +69,7 @@ GLUT.KeyboardFunc(Proc.new{|key,x,y|
 	# test ascii value
 	case (key)
         when 27 # ESCAPE
+		$level.free_dl
         	exit 0
 	end
 	# test as string
@@ -106,6 +107,7 @@ GL.Disable(GL::LIGHTING)
 
 # load level
 $level = FsknMx.new "ship.mxv"
+$level.make_dl
 
 # setup initial shape
 reshape $width, $height
