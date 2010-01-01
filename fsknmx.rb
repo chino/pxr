@@ -96,6 +96,6 @@ class FsknMx < BinReader
 	end
 	def dump_vert vert
 		x,y,z = vert[:vector]
-		sprintf "(%f,%f,%f) color=%d", x, y, z, vert[:color]
+		sprintf "(%f,%f,%f)", x, y, z
 	end
 end
