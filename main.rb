@@ -24,7 +24,7 @@ def reshape w, h
 	GL.Viewport(0, 0, $width, $height);
 	GL.MatrixMode(GL::PROJECTION)
 	GL.LoadIdentity
-	GLU.Perspective(45.0, $width/$height, 10.0, 100000.0)
+	GLU.Perspective(90.0, $width/$height, 10.0, 100000.0)
 end
 
 def update_position
