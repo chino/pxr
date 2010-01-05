@@ -1,10 +1,11 @@
 require "mesh"
 require "binreader"
-class FsknMx
-	attr_accessor :level, :magic, :version, :textures, :verts, :triangles
+class FsknMx < View
 	include Mesh
 	include BinReader
 	def initialize file
+		super
+		@render_type = GL::POLYGON
 		@level = File.basename file
 		open file
 		@magic = read 4
@@ -12,7 +13,7 @@ class FsknMx
 		@textures = []
 		read_short.times { @textures << read_str }
 		@verts = []
-		@triangles = []
+		@primitives = []
 		vert_offset = 0
 		@groups = read_short
 		@groups.times {|g|
@@ -33,7 +34,7 @@ class FsknMx
 				read_short.times {|t|
 					texture_type, start_vert, nverts, texture = read_short, read_short, read_short, read_short
 					read_short.times {|tr|
-						@triangles << [
+						@primitives << [
 							read_short + vert_offset,
 							read_short + vert_offset,
 							read_short + vert_offset
@@ -46,6 +47,7 @@ class FsknMx
 			vert_offset += group_verts
 		}
 		read_close
+		make_dl
 	end
 	def dump
 		puts "level: #{@level}"
@@ -54,8 +56,8 @@ class FsknMx
 		puts "textures: (#{@textures.length}): #{@textures.join(", ")}"
 		puts "groups: #{@groups}"
 		puts "verts: #{@verts.length}"
-		puts "triangles: #{@triangles.length}"
-		@triangles.each_with_index do |t,i|
+		puts "triangles: #{@primitives.length}"
+		@primitives.each_with_index do |t,i|
 			puts "\t#{i}: #{dump_tri t}"
 		end
 	end

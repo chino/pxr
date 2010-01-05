@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+require "rubygems"
+require "opengl"
+require "quat"
+require "view"
+require "fsknmx"
+require "window"
+require "mouse"
+require "lines"
+require "fps"
+require "main"
