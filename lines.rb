@@ -2,7 +2,7 @@ class Lines < View
 	include Mesh
 	def initialize *args
 		super *args
-		@render_type = GL::LINE
+		@render_type = GL::LINES
 		@verts = []
 		@primitives = []
 		@verts << { :vector => [0,0,0], :rgba => [255,255,255,255] }
