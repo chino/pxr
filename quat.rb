@@ -11,10 +11,10 @@ class Quat < Vector
 	def normalize
 		d = length
 		q = self.dup
-		q.x / d
-		q.y / d
-		q.z / d
-		q.w / d
+		q.x /= d
+		q.y /= d
+		q.z /= d
+		q.w /= d
 		q
 	end
 	def conjugate
