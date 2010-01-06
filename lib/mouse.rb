@@ -14,7 +14,10 @@ class << self
 		@@x = x_diff
 		@@y = y_diff
 	end
-	def x; @@x; end
-	def y; @@y; end
+	def get
+		x, y = @@x, @@y
+		@@x, @@y = 0, 0
+		[x, y]
+	end
 end
 end
