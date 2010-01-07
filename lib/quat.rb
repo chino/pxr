@@ -6,7 +6,10 @@ class Quat < Vector
 		@w = w
 	end
 	def length
-		Math.sqrt @x**2 + @y**2 + @z**2 + @w**2
+		Math.sqrt self.dot(self)
+	end
+	def dot q2
+		@x * q2.x + @y * q2.y + @z * q2.z + @w * q2.w
 	end
 	def normalize
 		d = length
@@ -23,6 +26,14 @@ class Quat < Vector
 		q.y = -q.y
 		q.z = -q.z
 		q
+	end
+	def cross q2
+		Quat.new(
+			@y * q2.z - @z * q2.y, # x
+			@z * q2.x - @x * q2.z, # y
+			@x * q2.y - @y * q2.x, # z
+			0
+		)
 	end
 	def * q2
 		q = self.dup
