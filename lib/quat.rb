@@ -1,9 +1,9 @@
 require "vector"
 class Quat < Vector
 	attr_accessor :w
-	def initialize x,y,z,w
-		super x,y,z
-		@w = w
+	def initialize *args
+		super args[0],args[1],args[2]
+		@w = args[3] || 0
 	end
 	def length
 		Math.sqrt self.dot(self)

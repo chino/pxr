@@ -1,35 +1,32 @@
 class View
-	attr_accessor :pos, :view, :up
+	attr_accessor :pos, :orientation
 	def initialize *args
-		@pos = Quat.new 0, 0, 0, 0	# origin
-		@view = Quat.new 0, 0, -1, 0	# look down -z
-		@up = Quat.new 0, 1, 0, 0	# up is +y
+		@pos = Vector.new 0, 0, 0
+		@orientation = Quat.new 0, 0, -1, 0
 	end
-	def rotate x, y
-		if y > 0
-			rot = ((@view - @pos) * @up).normalize
-			temp = rot.dup
-			temp.x *= Math.sin y
-			temp.y *= Math.sin y
-			temp.z *= Math.sin y
-			temp.w = Math.cos y
-			rv = (temp * rot) * rot.conjugate
-			@view.x = rv.x
-			@view.y = rv.y
-			@view.z = rv.z
-		end
-	end
-	def goto
-		puts "up.dot view != 0" if @up.dot(@view) != 0
-		right = @up.cross @view
-		GL.MatrixMode(GL::MODELVIEW)
-		GL.LoadIdentity
-		GL.Scale(1,1,-1)
-		GL.MultMatrix [
-			right.x, right.y, right.z, 0.0,
-			@up.x, @up.y, @up.z, 0.0,
-			@view.x, @view.y, @view.z, 0.0,
-			@pos.x, @pos.y, @pos.z, 1.0
-		]
+	def rotate yaw=0, pitch=0, roll=0
+		# create 3 quats for pitch, yaw, roll
+		# and multiply those together to form a rotation quat
+		# then apply it to the current quat to update it
+ 
+		piover180 = Math::PI / 180.0
+
+		p = pitch * piover180 / 2.0;
+		y = yaw * piover180 / 2.0;
+		r = roll * piover180 / 2.0;
+ 
+		sinp = Math.sin(p);
+		siny = Math.sin(y);
+		sinr = Math.sin(r);
+		cosp = Math.cos(p);
+		cosy = Math.cos(y);
+		cosr = Math.cos(r);
+ 
+		@orientation *= Quat.new(
+			sinr * cosp * cosy - cosr * sinp * siny,
+			cosr * sinp * cosy + sinr * cosp * siny,
+			cosr * cosp * siny - sinr * sinp * cosy,
+			cosr * cosp * cosy + sinr * sinp * siny
+		).normalize
 	end
 end
