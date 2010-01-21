@@ -10,6 +10,8 @@ class Camera
 		@pos = @ref.pos
 		@up = Quat.new(0, 1, 0) * @ref.orientation.conjugate * @ref.orientation
 		@forward = Quat.new(0, 0, 1) * @ref.orientation.conjugate * @ref.orientation
+		puts "up is not unit" if @up.length > 1
+		puts "forward is not unit" if @forward.length > 1
 		GL.MatrixMode(GL::MODELVIEW)
 		GL.LoadIdentity
 		GL.Scale(1,1,-1)
