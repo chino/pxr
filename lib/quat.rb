@@ -22,7 +22,7 @@ class Quat < Vector
 		Quat.new(
 			@y * q.z - @z * q.y,
 			@z * q.x - @x * q.z,
-			@x * q.y - @y * q.x,
+			@x * q.y - @y * q.x
 		)
 	end
 	def * q
