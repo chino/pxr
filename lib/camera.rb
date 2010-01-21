@@ -8,8 +8,8 @@ class Camera
 	def update
 		return if @ref.nil?
 		@pos = @ref.pos
-		@up = Quat.new(0, 1, 0) * @ref.orientation
-		@forward = Quat.new(0, 0, 1) * @ref.orientation
+		@up = Quat.new(0, 1, 0) * @ref.orientation.conjugate * @ref.orientation
+		@forward = Quat.new(0, 0, 1) * @ref.orientation.conjugate * @ref.orientation
 		GL.MatrixMode(GL::MODELVIEW)
 		GL.LoadIdentity
 		GL.Scale(1,1,-1)
