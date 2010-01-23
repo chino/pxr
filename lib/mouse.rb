@@ -1,23 +1,21 @@
 class Mouse
 class << self
+	@@window = nil
+	def window=(x); @@window=x; end
 	@@x = 0
 	@@y = 0
-	@@z = 0
-	@@last_x = 0
-	@@last_y = 0
-	@@last_z = 0
 	def input x, y
-		x_diff = x - @@last_x
-		y_diff = y - @@last_y
-		@@last_x = x
-		@@last_y = y
-		@@x = x_diff
-		@@y = y_diff
+		@@x = x - (@@window.w/2)
+		@@y = y - (@@window.h/2)
 	end
 	def get
 		x, y = @@x, @@y
-		@@x, @@y = 0, 0
+		reset
 		[x, y]
+	end
+	def reset
+		@@x, @@y = 0, 0
+		GLUT.WarpPointer @@window.w/2, @@window.h/2
 	end
 end
 end

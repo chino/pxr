@@ -13,10 +13,15 @@ class Window
 		GLUT.CreateWindow(@title)
 		GLUT.ReshapeFunc(Proc.new{|w,h| reshape w, h })
 		GLUT.DisplayFunc(Proc.new{ render })
+		# capture key presses
 		GLUT.KeyboardFunc(Proc.new{|key,x,y| 
 			#puts "key: #{key} pressed @ #{x},#{y}"
+			@keyboard.call key,x,y,true
+		})
+		GLUT.KeyboardUpFunc(Proc.new{|key,x,y|
+			#puts "key: #{key} released @ #{x},#{y}"
 			exit 0 if key == 27 # escape key
-			@keyboard.call key 
+			@keyboard.call key,x,y,false
 		})
 		GLUT.PassiveMotionFunc(Proc.new{|x,y| Mouse.input x,y })
 		GLUT.MouseFunc(Proc.new{|button,state,x,y| 
@@ -35,6 +40,9 @@ class Window
 		#GL.PolygonMode(GL::FRONT, GL::LINE)
 		#GL.PolygonMode(GL::BACK, GL::LINE)
 		#
+		Mouse.window = self
+		Mouse.reset
+		#
 		reshape @w, @h
 		#
 		@last_frame = 0
@@ -50,6 +58,7 @@ class Window
 		GL.MatrixMode(GL::PROJECTION)
 		GL.LoadIdentity
 		GLU.Perspective(90.0, aspect, 10.0, 100000.0)
+		Mouse.reset
 	end
 	def render 
 		GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT);
