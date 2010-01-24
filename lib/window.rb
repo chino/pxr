@@ -53,6 +53,8 @@ class Window
 		@last_frame = 0
 		@frames = 0
 		@fps = 0
+		#
+		@fov = 70.0
 	end
 	def aspect
 		@w.to_f / @h.to_f
@@ -62,7 +64,7 @@ class Window
 		GL.Viewport(0, 0, @w, @h);
 		GL.MatrixMode(GL::PROJECTION)
 		GL.LoadIdentity
-		GLU.Perspective(50.0, aspect, 10.0, 100000.0)
+		GLU.Perspective(70.0, aspect, 10.0, 100000.0)
 	end
 	def render 
 		GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT);

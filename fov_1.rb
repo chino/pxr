@@ -6,6 +6,16 @@ $ship    = FsknMx.new "data/sxcop400.mxa"
 $level   = FsknMx.new "data/ship.mxv"
 $camera  = View.new
 
+$fov = 100
+def fov_cycle
+	$fov+=1
+	$fov = 0 if $fov > 360
+	puts "fov set to #{$fov}"
+	GL.MatrixMode(GL::PROJECTION)
+	GL.LoadIdentity
+	GLU.Perspective($fov, $window.aspect, 10.0, 100000.0)
+end
+
 $step = 30
 $movement = Vector.new 0,0,0
 $bindings = {
@@ -14,7 +24,8 @@ $bindings = {
 	"e" => :up,
 	"d" => :down,
 	"f" => :left,
-	"g" => :right
+	"g" => :right,
+	"1" => :fov_cycle
 }
 $window.keyboard = Proc.new{|key,x,y,pressed|
 	k = key.chr.downcase
@@ -27,6 +38,7 @@ $window.keyboard = Proc.new{|key,x,y,pressed|
 	when :down then pressed ? $movement.y -= $step : $movement.y = 0 
 	when :forward then pressed ? $movement.z += $step : $movement.z = 0 
 	when :back then pressed ? $movement.z -= $step : $movement.z = 0
+	when :fov_cycle then fov_cycle
 	else puts "unknown key binding #{k}"
 	end
 }
