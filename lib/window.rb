@@ -25,7 +25,7 @@ class Window
 		# mouse inputs
 		Mouse.window = self
 		GLUT.EntryFunc(Proc.new{|entered|
-			Mouse.grab entered
+			Mouse.grab entered == 1
 		})
 		GLUT.PassiveMotionFunc(Proc.new{|x,y| Mouse.input x,y })
 		GLUT.MouseFunc(Proc.new{|button,state,x,y| 
