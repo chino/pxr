@@ -19,17 +19,13 @@ class Window
 		GLUT.KeyboardUpFunc(Proc.new{|key,x,y|
 			#puts "key: #{key} released @ #{x},#{y}"
 			exit 0 if key == 27 # escape key
+			Mouse.grab_swap if key.chr == "`"
 			@keyboard.call key,x,y,false
 		})
 		# mouse inputs
 		Mouse.window = self
 		GLUT.EntryFunc(Proc.new{|entered|
-			if entered
-				Mouse.center
-				Mouse.hide
-			else
-				Mouse.show
-			end
+			Mouse.grab entered
 		})
 		GLUT.PassiveMotionFunc(Proc.new{|x,y| Mouse.input x,y })
 		GLUT.MouseFunc(Proc.new{|button,state,x,y| 
