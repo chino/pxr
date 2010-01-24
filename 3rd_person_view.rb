@@ -49,8 +49,16 @@ $window.display = Proc.new{
 	# modify coordinate system based on camera position
 	$camera.load_matrix
 
-	# draw objects
+	# draw level
 	$level.draw
+
+	# draw ship
+	GL.MatrixMode(GL::MODELVIEW)
+	GL.LoadIdentity
+	GL.Scale(1,1,-1)
+	GL.Translate(0,-50,300)
+	GL.Rotate(-45,1,0,0)
+	$ship.draw
 }
 
 $window.run

@@ -1,5 +1,3 @@
-require "fps"
-require "mouse"
 class Window
 	attr_writer :display, :keyboard
 	attr_reader :title, :w, :h
@@ -23,6 +21,16 @@ class Window
 			exit 0 if key == 27 # escape key
 			@keyboard.call key,x,y,false
 		})
+		# mouse inputs
+		Mouse.window = self
+		GLUT.EntryFunc(Proc.new{|entered|
+			if entered
+				Mouse.center
+				Mouse.hide
+			else
+				Mouse.show
+			end
+		})
 		GLUT.PassiveMotionFunc(Proc.new{|x,y| Mouse.input x,y })
 		GLUT.MouseFunc(Proc.new{|button,state,x,y| 
 			puts "mouse button: #{button} "+
@@ -40,9 +48,6 @@ class Window
 		#GL.PolygonMode(GL::FRONT, GL::LINE)
 		#GL.PolygonMode(GL::BACK, GL::LINE)
 		#
-		Mouse.window = self
-		Mouse.reset
-		#
 		reshape @w, @h
 		#
 		@last_frame = 0
@@ -50,15 +55,14 @@ class Window
 		@fps = 0
 	end
 	def aspect
-		@w / @h
+		@w.to_f / @h.to_f
 	end
 	def reshape w, h
 		@w, @h = w, h
 		GL.Viewport(0, 0, @w, @h);
 		GL.MatrixMode(GL::PROJECTION)
 		GL.LoadIdentity
-		GLU.Perspective(90.0, aspect, 10.0, 100000.0)
-		Mouse.reset
+		GLU.Perspective(50.0, aspect, 10.0, 100000.0)
 	end
 	def render 
 		GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT);

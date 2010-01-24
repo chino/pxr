@@ -10,12 +10,18 @@ class << self
 	end
 	def get
 		x, y = @@x, @@y
-		reset
+		center
 		[x, y]
 	end
-	def reset
+	def center
 		@@x, @@y = 0, 0
 		GLUT.WarpPointer @@window.w/2, @@window.h/2
+	end
+	def hide
+		GLUT.SetCursor(GLUT::CURSOR_NONE);
+	end
+	def show
+		GLUT.SetCursor(GLUT::CURSOR_INHERIT);
 	end
 end
 end

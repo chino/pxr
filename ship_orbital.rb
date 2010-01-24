@@ -1,11 +1,9 @@
 #!/usr/bin/env ruby
 require "#{File.dirname __FILE__}/lib/headers"
-
 $window  = Window.new("Model Viewer", 640, 480)
 $ship    = FsknMx.new "data/sxcop400.mxa"
 $level   = FsknMx.new "data/ship.mxv"
 $camera  = View.new
-
 $step = 30
 $movement = Vector.new 0,0,0
 $bindings = {
@@ -34,7 +32,7 @@ $window.keyboard = Proc.new{|key,x,y,pressed|
 	else puts "unknown key binding #{k}"
 	end
 }
-
+$rotation = 0
 $window.display = Proc.new{
 
 	# read mouse for rotation
@@ -49,8 +47,15 @@ $window.display = Proc.new{
 	# modify coordinate system based on camera position
 	$camera.load_matrix
 
-	# draw objects
+	# draw level
 	$level.draw
-}
 
+	# draw ship
+	GL.MatrixMode(GL::MODELVIEW)
+	GL.LoadIdentity
+	GL.Scale(1,1,-1)
+	GL.Rotate($rotation+=1,0,0,1)
+	GL.Translate(0,-100,200)
+	$ship.draw
+}
 $window.run
