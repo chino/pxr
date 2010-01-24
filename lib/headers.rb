@@ -5,7 +5,6 @@ require "opengl"
 ROOT=File.dirname $0
 $: << "#{ROOT}/lib/"
 require "vector"
-require "position"
 require "view"
 require "quat"
 require "fsknmx"

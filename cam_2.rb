@@ -2,8 +2,9 @@
 require "#{File.dirname __FILE__}/lib/headers"
 
 $window  = Window.new("Model Viewer", 640, 480)
-$ship    = FsknMx.new "data/sxcop400.mxa"
-$level   = FsknMx.new "data/ship.mxv"
+$ship    = FsknMx.new("data/sxcop400.mxa")
+$ship2   = FsknMx.new("data/nbia400.mxa")
+$level   = FsknMx.new("data/ship.mxv")
 $camera  = View.new
 
 $step = 30
@@ -36,7 +37,6 @@ $window.keyboard = Proc.new{|key,x,y,pressed|
 }
 
 $window.display = Proc.new{
-
 	# read mouse for rotation
 	x,y = Mouse.get
 
@@ -50,15 +50,25 @@ $window.display = Proc.new{
 	$camera.load_matrix
 
 	# draw level
+	$level.pos = Vector.new 0,0,0
+	GL.PushMatrix
+	$level.mult_matrix
 	$level.draw
+	GL.PopMatrix
 
 	# draw ship
-	GL.MatrixMode(GL::MODELVIEW)
-	GL.LoadIdentity
-	GL.Scale(1,1,-1)
-	GL.Translate(0,-50,300)
-	GL.Rotate(-45,1,0,0)
+	$ship.pos = Vector.new 500,-500,-5000
+	GL.PushMatrix
+	$ship.mult_matrix
 	$ship.draw
+	GL.PopMatrix
+
+	# draw ship2
+	$ship2.pos = Vector.new 550,-500,-5000
+	GL.PushMatrix
+	$ship2.mult_matrix
+	$ship2.draw
+	GL.PopMatrix
 }
 
 $window.run
