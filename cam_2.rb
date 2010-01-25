@@ -4,9 +4,10 @@ require "#{File.dirname __FILE__}/lib/headers"
 $window  = Window.new("Model Viewer", 640, 480)
 
 # glut.init was crashing if i passed in argv[1] ???
-$host,$port = (ARGV[0]||"").split(":")
+$host,$port,$lport = (ARGV[0]||"").split(":")
 $port = $port || 2300
-$network = Network.new( $host, $port ) if ARGV.length > 0
+$lport = $lport || 2300
+$network = Network.new( $host, $port, $lport ) if ARGV.length > 0
 
 # this is not working yet
 $image = Image.new("data/excop.png")
@@ -66,11 +67,11 @@ $window.display = Proc.new{
 		data = $network.pump 
 		if data
 			px,py,pz,ox,oy,oz,ow = data.unpack("eeeeeee")
-			$ship3.pos = Vector.new px,py,pz
-			$ship3.orientation = Quat.new ox,oy,oz,ow
+			$ship3.pos = Vector.new px,py,-pz
+			$ship3.orientation = Quat.new(ox,oy,oz,ow)
 		end
 		# send current data
-		if (Time.now - $last_send).to_i > (60/10)
+		#if (Time.now - $last_send).to_i > (60/10)
 			$network.send [
 				$camera.pos.x, 
 				$camera.pos.y, 
@@ -81,7 +82,7 @@ $window.display = Proc.new{
 				$camera.orientation.w,
 			].pack("eeeeeee")
 			$last_send = Time.now
-		end
+		#end
 	end
 	
 	# read mouse for rotation
@@ -118,7 +119,7 @@ $window.display = Proc.new{
 #	$image.unbind
 	GL.PopMatrix
 
-	# draw ship2
+	# draw ship3
 	$ship2.pos = Vector.new 550,-500,-5000
 	GL.PushMatrix
 	$ship2.mult_matrix
