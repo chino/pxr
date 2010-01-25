@@ -2,11 +2,32 @@
 require "#{File.dirname __FILE__}/lib/headers"
 
 $window  = Window.new("Model Viewer", 640, 480)
-$ship    = FsknMx.new("data/sxcop400.mxa")
-$image   = Image.new("data/excop.png")
+
+# glut.init was crashing if i passed in argv[1] ???
+$host,$port = (ARGV[0]||"").split(":")
+$port = $port || 2300
+$network = Network.new( $host, $port ) if ARGV.length > 0
+
+# this is not working yet
+$image = Image.new("data/excop.png")
+class FsknMx2 < FsknMx
+	def draw
+		$image.bind
+		super
+		$image.unbind
+	end
+end
+# uncomment to see the image!
+# $image.image.display
+
+$ship    = FsknMx2.new("data/sxcop400.mxa")
 $ship2   = FsknMx.new("data/nbia400.mxa")
+$ship3   = FsknMx.new("data/nbia400.mxa")
 $level   = FsknMx.new("data/ship.mxv")
+$lines   = Lines.new
 $camera  = View.new
+
+$fusionfarm = D1rdl.new("data/fusnfarm.rdl")
 
 $step = 30
 $movement = Vector.new 0,0,0
@@ -38,6 +59,28 @@ $window.keyboard = Proc.new{|key,x,y,pressed|
 }
 
 $window.display = Proc.new{
+
+	# get network updates
+	unless $network.nil?
+		# read data from player
+		data = $network.pump 
+		if data
+			px,py,pz,ox,oy,oz,ow = data.unpack("eeeeeee")
+			$ship3.pos = Vector.new px,py,pz
+			$ship3.orientation = Quat.new ox,oy,oz,ow
+		end
+		# send current data
+		$network.send [
+			$camera.pos.x, 
+			$camera.pos.y, 
+			$camera.pos.z,
+			$camera.orientation.x,
+			$camera.orientation.y,
+			$camera.orientation.z,
+			$camera.orientation.w,
+		].pack("eeeeeee")
+	end
+	
 	# read mouse for rotation
 	x,y = Mouse.get
 
@@ -50,20 +93,26 @@ $window.display = Proc.new{
 	# modify coordinate system based on camera position
 	$camera.load_matrix
 
-	# draw level
-	$level.pos = Vector.new 0,0,0
-	GL.PushMatrix
-	$level.mult_matrix
+	# draw level at origin
 	$level.draw
+
+	# draw the "Kiln's Fusion Farm" level
+	$fusionfarm.pos = Vector.new 0,0,-200
+	GL.PushMatrix
+	$fusionfarm.mult_matrix
+	$fusionfarm.draw
 	GL.PopMatrix
+
+	# draw lines at origin
+	$lines.draw
 
 	# draw ship
 	$ship.pos = Vector.new 500,-500,-5000
 	GL.PushMatrix
 	$ship.mult_matrix
-	$image.bind
+#	$image.bind
 	$ship.draw
-	$image.unbind
+#	$image.unbind
 	GL.PopMatrix
 
 	# draw ship2
@@ -71,6 +120,12 @@ $window.display = Proc.new{
 	GL.PushMatrix
 	$ship2.mult_matrix
 	$ship2.draw
+	GL.PopMatrix
+
+	# draw ship3
+	GL.PushMatrix
+	$ship3.mult_matrix
+	$ship3.draw
 	GL.PopMatrix
 }
 
