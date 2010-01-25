@@ -57,7 +57,7 @@ $window.keyboard = Proc.new{|key,x,y,pressed|
 	else puts "unknown key binding #{k}"
 	end
 }
-
+$last_send = Time.now
 $window.display = Proc.new{
 
 	# get network updates
@@ -70,15 +70,18 @@ $window.display = Proc.new{
 			$ship3.orientation = Quat.new ox,oy,oz,ow
 		end
 		# send current data
-		$network.send [
-			$camera.pos.x, 
-			$camera.pos.y, 
-			$camera.pos.z,
-			$camera.orientation.x,
-			$camera.orientation.y,
-			$camera.orientation.z,
-			$camera.orientation.w,
-		].pack("eeeeeee")
+		if (Time.now - $last_send).to_i > (60/10)
+			$network.send [
+				$camera.pos.x, 
+				$camera.pos.y, 
+				$camera.pos.z,
+				$camera.orientation.x,
+				$camera.orientation.y,
+				$camera.orientation.z,
+				$camera.orientation.w,
+			].pack("eeeeeee")
+			$last_send = Time.now
+		end
 	end
 	
 	# read mouse for rotation
