@@ -3,6 +3,9 @@ require "#{File.dirname __FILE__}/lib/headers"
 
 $window  = Window.new("Model Viewer", 640, 480)
 
+# example of ruby-opengl throwing gl errors
+#GL.Enable(GL_TRUE) # will raise exception
+
 # glut.init was crashing if i passed in argv[1] ???
 $host,$port,$lport = (ARGV[0]||"").split(":")
 $port = $port || 2300

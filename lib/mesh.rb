@@ -18,8 +18,10 @@ module Mesh
 		@primitives.each do |primitive|
 			GL.Begin @render_type
 			primitive.each do |index|
-				GL.Color4ubv @verts[index][:rgba]
-				GL.Vertex3fv @verts[index][:vector]
+				vert = @verts[index]
+				GL.Color4ubv vert[:rgba] if vert[:rgba]
+				GL.TexCoord2f vert[:tu], vert[:tv] if vert[:tu] and vert[:tv]
+				GL.Vertex3fv vert[:vector]
 			end
 			GL.End
 		end

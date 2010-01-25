@@ -28,7 +28,9 @@ class FsknMx < View
 					group_verts += 1
 					@verts << {
 						:vector => vert,
-						:rgba => [red,green,blue,alpha]
+						:rgba => [red,green,blue,alpha],
+						:tu => tu,
+						:tv => tv
 					}
 				}
 				read_short.times {|t|
