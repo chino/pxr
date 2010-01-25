@@ -2,13 +2,11 @@
 require "#{File.dirname __FILE__}/lib/headers"
 
 $window  = Window.new("Model Viewer", 640, 480)
-$ship    = FsknMx.new("data/sxcop400.mxa")
-$image   = Image.new("data/excop.png")
-$ship2   = FsknMx.new("data/nbia400.mxa")
-$level   = FsknMx.new("data/ship.mxv")
+$fusionfarm = D1rdl.new("data/fusnfarm.rdl")
+$neptune = D1rdl.new("data/neptune.rdl")
 $camera  = View.new
 
-$step = 30
+$step = 3
 $movement = Vector.new 0,0,0
 $bindings = {
 	:w => :forward,
@@ -50,27 +48,22 @@ $window.display = Proc.new{
 	# modify coordinate system based on camera position
 	$camera.load_matrix
 
-	# draw level
-	$level.pos = Vector.new 0,0,0
+	# Use wireframe mode until we have proper lighting
+	#GL.PolygonMode(GL::FRONT, GL::LINE)
+	#GL.PolygonMode(GL::BACK, GL::LINE)
+
+	# draw the "Kiln's Fusion Farm" level
+	$fusionfarm.pos = Vector.new 0,0,-200
 	GL.PushMatrix
-	$level.mult_matrix
-	$level.draw
+	$fusionfarm.mult_matrix
+	$fusionfarm.draw
 	GL.PopMatrix
 
-	# draw ship
-	$ship.pos = Vector.new 500,-500,-5000
+	# draw the "Neptune" level
+	$neptune.pos = Vector.new 0,0,-700
 	GL.PushMatrix
-	$ship.mult_matrix
-	$image.bind
-	$ship.draw
-	$image.unbind
-	GL.PopMatrix
-
-	# draw ship2
-	$ship2.pos = Vector.new 550,-500,-5000
-	GL.PushMatrix
-	$ship2.mult_matrix
-	$ship2.draw
+	$neptune.mult_matrix
+	$neptune.draw
 	GL.PopMatrix
 }
 
