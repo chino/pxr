@@ -1,4 +1,4 @@
-require "opengl"
+require "mouse"
 class Window
 	attr_writer :display, :keyboard
 	attr_reader :title, :w, :h

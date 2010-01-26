@@ -1,5 +1,7 @@
 require "mesh"
 require "view"
+require "opengl"
+require "vector"
 require "binreader"
 class D1rdl < View
 	include Mesh

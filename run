@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require "rubygems"
+require "opengl"
 
 # args
 if ARGV[0].nil?
@@ -18,7 +19,7 @@ SCENE=ARGV[0]
 $: << LIB
 
 # libs
-Dir["#{LIB}/*"].each do |file|
+Dir["#{LIB}/*"].sort.each do |file|
 	require file
 end
 

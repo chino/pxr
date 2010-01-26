@@ -1,3 +1,5 @@
+require "vector"
+require "quat"
 class View
 	attr_accessor :pos, :orientation, :scale
 	def initialize *args

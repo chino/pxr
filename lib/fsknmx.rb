@@ -1,4 +1,5 @@
 require "mesh"
+require "image"
 require "binreader"
 class FsknMx
 	include Mesh
