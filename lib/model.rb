@@ -1,6 +1,7 @@
 class Model < View
 	@@dir = "data/models"
 	@@loaders = {
+		"mx"  => FsknMx,
 		"mxa" => FsknMx,
 		"mxv" => FsknMx,
 		"rdl" => D1rdl

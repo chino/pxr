@@ -15,13 +15,18 @@ $ship3       = Model.new("nbia400.mxa")
 $lines       = Lines.new
 $level       = Model.new("ship.mxv")
 $fusionfarm  = Model.new("fusnfarm.rdl")
+$ball        = Model.new
 
+$ball.pos       = Vector.new 100,100,100
 $ship.pos       = Vector.new 500,-500,-5000
 $ship2.pos      = Vector.new 550,-500,-5000
 $fusionfarm.pos = Vector.new 1000,-5000,4000
+
 $fusionfarm.scale = Vector.new 20,20,20
 
-$camera    = View.new
+$camera     = View.new
+$camera.pos = Vector.new -100,-50,-500
+
 $step = 100
 $movement = Vector.new 0,0,0
 $bindings = {
@@ -77,6 +82,9 @@ $window.display = Proc.new{
 			$last_send = Time.now
 		#end
 	end
+
+	# rotate ball
+	$ball.rotate 5,5,5
 	
 	# read mouse for rotation
 	x,y = Mouse.get
@@ -90,12 +98,8 @@ $window.display = Proc.new{
 	# modify coordinate system based on camera position
 	$camera.place_camera
 
-	# draw level at origin
-	$level.draw
-	$lines.draw
-
 	# draw at their locations
-	[$fusionfarm,$ship,$ship2,$ship3].each do |o|
+	[$level,$fusionfarm,$lines,$ship,$ship2,$ship3,$ball].each do |o|
 		GL.PushMatrix
 		o.load_matrix
 		o.draw
