@@ -1,10 +1,9 @@
 require "mesh"
 require "binreader"
-class FsknMx < View
+class FsknMx
 	include Mesh
 	include BinReader
 	def initialize file
-		super
 		@render_type = GL::POLYGON
 		@level = File.basename file
 		open file

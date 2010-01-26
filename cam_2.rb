@@ -12,16 +12,18 @@ $port = $port || 2300
 $lport = $lport || 2300
 $network = Network.new( $host, $port, $lport ) if ARGV.length > 0
 
-$ship    = FsknMx.new("data/sxcop400.mxa")
-$ship2   = FsknMx.new("data/nbia400.mxa")
-$ship3   = FsknMx.new("data/nbia400.mxa")
-$level   = FsknMx.new("data/ship.mxv")
-$lines   = Lines.new
-$camera  = View.new
+$ship      = Model.new("sxcop400.mxa")
+$ship.pos  = Vector.new 500,-500,-5000
+$ship2     = Model.new("nbia400.mxa")
+$ship2.pos = Vector.new 550,-500,-5000
+$ship3     = Model.new("nbia400.mxa")
+$lines     = Lines.new
+$level     = Model.new("ship.mxv")
+$camera    = View.new
 
 #$fusionfarm = D1rdl.new("data/fusnfarm.rdl")
 
-$step = 30
+$step = 60
 $movement = Vector.new 0,0,0
 $bindings = {
 	:w => :forward,
@@ -102,16 +104,12 @@ $window.display = Proc.new{
 	$lines.draw
 
 	# draw ship
-	$ship.pos = Vector.new 500,-500,-5000
 	GL.PushMatrix
 	$ship.mult_matrix
-#	$image.bind
 	$ship.draw
-#	$image.unbind
 	GL.PopMatrix
 
 	# draw ship2
-	$ship2.pos = Vector.new 550,-500,-5000
 	GL.PushMatrix
 	$ship2.mult_matrix
 	$ship2.draw
