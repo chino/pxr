@@ -9,18 +9,20 @@ $port = $port || 2300
 $lport = $lport || 2300
 $network = Network.new( $host, $port, $lport ) if ARGV.length > 1
 
-$ship      = Model.new("sxcop400.mxa")
-$ship.pos  = Vector.new 500,-500,-5000
-$ship2     = Model.new("nbia400.mxa")
-$ship2.pos = Vector.new 550,-500,-5000
-$ship3     = Model.new("nbia400.mxa")
-$lines     = Lines.new
-$level     = Model.new("ship.mxv")
+$ship        = Model.new("sxcop400.mxa")
+$ship2       = Model.new("nbia400.mxa")
+$ship3       = Model.new("nbia400.mxa")
+$lines       = Lines.new
+$level       = Model.new("ship.mxv")
+$fusionfarm  = Model.new("fusnfarm.rdl")
+
+$ship.pos       = Vector.new 500,-500,-5000
+$ship2.pos      = Vector.new 550,-500,-5000
+$fusionfarm.pos = Vector.new 1000,-5000,4000
+$fusionfarm.scale = Vector.new 20,20,20
+
 $camera    = View.new
-
-#$fusionfarm = D1rdl.new("data/fusnfarm.rdl")
-
-$step = 60
+$step = 100
 $movement = Vector.new 0,0,0
 $bindings = {
 	:w => :forward,
@@ -48,6 +50,7 @@ $window.keyboard = Proc.new{|key,x,y,pressed|
 	else puts "unknown key binding #{k}"
 	end
 }
+
 $last_send = Time.now
 $window.display = Proc.new{
 
@@ -85,38 +88,20 @@ $window.display = Proc.new{
 	$camera.move $movement
 
 	# modify coordinate system based on camera position
-	$camera.load_matrix
+	$camera.place_camera
 
 	# draw level at origin
 	$level.draw
-
-	# draw the "Kiln's Fusion Farm" level
-#	$fusionfarm.pos = Vector.new 0,0,-200
-#	GL.PushMatrix
-#	$fusionfarm.mult_matrix
-#	$fusionfarm.draw
-#	GL.PopMatrix
-
-	# draw lines at origin
 	$lines.draw
 
-	# draw ship
-	GL.PushMatrix
-	$ship.mult_matrix
-	$ship.draw
-	GL.PopMatrix
-
-	# draw ship2
-	GL.PushMatrix
-	$ship2.mult_matrix
-	$ship2.draw
-	GL.PopMatrix
-
-	# draw ship3
-	GL.PushMatrix
-	$ship3.mult_matrix
-	$ship3.draw
-	GL.PopMatrix
+	# draw at their locations
+	[$fusionfarm,$ship,$ship2,$ship3].each do |o|
+		GL.PushMatrix
+		o.load_matrix
+		o.draw
+		GL.PopMatrix
+	end
+	
 }
 
 $window.run

@@ -70,11 +70,14 @@ class D1rdl < View
 			]
 			cvi.each_with_index { |v,i|
 				if sidemask & (1<<i) == 0 then
-					@primitives << v.map { |i|
-						if cubeverts[i] >= nverts then
-							puts "Invalid vertex number (#{cubeverts[i]} >= #{nverts})"
-						end
-						cubeverts[i]
+					@primitives << {
+						:texture => nil,
+						:verts => v.map { |i|
+							if cubeverts[i] >= nverts then
+								puts "Invalid vertex number (#{cubeverts[i]} >= #{nverts})"
+							end
+							cubeverts[i]
+						}
 					}
 				end
 			}

@@ -1,8 +1,9 @@
 class View
-	attr_accessor :pos, :orientation
+	attr_accessor :pos, :orientation, :scale
 	def initialize *args
 		@pos = Vector.new 0, 0, 0
 		@orientation = Quat.new(0, 0, 0, 1).normalize
+		@scale = Vector.new 1, 1, 1
 	end
 	# vector { x=right-left, y=up-down, z=forward-back }
 	def move vector
@@ -12,7 +13,7 @@ class View
 	def rotate *args
 		@orientation.rotate! *args
 	end
-	def load_matrix
+	def place_camera
 		up = @orientation.vector :up
 		forward = @orientation.vector :forward
 		GL.MatrixMode(GL::MODELVIEW)
@@ -24,7 +25,7 @@ class View
 		)
 		GL.Scale(1,1,-1)
 	end
-	def mult_matrix
+	def load_matrix
 		up = @orientation.vector :up
 		forward = @orientation.vector :forward
 		right = @orientation.vector :right
@@ -35,5 +36,6 @@ class View
 			forward.x, forward.y, forward.z, 0.0,
 			@pos.x, @pos.y, -@pos.z, 1.0
 		]
+		GL.Scale( @scale.x, @scale.y, @scale.z )
 	end
 end
