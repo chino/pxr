@@ -12,26 +12,14 @@ $port = $port || 2300
 $lport = $lport || 2300
 $network = Network.new( $host, $port, $lport ) if ARGV.length > 0
 
-# this is not working yet
-$image = Image.new("data/excop.png")
-class FsknMx2 < FsknMx
-	def draw
-		$image.bind
-		super
-		$image.unbind
-	end
-end
-# uncomment to see the image!
-# $image.image.display
-
-$ship    = FsknMx2.new("data/sxcop400.mxa")
+$ship    = FsknMx.new("data/sxcop400.mxa")
 $ship2   = FsknMx.new("data/nbia400.mxa")
 $ship3   = FsknMx.new("data/nbia400.mxa")
 $level   = FsknMx.new("data/ship.mxv")
 $lines   = Lines.new
 $camera  = View.new
 
-$fusionfarm = D1rdl.new("data/fusnfarm.rdl")
+#$fusionfarm = D1rdl.new("data/fusnfarm.rdl")
 
 $step = 30
 $movement = Vector.new 0,0,0
@@ -104,11 +92,11 @@ $window.display = Proc.new{
 	$level.draw
 
 	# draw the "Kiln's Fusion Farm" level
-	$fusionfarm.pos = Vector.new 0,0,-200
-	GL.PushMatrix
-	$fusionfarm.mult_matrix
-	$fusionfarm.draw
-	GL.PopMatrix
+#	$fusionfarm.pos = Vector.new 0,0,-200
+#	GL.PushMatrix
+#	$fusionfarm.mult_matrix
+#	$fusionfarm.draw
+#	GL.PopMatrix
 
 	# draw lines at origin
 	$lines.draw
@@ -122,7 +110,7 @@ $window.display = Proc.new{
 #	$image.unbind
 	GL.PopMatrix
 
-	# draw ship3
+	# draw ship2
 	$ship2.pos = Vector.new 550,-500,-5000
 	GL.PushMatrix
 	$ship2.mult_matrix

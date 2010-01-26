@@ -11,7 +11,11 @@ class FsknMx < View
 		@magic = read 4
 		@version = read_int
 		@textures = []
-		read_short.times { @textures << read_str }
+		read_short.times { 
+			path = "data/images/" + File.basename(read_str).sub(/\..*/,".png").downcase 
+			Images.get path
+			@textures << path
+		}
 		@verts = []
 		@primitives = []
 		vert_offset = 0
@@ -36,11 +40,14 @@ class FsknMx < View
 				read_short.times {|t|
 					texture_type, start_vert, nverts, texture = read_short, read_short, read_short, read_short
 					read_short.times {|tr|
-						@primitives << [
-							read_short + vert_offset,
-							read_short + vert_offset,
-							read_short + vert_offset
-						]
+						@primitives << {
+							:texture => @textures[texture],
+							:verts => [
+								read_short + vert_offset,
+								read_short + vert_offset,
+								read_short + vert_offset
+							]
+						}
 						pad16 = read_short
 						normal = [ read_float, read_float, read_float ]
 					}

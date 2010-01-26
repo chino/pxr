@@ -16,14 +16,16 @@ module Mesh
 			return
 		end
 		@primitives.each do |primitive|
+			Images.bind primitive[:texture]
 			GL.Begin @render_type
-			primitive.each do |index|
+			primitive[:verts].each do |index|
 				vert = @verts[index]
 				GL.Color4ubv vert[:rgba] if vert[:rgba]
 				GL.TexCoord2f vert[:tu], vert[:tv] if vert[:tu] and vert[:tv]
 				GL.Vertex3fv vert[:vector]
 			end
 			GL.End
+			Images.unbind primitive[:texture]
 		end
 	end
 end
