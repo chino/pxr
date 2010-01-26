@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+require "rubygems"
+
+# args
+if ARGV[0].nil?
+	puts "Usage: #{$0} <scene> [host[:port[:localport]]]"
+	exit 1
+end
+
+# globals
+ROOT=File.dirname($0)
+DATA="#{ROOT}/data"
+LIB="#{ROOT}/lib"
+SCENES="#{ROOT}/scenes"
+SCENE=ARGV[0]
+
+# append load paths
+$: << LIB
+
+# libs
+Dir["#{LIB}/*"].each do |file|
+	require file
+end
+
+# load scene
+require "#{SCENES}/#{SCENE}"
