@@ -9,19 +9,12 @@ class Network
 	def pump
 		ready = IO.select([@server], nil, nil, 0.01)
 		return unless ready
-		data,info = @server.recvfrom_nonblock(7*32)
-		#something,port,domain name,ip = info
-		#puts "udp data: " + data unless data.nil? 
-		puts "r"
-		data
+		@server.recvfrom_nonblock(7*32)
 	rescue
 	end
 	def send data
 		ready = IO.select(nil,[@client], nil, 0.01)
-		if ready
-			@client.send data, 0 
-			#puts "w"
-		end
+		@client.send data, 0 if ready
 	rescue
 	end
 end

@@ -11,7 +11,6 @@ $network = Network.new( $host, $port, $lport ) if ARGV.length > 1
 
 $ship        = Model.new("sxcop400.mxa")
 $ship2       = Model.new("nbia400.mxa")
-$ship3       = Model.new("nbia400.mxa")
 $lines       = Lines.new
 $level       = Model.new("ship.mxv")
 $fusionfarm  = Model.new("fusnfarm.rdl")
@@ -26,6 +25,8 @@ $fusionfarm.pos = Vector.new 1000,-5000,4000
 
 $fusionfarm.scale = Vector.new 20,20,20
 $ball.scale = Vector.new 0.5,0.5,0.5
+
+$objects = [$level,$fusionfarm,$lines,$ship,$ship2,$ball,$ball2]
 
 $camera     = View.new
 $camera.pos = Vector.new -100,-50,-500
@@ -58,20 +59,26 @@ $window.keyboard = Proc.new{|key,x,y,pressed|
 	else puts "unknown key binding #{k}"
 	end
 }
-
+$players = {}
 $last_send = Time.now
 $window.display = Proc.new{
 
 	# get network updates
 	unless $network.nil?
 		# read data from player
-		data = $network.pump 
+		data,info = $network.pump 
+		something,port,name,ip = info
+		player = $players[ip]
+		if player.nil?
+			player = $players[ip] = Model.new("nbia400.mxa")
+			$objects << player
+		end
 		if data
 			px,py,pz,ox,oy,oz,ow = data.unpack("eeeeeee")
-			$ship3.pos = Vector.new px,py,-pz
-			$ship3.orientation = Quat.new(ox,oy,oz,ow)
+			player.pos = Vector.new px,py,-pz
+			player.orientation = Quat.new(ox,oy,oz,ow)
 		end
-		# send current data
+		# send current update
 		#if (Time.now - $last_send).to_i > (60/10)
 			$network.send [
 				$camera.pos.x, 
@@ -103,7 +110,7 @@ $window.display = Proc.new{
 	$camera.place_camera
 
 	# draw at their locations
-	[$level,$fusionfarm,$lines,$ship,$ship2,$ship3,$ball,$ball2].each do |o|
+	$objects.each do |o|
 		GL.PushMatrix
 		o.load_matrix
 		o.draw

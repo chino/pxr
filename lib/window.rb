@@ -6,7 +6,7 @@ class Window
 		@title, @w, @h = title, w, h
 		@display = Proc.new{}
 		@keyboard = Proc.new{}
-		GLUT.Init
+		GLUT.Init([])
 		GLUT.InitDisplayMode(GLUT::DOUBLE | GLUT::RGB | GLUT::DEPTH)
 		GLUT.InitWindowSize(@w, @h)
 		GLUT.CreateWindow(@title)
