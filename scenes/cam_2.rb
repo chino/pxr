@@ -16,13 +16,16 @@ $lines       = Lines.new
 $level       = Model.new("ship.mxv")
 $fusionfarm  = Model.new("fusnfarm.rdl")
 $ball        = Model.new
+$ball2        = Model.new
 
 $ball.pos       = Vector.new 100,100,100
+$ball2.pos       = Vector.new 100,100,100
 $ship.pos       = Vector.new 500,-500,-5000
 $ship2.pos      = Vector.new 550,-500,-5000
 $fusionfarm.pos = Vector.new 1000,-5000,4000
 
 $fusionfarm.scale = Vector.new 20,20,20
+$ball.scale = Vector.new 0.5,0.5,0.5
 
 $camera     = View.new
 $camera.pos = Vector.new -100,-50,-500
@@ -85,6 +88,7 @@ $window.display = Proc.new{
 
 	# rotate ball
 	$ball.rotate 5,5,5
+	$ball2.rotate -5,-5,-5
 	
 	# read mouse for rotation
 	x,y = Mouse.get
@@ -99,7 +103,7 @@ $window.display = Proc.new{
 	$camera.place_camera
 
 	# draw at their locations
-	[$level,$fusionfarm,$lines,$ship,$ship2,$ship3,$ball].each do |o|
+	[$level,$fusionfarm,$lines,$ship,$ship2,$ship3,$ball,$ball2].each do |o|
 		GL.PushMatrix
 		o.load_matrix
 		o.draw
