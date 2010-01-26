@@ -1,16 +1,13 @@
-#!/usr/bin/env ruby
-require "#{File.dirname __FILE__}/lib/headers"
-
 $window  = Window.new("Model Viewer", 640, 480)
 
 # example of ruby-opengl throwing gl errors
 #GL.Enable(GL_TRUE) # will raise exception
 
 # glut.init was crashing if i passed in argv[1] ???
-$host,$port,$lport = (ARGV[0]||"").split(":")
+$host,$port,$lport = (ARGV[1]||"").split(":")
 $port = $port || 2300
 $lport = $lport || 2300
-$network = Network.new( $host, $port, $lport ) if ARGV.length > 0
+$network = Network.new( $host, $port, $lport ) if ARGV.length > 1
 
 $ship      = Model.new("sxcop400.mxa")
 $ship.pos  = Vector.new 500,-500,-5000

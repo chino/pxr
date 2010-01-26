@@ -1,4 +1,5 @@
 require "mesh"
+require "view"
 require "binreader"
 class D1rdl < View
 	include Mesh
