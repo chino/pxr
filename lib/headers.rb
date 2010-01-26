@@ -6,7 +6,6 @@ ROOT=File.dirname $0
 $: << "#{ROOT}/lib/"
 require "network"
 require "image"
-require "images"
 require "vector"
 require "view"
 require "quat"

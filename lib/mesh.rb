@@ -16,7 +16,7 @@ module Mesh
 			return
 		end
 		@primitives.each do |primitive|
-			Images.bind primitive[:texture]
+			Image.bind primitive[:texture]
 			GL.Begin @render_type
 			primitive[:verts].each do |index|
 				vert = @verts[index]
@@ -25,7 +25,7 @@ module Mesh
 				GL.Vertex3fv vert[:vector]
 			end
 			GL.End
-			Images.unbind primitive[:texture]
+			Image.unbind primitive[:texture]
 		end
 	end
 end
