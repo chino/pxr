@@ -18,6 +18,7 @@ module Mesh
 		@primitives.each do |primitive|
 			Image.bind primitive[:texture]
 			GL.Begin @render_type
+			GL.Normal3fv primitive[:normal] if primitive[:normal]
 			primitive[:verts].each do |index|
 				vert = @verts[index]
 				GL.Color4ubv vert[:rgba] if vert[:rgba]
