@@ -68,16 +68,24 @@ class D1rdl < View
 				[7, 4, 5, 6], # back
 				[0, 3, 2, 1]  # front
 			]
-			cvi.each_with_index { |v,i|
+			cvi.each_with_index { |vii,i|
 				if sidemask & (1<<i) == 0 then
+					# To compute the face normal...
+					# ...first map from indices of indices to indices...
+					vi = vii.map { |i|
+						puts "Invalid vertex number (#{cubeverts[i]} >= #{nverts})" if cubeverts[i] >= nverts
+						cubeverts[i]
+					}
+					# ...then from those indices to the real vertices...
+					# ...converting them to Vectors in the process...
+					v = vi.map { |i| Vector.new *@verts[i][:vector] }
+					# ...then get the normal by taking the (normalized)
+					# cross product of two of the face's edges - and
+					# finally store everything.
 					@primitives << {
 						:texture => nil,
-						:verts => v.map { |i|
-							if cubeverts[i] >= nverts then
-								puts "Invalid vertex number (#{cubeverts[i]} >= #{nverts})"
-							end
-							cubeverts[i]
-						}
+						:verts => vi,
+						:normal => (v[1]-v[0]).cross(v[2]-v[1]).normalize.to_a
 					}
 				end
 			}

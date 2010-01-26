@@ -39,16 +39,18 @@ class FsknMx
 				read_short.times {|t|
 					texture_type, start_vert, nverts, texture = read_short, read_short, read_short, read_short
 					read_short.times {|tr|
-						@primitives << {
-							:texture => @textures[texture],
-							:verts => [
-								read_short + vert_offset,
-								read_short + vert_offset,
-								read_short + vert_offset
-							]
-						}
+						v = [
+							read_short + vert_offset,
+							read_short + vert_offset,
+							read_short + vert_offset
+						]
 						pad16 = read_short
 						normal = [ read_float, read_float, read_float ]
+						@primitives << {
+							:texture => @textures[texture],
+							:verts => v,
+							:normal => normal
+						}
 					}
 				}
 			}
