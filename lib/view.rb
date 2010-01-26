@@ -38,4 +38,25 @@ class View
 		]
 		GL.Scale( @scale.x, @scale.y, @scale.z )
 	end
+	def serialize repr=:short
+		# Convert to string suitable for network transmission
+		case repr
+		when :full
+			@pos.serialize(:full) + @orientation.serialize(:full)
+		when :short
+			@pos.serialize(:full) + @orientation.serialize(:short)
+		end
+	end
+	def unserialize! str, repr=:short
+		case repr
+		when :full
+			pos_s, orient_s = str.unpack "a12a16"
+			@pos.unserialize! pos_s, :full
+			@orientation.unserialize! orient_s, :full
+		when :short
+			pos_s, orient_s = str.unpack "a12a8"
+			@pos.unserialize! pos_s, :full
+			@orientation.unserialize! orient_s, :short
+		end
+	end
 end

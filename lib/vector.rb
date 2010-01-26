@@ -39,4 +39,23 @@ class Vector
 	def normalize
 		l = length; Vector.new( @x / l, @y / l, @z / l )
 	end
+	def serialize repr=:full
+		case repr
+		when :full
+			# Exact representation, 12 bytes: x,y,z as floats.
+			[ @x, @y, -@z ].pack "e3"
+		when :short
+			# Short representation, 6 bytes: x,y,z as shorts (16 bits each).
+			# Components must be between -1.0 and 1.0 (inclusive).
+			([ @x, @y, -@z ].map { |x| (x*32767.999).to_i + 32768 }).pack "v3"
+		end
+	end
+	def unserialize! data, repr=:full
+		case repr
+		when :full
+			@x, @y, @z = data.unpack "e3"
+		when :short
+			@x, @y, @z = data.unpack("v3").map { |x| (x-32768)/32767.999 }
+		end
+	end
 end
