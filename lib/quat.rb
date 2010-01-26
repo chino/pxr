@@ -58,4 +58,23 @@ class Quat
 		d = (@@directions[direction] || direction).quat
 		normalize * d * conjugate
 	end
+	def serialize repr=:full
+		case repr
+		when :full
+			# Exact representation, 16 bytes: x,y,z,w as floats.
+			[ @x, @y, @z, @w ].pack "e4"
+		when :short
+			# Short representation, 8 bytes: x,y,z,w as shorts (16 bits each).
+			# Components may not be greater than 1.0.
+			([ @x, @y, @z, @w ].map { |x| (x*32767.999).to_i }).pack "v4"
+		end
+	end
+	def unserialize! data, repr=:full
+		case repr
+		when :full
+			@x, @y, @z, @w = data.unpack "e4"
+		when :short
+			@x, @y, @z, @w = data.unpack("v4").map { |x| x/32767.999 }
+		end
+	end
 end

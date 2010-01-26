@@ -74,21 +74,11 @@ $window.display = Proc.new{
 			$objects << player
 		end
 		if data
-			px,py,pz,ox,oy,oz,ow = data.unpack("eeeeeee")
-			player.pos = Vector.new px,py,-pz
-			player.orientation = Quat.new(ox,oy,oz,ow)
+			player.unserialize! data
 		end
 		# send current update
 		#if (Time.now - $last_send).to_i > (60/10)
-			$network.send [
-				$camera.pos.x, 
-				$camera.pos.y, 
-				$camera.pos.z,
-				$camera.orientation.x,
-				$camera.orientation.y,
-				$camera.orientation.z,
-				$camera.orientation.w,
-			].pack("eeeeeee")
+			$network.send $camera.serialize
 			$last_send = Time.now
 		#end
 	end
