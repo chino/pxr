@@ -9,7 +9,7 @@ class Window
 		GLUT.Init([])
 		GLUT.InitDisplayMode(GLUT::DOUBLE | GLUT::RGB | GLUT::DEPTH)
 		GLUT.InitWindowSize(@w, @h)
-		GLUT.CreateWindow(@title)
+		@id = GLUT.CreateWindow(@title)
 		GLUT.ReshapeFunc(Proc.new{|w,h| reshape w, h })
 		GLUT.DisplayFunc(Proc.new{ render })
 		# capture key presses
@@ -19,6 +19,7 @@ class Window
 		})
 		GLUT.KeyboardUpFunc(Proc.new{|key,x,y|
 			#puts "key: #{key} released @ #{x},#{y}"
+			#GLUT.DestroyWindow @id if key == 27 # escape key
 			exit 0 if key == 27 # escape key
 			Mouse.grab_swap if key.chr == "`"
 			@keyboard.call key,x,y,false

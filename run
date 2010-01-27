@@ -1,26 +1,46 @@
 #!/usr/bin/env ruby
 require "rubygems"
 require "opengl"
+require 'ruby-prof'
+require 'optparse'
 
-# args
-if ARGV[0].nil?
-	puts "Usage: #{$0} <scene> [host[:port[:localport]]]"
-	exit 1
-end
+# parse options
+$options = {}
+OptionParser.new do |opts|
+	opts.banner = "Usage: #{$0} <scene> [host[:port[:localport]]]"
+	opts.on("-p", "--profile", "Profile the scene") do |v|
+		$options[:profile] = v
+	end
+end.parse!
 
-# globals
+# defines
 ROOT=File.dirname($0)
 DATA="#{ROOT}/data"
 LIB="#{ROOT}/lib"
 SCENES="#{ROOT}/scenes"
+PROFILE="#{ROOT}/profile.txt"
 SCENE=ARGV[0]
 
 # append load paths
 $: << LIB
 
-# libs
-Dir["#{LIB}/*"].sort.each do |file|
-	require file
+# load libs
+# make sure your libs require their own dependencies
+Dir["#{LIB}/*"].sort.each{|file| require file }
+
+# profile the scene
+# dump profile to file
+if $options[:profile]
+	RubyProf.start
+	at_exit {
+	#Kernel.trap('EXIT') {
+		result = RubyProf.stop
+		printer = RubyProf::FlatPrinter.new(result)
+		file = File.new PROFILE, 'w'
+		printer.print(file, 0)
+		file.close
+		puts "profile saved to #{PROFILE}"
+	}
 end
 
 # load scene
