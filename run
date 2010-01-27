@@ -1,19 +1,41 @@
 #!/usr/bin/env ruby
-require "rubygems"
+require 'rubygems'
 require "opengl"
 require 'ruby-prof'
 require 'optparse'
+require 'pp'
 
 # parse options
 $options = {
+	:debug => false,
 	:profile => false,
-	:scene => "default"
+	:scene => "default",
+	:port => 2300,
+	:peer => {
+		:address => false,
+		:port => 2300
+	}
 }
 OptionParser.new do |opts|
-	opts.banner = "Usage: #{$0} --profile --scene <name> [host[:port[:localport]]]"
-	opts.on("-p", "--profile", "Profile the scene"){|v| $options[:profile] = v }
+	opts.banner = "Usage: #{$0} -p|--profile -s|--scene <name> --port <number> --peer <ip/dns[:port]>"
+	opts.on("-h", "--help", "This help"){|v| puts opts }
 	opts.on("-s", "--scene SCENE", "Select a scene to load"){|v| $options[:scene] = v }
+	opts.on("--profile", "Profile the scene"){|v| $options[:profile] = v }
+	opts.on("--port PORT", "Local port to use for networking"){|v| $options[:port] = v }
+	opts.on("-p", "--peer PEER", ""){|v| 
+		v =~ /([^:]*):([0-9]*)/
+		$options[:peer][:address] = $1
+		$options[:peer][:port] = $2 unless $2.nil?
+	}
+	opts.on("-d", "--debug", "Enable debugging output"){|v|
+		$options[:debug] = true
+	}
 end.parse!
+
+if $options[:debug]
+	puts "Command line options:"
+	pp $options
+end
 
 # defines
 ROOT=File.dirname($0)
@@ -21,6 +43,8 @@ DATA="#{ROOT}/data"
 LIB="#{ROOT}/lib"
 SCENES="#{ROOT}/scenes"
 PROFILE="#{ROOT}/profile.txt"
+SCENE=$options[:scene]
+DEBUG=$options[:debug]
 
 # append load paths
 $: << LIB
@@ -34,7 +58,6 @@ Dir["#{LIB}/*"].sort.each{|file| require file }
 if $options[:profile]
 	RubyProf.start
 	at_exit {
-	#Kernel.trap('EXIT') {
 		result = RubyProf.stop
 		printer = RubyProf::FlatPrinter.new(result)
 		file = File.new PROFILE, 'w'
