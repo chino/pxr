@@ -17,7 +17,7 @@ $options = {
 }
 OptionParser.new do |opts|
 	opts.banner = "Usage: #{$0} -p|--profile -s|--scene <name> --port <number> --peer <ip/dns[:port]>"
-	opts.on("-h", "--help", "This help"){|v| puts opts }
+	opts.on("-h", "--help", "This help"){|v| puts opts; exit 0 }
 	opts.on("-s", "--scene SCENE", "Select a scene to load"){|v| $options[:scene] = v }
 	opts.on("--profile", "Profile the scene"){|v| $options[:profile] = v }
 	opts.on("--port PORT", "Local port to use for networking"){|v| $options[:port] = v }
