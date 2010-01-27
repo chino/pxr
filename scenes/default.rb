@@ -1,13 +1,5 @@
 $window  = Window.new("Model Viewer", 640, 480)
-
-# example of ruby-opengl throwing gl errors
-#GL.Enable(GL_TRUE) # will raise exception
-
-# glut.init was crashing if i passed in argv[1] ???
-$host,$port,$lport = (ARGV[1]||"").split(":")
-$port = $port || 2300
-$lport = $lport || 2300
-$network = Network.new( $host, $port, $lport ) if ARGV.length > 1
+$network = Network.new( $options[:peer][:address], $options[:peer][:port], $options[:port] ) if $options[:peer][:address]
 
 $ship        = Model.new("sxcop400.mxa")
 $ship2       = Model.new("nbia400.mxa")
