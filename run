@@ -5,12 +5,14 @@ require 'ruby-prof'
 require 'optparse'
 
 # parse options
-$options = {}
+$options = {
+	:profile => false,
+	:scene => "default"
+}
 OptionParser.new do |opts|
-	opts.banner = "Usage: #{$0} <scene> [host[:port[:localport]]]"
-	opts.on("-p", "--profile", "Profile the scene") do |v|
-		$options[:profile] = v
-	end
+	opts.banner = "Usage: #{$0} --profile --scene <name> [host[:port[:localport]]]"
+	opts.on("-p", "--profile", "Profile the scene"){|v| $options[:profile] = v }
+	opts.on("-s", "--scene SCENE", "Select a scene to load"){|v| $options[:scene] = v }
 end.parse!
 
 # defines
@@ -19,7 +21,6 @@ DATA="#{ROOT}/data"
 LIB="#{ROOT}/lib"
 SCENES="#{ROOT}/scenes"
 PROFILE="#{ROOT}/profile.txt"
-SCENE=ARGV[0]
 
 # append load paths
 $: << LIB
@@ -44,4 +45,4 @@ if $options[:profile]
 end
 
 # load scene
-require "#{SCENES}/#{SCENE}"
+require "#{SCENES}/#{$options[:scene]}"
