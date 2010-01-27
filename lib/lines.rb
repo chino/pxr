@@ -6,12 +6,12 @@ class Lines < View
 		@verts = []
 		@primitives = []
 		@verts << { :vector => [0,0,0], :rgba => [255,255,255,255] }
-		@verts << { :vector => [100,0,0], :rgba => [255,255,0,255] } # x = yellow
-		@verts << { :vector => [-100,0,0], :rgba => [255,255,0,255] } # x = yellow
-		@verts << { :vector => [0,100,0], :rgba => [255,0,255,255] } # y = purple
-		@verts << { :vector => [0,-100,0], :rgba => [255,0,255,255] } # y = purple
-		@verts << { :vector => [0,0,100], :rgba => [0,255,255,255] } # z = blue
-		@verts << { :vector => [0,0,-100], :rgba => [0,255,255,255] } # z = blue
+		@verts << { :vector => [10000000000,0,0], :rgba => [255,255,0,255] } # x = yellow
+		@verts << { :vector => [-10000000000,0,0], :rgba => [255,255,0,255] } # x = yellow
+		@verts << { :vector => [0,10000000000,0], :rgba => [255,0,255,255] } # y = purple
+		@verts << { :vector => [0,-10000000000,0], :rgba => [255,0,255,255] } # y = purple
+		@verts << { :vector => [0,0,10000000000], :rgba => [0,255,255,255] } # z = blue
+		@verts << { :vector => [0,0,-10000000000], :rgba => [0,255,255,255] } # z = blue
 		@primitives << { :texture => nil, :verts => [0,1] }
 		@primitives << { :texture => nil, :verts => [0,2] }
 		@primitives << { :texture => nil, :verts => [0,3] }

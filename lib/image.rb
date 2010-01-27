@@ -30,8 +30,19 @@ class Image
 			0,0,@image.columns,@image.rows,"RGBA",CharPixel
 		)
 		@id = GL.GenTextures(1)[0]
-		#puts "generated texture #{@id}"
 		bind
+		@anisotropic = 0.0
+		if Gl.is_available?("GL_EXT_texture_filter_anisotropic")
+			@anisotropic = GL.GetFloatv(GL::MAX_TEXTURE_MAX_ANISOTROPY_EXT)
+			GL.TexParameterf(GL::TEXTURE_2D, GL::TEXTURE_MAX_ANISOTROPY_EXT, @anisotropic)
+		end
+		# when texture area is small, bilinear filter the closest mipmap
+		GL.TexParameterf( GL::TEXTURE_2D, GL::TEXTURE_MIN_FILTER, GL::LINEAR_MIPMAP_NEAREST )
+		# when texture area is large, bilinear filter the original
+		GL.TexParameterf( GL::TEXTURE_2D, GL::TEXTURE_MAG_FILTER, GL::LINEAR )
+		# the texture wraps over at the edges (repeat)
+		GL.TexParameterf( GL::TEXTURE_2D, GL::TEXTURE_WRAP_S, GL::REPEAT )
+		GL.TexParameterf( GL::TEXTURE_2D, GL::TEXTURE_WRAP_T, GL::REPEAT )
 		GLU.Build2DMipmaps(
 			GL::TEXTURE_2D, 
 			GL::RGBA, 
