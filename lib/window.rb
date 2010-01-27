@@ -41,6 +41,7 @@ class Window
 		GL.CullFace(GL::BACK)
 		GL.FrontFace(GL::CW)
 		GL.Disable(GL::LIGHTING)
+		GL.Hint(GL::PERSPECTIVE_CORRECTION_HINT, GL::NICEST)
 		# wireframe mode
 		#GL.PolygonMode(GL::FRONT, GL::LINE)
 		#GL.PolygonMode(GL::BACK, GL::LINE)
@@ -64,7 +65,7 @@ class Window
 		GLU.Perspective(70.0, aspect, 10.0, 100000.0)
 	end
 	def render 
-		GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT);
+		GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT)
 		@display.call
 		GL.Flush
 		GLUT.SwapBuffers

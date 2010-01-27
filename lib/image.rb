@@ -3,7 +3,7 @@ class Image
 	include Magick
 	class << self
 		@@images = {}
-		def get image
+		def get image, *args
 			return nil if image.nil?
 			return nil if @@images[image] == false
 			return @@images[image] unless @@images[image].nil?
@@ -11,7 +11,7 @@ class Image
 				@@images[image] = false
 				return nil
 			end
-			@@images[image] = Image.new image
+			@@images[image] = Image.new image, *args
 			@@images[image]
 		end
 		def bind image
@@ -23,9 +23,16 @@ class Image
 			i.unbind unless i.nil?
 		end
 	end
-	attr_accessor :image
-	def initialize path
+	attr_accessor :image, :colorkey
+	def initialize path, colorkey=false
 		@image = ImageList.new(path)[0]
+		# only forsaken uses the old color key trick
+		# fsknmx will pass true for colorkey always as a hint
+		# but we only apply it if there is no alpha channel (this is the standard)
+		# colorkeying is done by setting alpha channel transparent on black pixels
+		# during drawing alpha test completely ignores the pixel during drawing
+		@colorkey = colorkey
+		@image = @image.transparent "black" if @colorkey and @image.opaque?
 		@data = @image.export_pixels_to_str(
 			0,0,@image.columns,@image.rows,"RGBA",CharPixel
 		)

@@ -16,7 +16,12 @@ module Mesh
 			return
 		end
 		@primitives.each do |primitive|
-			Image.bind primitive[:texture]
+			image = Image.get primitive[:texture]
+			if !image.nil? and image.colorkey
+				GL.Enable(GL::ALPHA_TEST)
+				GL.AlphaFunc(GL::GREATER,(100.0/255.0))
+			end
+			image.bind if image
 			GL.Begin @render_type
 			GL.Normal3fv primitive[:normal] if primitive[:normal]
 			primitive[:verts].each do |index|
@@ -26,7 +31,8 @@ module Mesh
 				GL.Vertex3fv vert[:vector]
 			end
 			GL.End
-			Image.unbind primitive[:texture]
+			GL.Disable(GL::ALPHA_TEST) if !image.nil? and image.colorkey
+			image.unbind if image
 		end
 	end
 end

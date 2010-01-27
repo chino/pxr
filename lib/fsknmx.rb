@@ -13,7 +13,7 @@ class FsknMx
 		@textures = []
 		read_short.times { 
 			path = "data/images/" + File.basename(read_str).sub(/\..*/,".png").downcase 
-			Image.get path # load image if exists
+			Image.get path, true # load image if exists and allow color key
 			@textures << path
 		}
 		@verts = []
