@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 require 'rubygems'
 require "opengl"
-require 'ruby-prof'
 require 'optparse'
 require 'pp'
 
@@ -56,6 +55,7 @@ Dir["#{LIB}/*"].sort.each{|file| require file }
 # profile the scene
 # dump profile to file
 if $options[:profile]
+	require 'ruby-prof'
 	RubyProf.start
 	at_exit {
 		result = RubyProf.stop
