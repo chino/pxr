@@ -5,12 +5,12 @@ class Network
 		@server.bind("0.0.0.0", lport)
 		@client = UDPSocket.new
 		@client.connect ip, port
-		puts "init - #{ip} #{port}"
+		puts "initialized network with local port = #{lport.to_s} and server = #{ip}:#{port}" if DEBUG
 	end
 	def pump
 		ready = IO.select([@server], nil, nil, 0.01)
 		return unless ready
-		puts "r"
+		puts "recieved data" if DEBUG
 		@server.recvfrom_nonblock(7*32)
 	rescue
 	end

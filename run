@@ -29,7 +29,7 @@ OptionParser.new do |opts|
 	opts.on("-p", "--peer PEER", "Specify the remote peer (host) to connect to"){|v| 
 		v =~ /([^:]*):?([0-9]*)?/
 		$options[:peer][:address] = $1
-		$options[:peer][:port] = $2 unless $2.nil?
+		$options[:peer][:port] = $2 unless $2.nil? or $2.empty?
 	}
 	opts.on("-d", "--debug", "Enable debugging output"){|v|
 		$options[:debug] = true
