@@ -3,6 +3,10 @@ cut up the default scene and spread it across multiple files.
 	- network
 networking
 	- p2p mesh synching (everyone can act as host or relay)
+	- new connections
+		- need to support storing list of clients that connect
+		- and some kind of timeout if no updates are received
+		- send to all connected clients
 real time lighting for descent levels
 in game typing
 port to sdl
