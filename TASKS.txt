@@ -1,0 +1,21 @@
+cut up the default scene and spread it across multiple files.
+	- inputs
+	- network
+networking
+	- p2p mesh synching (everyone can act as host or relay)
+real time lighting for descent levels
+in game typing
+port to sdl
+physics
+	- use ode ?
+	- is there a bullet wrapper for ruby ?
+	- mesh collision detection
+	- movement emulation for forsaken/descent/mouselook
+cmd api for consoles
+working fullscreen mode
+shaders
+other rendering modes, arrays, vbo's ?
+single packed binaries for windows ?
+game modes
+	- asteriods
+	- mario cart
