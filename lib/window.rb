@@ -2,14 +2,19 @@ require "mouse"
 class Window
 	attr_writer :display, :keyboard
 	attr_reader :title, :w, :h
-	def initialize title, w, h, &block
+	def initialize title="Window", w=640, h=480, fullscreen=false
 		@title, @w, @h = title, w, h
 		@display = Proc.new{}
 		@keyboard = Proc.new{}
 		GLUT.Init([])
 		GLUT.InitDisplayMode(GLUT::DOUBLE | GLUT::RGB | GLUT::DEPTH)
-		GLUT.InitWindowSize(@w, @h)
-		@id = GLUT.CreateWindow(@title)
+		if fullscreen
+			GLUT.GameModeString( "#{@w}x#{@h}:24" )
+			GLUT.EnterGameMode
+		else
+			GLUT.InitWindowSize(@w, @h)
+			@id = GLUT.CreateWindow(@title)
+		end
 		GLUT.ReshapeFunc(Proc.new{|w,h| reshape w, h })
 		GLUT.DisplayFunc(Proc.new{ render })
 		# capture key presses

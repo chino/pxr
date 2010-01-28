@@ -1,4 +1,4 @@
-$window  = Window.new("Model Viewer", 640, 480)
+$window  = Window.new("Model Viewer", $options[:width], $options[:height], $options[:fullscreen])
 $network = Network.new( $options[:peer][:address], $options[:peer][:port], $options[:port] ) if $options[:peer][:address]
 
 $ship        = Model.new("sxcop400.mxa")
