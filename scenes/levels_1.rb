@@ -1,40 +1,29 @@
 $window  = Window.new("Model Viewer", $options[:width], $options[:height], $options[:fullscreen])
-
-GL.Disable(GL::CULL_FACE)
-
 $network = Network.new( $options[:peer][:address], $options[:peer][:port], $options[:port] ) if $options[:peer][:address]
 
+$ship        = Model.new("sxcop400.mxa")
 $ship2       = Model.new("nbia400.mxa")
 $lines       = Lines.new
 $level       = Model.new("ship.mxv")
 $fusionfarm  = Model.new("fusnfarm.rdl")
 $ball        = Model.new
 $ball2        = Model.new
-$suss					= Model.new "ssus.mx"
-#$suss					= Model.new "pulsegun.mx"
 
 $ball.pos       = Vector.new 100,100,100
-$ball2.pos       = Vector.new -100,-100,-100
+$ball2.pos       = Vector.new 100,100,100
+$ship.pos       = Vector.new 500,-500,-5000
 $ship2.pos      = Vector.new 550,-500,-5000
 $fusionfarm.pos = Vector.new 1000,-5000,4000
 
 $fusionfarm.scale = Vector.new 20,20,20
 $ball.scale = Vector.new 0.5,0.5,0.5
 
-$ship      = Model.new("sxcop400.mxa")
-$ship.pos  = Vector.new -100,100,100
-$suss2	   = Model.new "ssus.mx"
-$suss2.scale = Vector.new 0.5,0.5,0.5
-$suss2.pos = Vector.new 20,-25,-40
-$suss2.rotate 0,0,180
-$ship.attach $suss2
-
 $objects = [$level,$fusionfarm,$lines,$ship,$ship2,$ball,$ball2]
 
 $camera     = View.new
 $camera.pos = Vector.new -100,-50,-500
 
-$step = 50
+$step = 100
 $movement = Vector.new 0,0,0
 $bindings = {
 	:w => :forward,
@@ -109,16 +98,7 @@ $window.display = Proc.new{
 		o.draw
 		GL.PopMatrix
 	end
-
-	# move back to the camera
-	GL.LoadIdentity
-
-	# draw attached gun
-	$suss.load_matrix
-	$suss.draw
-
+	
 }
-$suss.pos = Vector.new 90,-40,130
-$suss.rotate 180,-10,220
 
 $window.run

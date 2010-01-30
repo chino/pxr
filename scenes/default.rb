@@ -1,29 +1,55 @@
 $window  = Window.new("Model Viewer", $options[:width], $options[:height], $options[:fullscreen])
+
+GL.Disable(GL::CULL_FACE)
+
 $network = Network.new( $options[:peer][:address], $options[:peer][:port], $options[:port] ) if $options[:peer][:address]
 
-$ship        = Model.new("sxcop400.mxa")
 $ship2       = Model.new("nbia400.mxa")
 $lines       = Lines.new
 $level       = Model.new("ship.mxv")
 $fusionfarm  = Model.new("fusnfarm.rdl")
 $ball        = Model.new
 $ball2        = Model.new
+$suss					= Model.new "ssus.mx"
+#$suss					= Model.new "pulsegun.mx"
 
-$ball.pos       = Vector.new 100,100,100
-$ball2.pos       = Vector.new 100,100,100
-$ship.pos       = Vector.new 500,-500,-5000
+$ball.pos       = Vector.new 3000,3000,3000
+$ball2.pos       = Vector.new -3000,-3000,-3000
 $ship2.pos      = Vector.new 550,-500,-5000
 $fusionfarm.pos = Vector.new 1000,-5000,4000
 
 $fusionfarm.scale = Vector.new 20,20,20
 $ball.scale = Vector.new 0.5,0.5,0.5
 
-$objects = [$level,$fusionfarm,$lines,$ship,$ship2,$ball,$ball2]
+$ship      = Model.new("sxcop400.mxa")
+$ship.pos  = Vector.new -100,100,100
+$suss2	   = Model.new "ssus.mx"
+$suss2.scale = Vector.new 0.5,0.5,0.5
+$suss2.pos = Vector.new 20,-25,-40
+$suss2.rotate 0,0,180
+$ship.attach $suss2
+
+$sun = Model.new
+$sun.pos = Vector.new 500,500,-1000
+
+$earth = Model.new
+$earth.scale = Vector.new 0.5,0.5,0.5
+$sun.attach $earth
+
+$moon = Model.new
+$moon.scale = Vector.new 0.2,0.2,0.2
+$earth.attach $moon
+
+$mars = Model.new
+$mars.scale = Vector.new 0.3,0.3,0.3
+$sun.attach $mars
+
+$objects = [$level,$fusionfarm,$lines,$ship,$ship2,$ball,$ball2,$sun]
 
 $camera     = View.new
 $camera.pos = Vector.new -100,-50,-500
 
-$step = 100
+$step = 50
 $movement = Vector.new 0,0,0
 $bindings = {
 	:w => :forward,
@@ -91,6 +117,23 @@ $window.display = Proc.new{
 	# modify coordinate system based on camera position
 	$camera.place_camera
 
+	# plantary orbits
+	$earth.orbit(
+		Vector.new(0,0,0),
+		200,0,0, # radius / distance / direction - from position
+		5,0,0 # rotate speed 
+	)
+	$moon.orbit(
+		Vector.new(0,0,0),
+		100,0,0, # radius / distance / direction - from position
+		20,0,0 # rotate speed 
+	)
+	$mars.orbit(
+		Vector.new(0,0,0),
+		500,0,0, # radius / distance / direction - from position
+		3,0,0 # rotate speed 
+	)
+
 	# draw at their locations
 	$objects.each do |o|
 		GL.PushMatrix
@@ -98,7 +141,16 @@ $window.display = Proc.new{
 		o.draw
 		GL.PopMatrix
 	end
-	
+
+	# move back to the camera
+	GL.LoadIdentity
+
+	# draw attached gun
+	$suss.load_matrix
+	$suss.draw
+
 }
+$suss.pos = Vector.new 90,-40,130
+$suss.rotate 180,-10,220
 
 $window.run

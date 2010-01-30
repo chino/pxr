@@ -15,6 +15,11 @@ class View
 	def rotate *args
 		@orientation.rotate! *args
 	end
+	def orbit pos, mx,my,mz, rx,ry,rz
+		@pos = pos
+		rotate rx,ry,rz
+		move Vector.new mx,my,mz
+	end
 	def place_camera
 		up = @orientation.vector :up
 		forward = @orientation.vector :forward
