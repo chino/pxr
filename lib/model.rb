@@ -1,3 +1,5 @@
+require 'd1rdl'
+require 'fsknmx'
 class Model < View
 	@@dir = "data/models"
 	@@loaders = {

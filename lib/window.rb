@@ -43,7 +43,7 @@ class Window
 		GL.Enable(GL::DEPTH_TEST)
 		GL.DepthFunc(GL::LESS) 
 		GL.ShadeModel(GL::SMOOTH)
-		GL.Enable(GL::CULL_FACE)
+		GL.Disable(GL::CULL_FACE)
 		GL.CullFace(GL::BACK)
 		GL.FrontFace(GL::CW)
 		GL.Disable(GL::LIGHTING)

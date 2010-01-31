@@ -22,6 +22,7 @@ module Mesh
 				GL.AlphaFunc(GL::GREATER,(100.0/255.0))
 			end
 			image.bind if image
+			GL.PointSize(@size) if @render_type == GL::POINTS and @size
 			GL.Begin @render_type
 			GL.Normal3fv primitive[:normal] if primitive[:normal]
 			primitive[:verts].each do |index|
