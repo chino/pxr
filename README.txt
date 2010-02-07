@@ -4,6 +4,8 @@ Description:
 	Provides a 3d game playground to do anything you want.
 	You can rip it up or create a new scene of your liking.
 
+	This project uses bzr
+
 Directories:
 
 	lib/* contains various generic files.
