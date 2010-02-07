@@ -11,7 +11,8 @@ class Quat
 		@x * q.x + @y * q.y + @z * q.z + @w * q.w
 	end
 	def normalize
-		l = length; q = Quat.new( @x / l, @y / l, @z / l, @w / l ); self
+		l = length
+		Quat.new( @x / l, @y / l, @z / l, @w / l )
 	end
 	def normalized?
 		not length > 1.00001

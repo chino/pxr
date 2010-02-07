@@ -9,6 +9,7 @@ class Model < View
 		"rdl" => D1rdl
 	}
 	@@models = {}
+	attr_accessor :model
 	def initialize file="ball1.mx"
 		super
 		@path = "#{@@dir}/#{file}"
