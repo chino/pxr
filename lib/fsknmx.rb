@@ -4,6 +4,7 @@ require "binreader"
 class FsknMx
 	include Mesh
 	include BinReader
+	attr_reader :textures
 	def initialize file
 		@render_type = GL::POLYGON
 		@level = File.basename file
@@ -23,7 +24,9 @@ class FsknMx
 		@groups.times {|g|
 			group_verts = 0
 			read_short.times {|e|
-				exec_type = read_int
+				exec_size = read_short
+				exec_type = read_ushort
+				has_transparencies = exec_type & 0x001 == 1
 				read_short.times {|v|
 					vert = [ read_float, read_float, read_float ]
 					reserved = read_int
@@ -34,7 +37,8 @@ class FsknMx
 						:vector => vert,
 						:rgba => [red,green,blue,alpha],
 						:tu => tu,
-						:tv => tv
+						:tv => tv,
+						:transparencies => has_transparencies
 					}
 				}
 				read_short.times {|t|
@@ -50,7 +54,8 @@ class FsknMx
 						@primitives << {
 							:texture => @textures[texture],
 							:verts => v,
-							:normal => normal
+							:normal => normal,
+							:transparencies => has_transparencies
 						}
 					}
 				}
