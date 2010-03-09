@@ -21,19 +21,23 @@ module Mesh
 				trans << primitive
 				next
 			end
-#			draw_primitive primitive
+			draw_primitive primitive
 		end
+		trans.each do |primitive|
+			draw_primitive primitive
+		end
+	end
+	def set_trans
 		GL.DepthMask(GL::FALSE)
 		GL.Enable(GL::BLEND)
 		GL.BlendFunc(GL::SRC_ALPHA,GL::ONE)
-		trans.each_with_index do |primitive,i|
-puts "primitive: #{i}"
-			draw_primitive primitive
-		end
+	end
+	def unset_trans
 		GL.DepthMask(GL::TRUE)
 		GL.Disable(GL::BLEND)
 	end
 	def draw_primitive primitive
+		set_trans if primitive[:transparencies]
 		image = Image.get primitive[:texture]
 		if !image.nil? and image.colorkey
 			GL.Enable(GL::ALPHA_TEST)
@@ -43,15 +47,15 @@ puts "primitive: #{i}"
 		GL.PointSize(@size) if @render_type == GL::POINTS and @size
 		GL.Begin @render_type
 		GL.Normal3fv primitive[:normal] if primitive[:normal]
-		primitive[:verts].each_with_index do |index,i|
+		primitive[:verts].each do |index|
 			vert = @verts[index]
 			GL.Color4ubv vert[:rgba] if vert[:rgba]
 			GL.TexCoord2f vert[:tu], vert[:tv] if vert[:tu] and vert[:tv]
-			GL.Vertex3fv vert[:vector].map{|x|x.to_i}
-puts "\tvert: #{i} = #{vert[:vector].join(', ')}"
+			GL.Vertex3fv vert[:vector]
 		end
 		GL.End
 		GL.Disable(GL::ALPHA_TEST) if !image.nil? and image.colorkey
 		image.unbind if image
+		unset_trans if primitive[:transparencies]
 	end
 end
