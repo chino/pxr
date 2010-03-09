@@ -22,17 +22,17 @@ class FsknMx
 		vert_offset = 0
 		@groups = read_short
 		@groups.times {|g|
-			group_verts = 0
 			read_short.times {|e|
+				exec_verts = 0
 				exec_size = read_short
-				exec_type = read_ushort
+				exec_type = read_short
 				has_transparencies = exec_type & 0x001 == 1
 				read_short.times {|v|
 					vert = [ read_float, read_float, read_float ]
 					reserved = read_int
 					blue, green, red, alpha = read_char, read_char, read_char, read_char 
 					specular, tu, tv = read_int, read_float, read_float
-					group_verts += 1
+					exec_verts += 1
 					@verts << {
 						:vector => vert,
 						:rgba => [red,green,blue,alpha],
@@ -59,8 +59,8 @@ class FsknMx
 						}
 					}
 				}
+				vert_offset += exec_verts
 			}
-			vert_offset += group_verts
 		}
 		read_close
 		make_dl
