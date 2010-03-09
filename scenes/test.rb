@@ -7,7 +7,8 @@ $level   = Model.new("ship.mxv")
 $objects << $level
 
 $camera     = View.new
-$camera.pos = Vector.new -100,-50,-500
+$camera.pos = Vector.new 1630.18479993703, -2246.197973884, 4272.87011089963
+$camera.orientation = Quat.new 0.720965673207332, 0.119110906567092, -0.119656936684802, 0.672088764596369
 
 $step = 10
 $movement = Vector.new 0,0,0
