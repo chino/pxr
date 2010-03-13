@@ -11,7 +11,6 @@ $fusionfarm  = Model.new("fusnfarm.rdl")
 $ball        = Model.new
 $ball2        = Model.new
 $suss					= Model.new "ssus.mx"
-#$suss					= Model.new "pulsegun.mx"
 
 $ball.pos       = Vector.new 3000,3000,3000
 $ball2.pos       = Vector.new -3000,-3000,-3000
@@ -23,7 +22,6 @@ $ball.scale = Vector.new 0.5,0.5,0.5
 
 $ship      = Model.new("sxcop400.mxa")
 $ship.pos  = Vector.new -100,100,100
-$ship.attach $lines
 
 $suss2	   = Model.new "ssus.mx"
 $suss2.scale = Vector.new 0.5,0.5,0.5
@@ -52,9 +50,8 @@ $world = [$lines,$ship,$ship2,$ball,$ball2,$sun]
 $camera     = View.new
 $camera.pos = Vector.new -100,-50,-500
 
-$step = 30
+$step = 10
 $movement = Vector.new 0,0,0
-$radius = 10
 $bindings = {
 	:w => :forward,
 	:s => :back,
@@ -84,19 +81,6 @@ $window.keyboard = Proc.new{|key,x,y,pressed|
 $players = {}
 $last_send = Time.now
 $window.display = Proc.new{
-
-	# detect collisions with local player
-	$world.each do |o|
-		distance = (o.pos - $camera.pos).length
-		collision_distance = ($radius + $radius) # o.radius + $camera.radius
-		if distance < collision_distance
-			puts "#{Time.now} Collision!!!! distance=#{distance} threshold=#{collision_distance}"
-		else
-if o == $ship
-	puts "#{Time.now} here distance=#{distance}"
-end
-		end
-	end
 
 	# get network updates
 	unless $network.nil?
@@ -129,7 +113,25 @@ end
 	$camera.rotate x, y
 
 	# apply movement
-	$camera.move $movement
+	radius = 20 # radius of object collision
+	collision_distance = (radius + radius) # o.radius + $camera.radius
+	camera = $camera.dup
+	camera.move $movement
+	camera.pos.z *= -1
+
+	# detect collisions with local player if we allow movement
+	collision = false
+	$world.each do |o|
+		distance = (o.pos - camera.pos).length
+		if distance < collision_distance
+#			$movement = Vector.new $radius,$radius,$radius
+			puts "#{Time.now} Collision!!!!"
+			collision = true
+		end
+	end
+
+	# apply movement if no collision would result
+	$camera.move $movement unless collision
 
 	# modify coordinate system based on camera position
 	$camera.place_camera
@@ -161,13 +163,6 @@ end
 
 	# move back to the camera
 	GL.LoadIdentity
-
-	# draw attached gun
-	$suss.load_matrix
-	$suss.draw
-
 }
-$suss.pos = Vector.new 90,-40,130
-$suss.rotate 180,-10,220
 
 $window.run
