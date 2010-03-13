@@ -9,6 +9,9 @@ class Vector
 	def to_a
 		[@x,@y,@z]
 	end
+	def to_s
+		to_a.join(',')
+	end
 	def + p2
 		Vector.new(
 			@x + p2.x,
