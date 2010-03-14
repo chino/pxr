@@ -121,9 +121,17 @@ $updates << Proc.new{
 	$objects.each do |o|
 		GL.PushMatrix
 		o.load_matrix
-		o.draw
+		o.draw :opaque
 		GL.PopMatrix
 	end
+	Mesh.set_trans
+	$objects.each do |o|
+		GL.PushMatrix
+		o.load_matrix
+		o.draw :trans
+		GL.PopMatrix
+	end
+	Mesh.unset_trans
 }
 
 

@@ -1,43 +1,56 @@
 module Mesh
 	attr_accessor :primitives, :verts
 	def make_dl
-		dl = GL.GenLists(1)
-		GL.NewList(dl, GL::COMPILE)
-		draw
+		# opaque
+		dl_opaque = GL.GenLists(1)
+		GL.NewList(dl_opaque, GL::COMPILE)
+		draw_opaque
 		GL.EndList
-		@dl = dl
+		dl_opaque = @dl_opaque
+		# trans
+		dl_trans = GL.GenLists(1)
+		GL.NewList(dl_trans, GL::COMPILE)
+		draw_trans
+		GL.EndList
+		@dl_trans = dl_trans
 	end
 	def free_dl
-		GL.DeleteLists(@dl, 1)
+		GL.DeleteLists(@dl_opaque, 1)
+		GL.DeleteLists(@dl_trans, 1)
 	end
-	def draw
-		if @dl then
-			GL.CallList(@dl)
+	def draw mode=:both # :opaque, :trans
+		draw_opaque if mode==:both or mode==:opaque
+		draw_trans if mode==:both or mode==:trans
+	end
+	def draw_trans
+		if @dl_trans then
+			GL.CallList(@dl_trans)
 			return
 		end
-		trans=[]
 		@primitives.each do |primitive|
-			if primitive[:transparencies]
-				trans << primitive
-				next
-			end
-			draw_primitive primitive
-		end
-		trans.each do |primitive|
-			draw_primitive primitive
+			draw_primitive primitive if primitive[:transparencies]
 		end
 	end
-	def set_trans
+	def draw_opaque
+		if @dl_opaque then
+			GL.CallList(@dl_opaque)
+			return
+		end
+		@primitives.each do |primitive|
+			draw_primitive primitive unless primitive[:transparencies]
+		end
+	end
+	def self.set_trans
 		GL.DepthMask(GL::FALSE)
 		GL.Enable(GL::BLEND)
 		GL.BlendFunc(GL::SRC_ALPHA,GL::ONE)
 	end
-	def unset_trans
+	def self.unset_trans
 		GL.DepthMask(GL::TRUE)
 		GL.Disable(GL::BLEND)
 	end
 	def draw_primitive primitive
-		set_trans if primitive[:transparencies]
+		#Mesh.set_trans if primitive[:transparencies]
 		image = Image.get primitive[:texture]
 		if !image.nil? and image.colorkey
 			GL.Enable(GL::ALPHA_TEST)
@@ -56,6 +69,6 @@ module Mesh
 		GL.End
 		GL.Disable(GL::ALPHA_TEST) if !image.nil? and image.colorkey
 		image.unbind if image
-		unset_trans if primitive[:transparencies]
+		#Mesh.unset_trans if primitive[:transparencies]
 	end
 end

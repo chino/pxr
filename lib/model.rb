@@ -21,14 +21,14 @@ class Model < View
 		@model = loader.new @path
 		@attachments = []
 	end
-	def draw
-		@model.draw
+	def draw mode=:both # :opaque , :trans
+		@model.draw mode
 		# each transformation starts from the parent objects perspective
 		# you can attach models to child objects if you want to chain down
 		@attachments.each do |attachment|
 			GL.PushMatrix
 			attachment.load_matrix
-			attachment.draw
+			attachment.draw mode
 			GL.PopMatrix
 		end
 	end

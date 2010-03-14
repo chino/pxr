@@ -81,6 +81,7 @@ class Game
 			when SDL::Event2::KeyDown
 				if event.sym == 27
 					SDL.quit 
+					exit 0
 				elsif event.sym.chr == "`"
 					mouse_grab_swap
 				else
