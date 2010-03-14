@@ -15,6 +15,8 @@ class Game
 
 		reshape @w,@h
 
+		mouse_grab
+
 		@display = Proc.new{}
 		@keyboard = Proc.new{}
 
