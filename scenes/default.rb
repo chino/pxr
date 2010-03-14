@@ -126,12 +126,10 @@ $updates << Proc.new{
 	end
 }
 
-# collision detection world
-
-$world = [$lines,$ship,$ship2,$ball,$ball2,$sun]
-
 
 # local player 
+
+
 $camera     = View.new
 $camera.pos = Vector.new -100,-50,-500
 
@@ -160,6 +158,11 @@ $game.keyboard = Proc.new{|key,pressed|
 	else puts "unknown key binding #{k}"
 	end
 }
+
+
+# camera/collision physics
+
+$world = [$lines,$ship,$ship2,$ball,$ball2,$sun]
 
 $updates.unshift Proc.new{
 
