@@ -26,6 +26,13 @@ class Vector
 			@z - p2.z
 		)
 	end
+	def * i
+		Vector.new(
+			@x * i,
+			@y * i,
+			@z * i
+		)
+	end
 	def dot q=self
 		@x * q.x + @y * q.y + @z * q.z
 	end

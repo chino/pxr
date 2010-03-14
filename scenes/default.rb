@@ -186,17 +186,18 @@ $updates.unshift Proc.new{
 	camera.pos.z *= -1
 
 	# detect collisions with local player if we allow movement
-	collision = false
 	$world.each do |o|
-		distance = (o.pos - camera.pos).length
+		collision_vec = (o.pos - camera.pos)
+		distance = collision_vec.length
 		if distance < collision_distance
 			puts "#{Time.now} Collision!!!!"
-			collision = true
+			c = collision_vec.normalize
+			$movement -= c * $movement.dot(c)
 		end
 	end
 
 	# apply movement if no collision would result
-	$camera.move $movement unless collision
+	$camera.move $movement
 
 	# modify coordinate system based on camera position
 	$camera.place_camera
