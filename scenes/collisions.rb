@@ -107,7 +107,7 @@ $window.display = Proc.new{
 	$ball2.rotate -5,-5,-5
 	
 	# read mouse for rotation
-	x,y = Mouse.get
+	x,y = $window.mouse_get
 
 	# apply rotation
 	$camera.rotate x, y

@@ -19,9 +19,6 @@ class Window
 		@display = Proc.new{}
 		@keyboard = Proc.new{}
 
-		Mouse.window = self
-
-		# setup GL
 		GL.Enable(GL::DEPTH_TEST)
 		GL.DepthFunc(GL::LESS) 
 		GL.ShadeModel(GL::SMOOTH)
@@ -30,8 +27,6 @@ class Window
 		GL.FrontFace(GL::CW)
 		GL.Disable(GL::LIGHTING)
 		GL.Hint(GL::PERSPECTIVE_CORRECTION_HINT, GL::NICEST)
-
-		# wireframe mode
 		#GL.PolygonMode(GL::FRONT, GL::LINE)
 		#GL.PolygonMode(GL::BACK, GL::LINE)
 
@@ -39,6 +34,7 @@ class Window
 		@frames = 0
 		@fps = 0
 		@fov = 70.0
+		@x, @y = 0, 0
 
 	end
 	def aspect
@@ -58,23 +54,41 @@ class Window
 			render
 		end
 	end
+	def mouse_grab bool=true
+		@grabbed = bool
+		bool ?  SDL::Mouse.hide : SDL::Mouse.show
+	end
+	def mouse_grab_swap
+		mouse_grab !@grabbed
+	end
+	def mouse_get
+		return [0,0] unless @grabbed
+		x, y = @x, @y
+		@x, @y = 0, 0
+		SDL::Mouse.warp @w/2, @h/2
+		[x, y]
+	end
+	def mouse_set x,y
+                @x = x - (@w/2)
+                @y = y - (@h/2)
+	end
 	def handle_events
 		while event = SDL::Event2.poll
 			case event
 			when SDL::Event2::Active
-				Mouse.grab event.gain
+				mouse_grab event.gain
 			when SDL::Event2::KeyDown
 				if event.sym == 27
 					SDL.quit 
 				elsif event.sym.chr == "`"
-					Mouse.grab_swap
+					mouse_grab_swap
 				else
 					@keyboard.call event.sym, true
 				end
 			when SDL::Event2::KeyUp
 				@keyboard.call event.sym, false
 			when SDL::Event2::MouseMotion
-				Mouse.input event.x, event.y
+				mouse_set event.x, event.y
 			when SDL::Event2::MouseButtonDown
 				puts "mouse button down #{event.button}"
 			when SDL::Event2::MouseButtonUp
@@ -99,4 +113,5 @@ class Window
 		@frames = 0
 		@fps
 	end
+	
 end
