@@ -1,44 +1,26 @@
 require "mouse"
 class Window
 	attr_writer :display, :keyboard
-	attr_reader :title, :w, :h
-	def initialize title="Window", w=640, h=480, fullscreen=false
-		@title, @w, @h = title, w, h
+	attr_reader :title, :w, :h, :depth
+	def initialize title="Window", w=640, h=480, fullscreen=false, depth=32
+
+		@title, @w, @h, @depth = title, w, h, depth
+
+		SDL.init(SDL::INIT_VIDEO)
+		SDL.setGLAttr(SDL::GL_DOUBLEBUFFER,1)
+
+		flags = SDL::OPENGL
+		flags |= SDL::FULLSCREEN if fullscreen
+	
+		SDL.setVideoMode(@w,@h,@depth,flags)
+
+		reshape @w,@h
+
 		@display = Proc.new{}
 		@keyboard = Proc.new{}
-		GLUT.Init([])
-		GLUT.InitDisplayMode(GLUT::DOUBLE | GLUT::RGB | GLUT::DEPTH)
-		if fullscreen
-			GLUT.GameModeString( "#{@w}x#{@h}:24" )
-			GLUT.EnterGameMode
-		else
-			GLUT.InitWindowSize(@w, @h)
-			@id = GLUT.CreateWindow(@title)
-		end
-		GLUT.ReshapeFunc(Proc.new{|w,h| reshape w, h })
-		GLUT.DisplayFunc(Proc.new{ render })
-		# capture key presses
-		GLUT.KeyboardFunc(Proc.new{|key,x,y| 
-			#puts "key: #{key} pressed @ #{x},#{y}"
-			@keyboard.call key,x,y,true
-		})
-		GLUT.KeyboardUpFunc(Proc.new{|key,x,y|
-			#puts "key: #{key} released @ #{x},#{y}"
-			#GLUT.DestroyWindow @id if key == 27 # escape key
-			exit 0 if key == 27 # escape key
-			Mouse.grab_swap if key.chr == "`"
-			@keyboard.call key,x,y,false
-		})
-		# mouse inputs
+
 		Mouse.window = self
-		GLUT.EntryFunc(Proc.new{|entered|
-			Mouse.grab entered == 1
-		})
-		GLUT.PassiveMotionFunc(Proc.new{|x,y| Mouse.input x,y })
-		GLUT.MouseFunc(Proc.new{|button,state,x,y| 
-			puts "mouse button: #{button} "+
-				"#{(state==GLUT::DOWN)?"pressed":"released"} @ #{x},#{y}"
-		})
+
 		# setup GL
 		GL.Enable(GL::DEPTH_TEST)
 		GL.DepthFunc(GL::LESS) 
@@ -48,17 +30,16 @@ class Window
 		GL.FrontFace(GL::CW)
 		GL.Disable(GL::LIGHTING)
 		GL.Hint(GL::PERSPECTIVE_CORRECTION_HINT, GL::NICEST)
+
 		# wireframe mode
 		#GL.PolygonMode(GL::FRONT, GL::LINE)
 		#GL.PolygonMode(GL::BACK, GL::LINE)
-		#
-		reshape @w, @h
-		#
+
 		@last_frame = 0
 		@frames = 0
 		@fps = 0
-		#
 		@fov = 70.0
+
 	end
 	def aspect
 		@w.to_f / @h.to_f
@@ -69,17 +50,44 @@ class Window
 		GL.MatrixMode(GL::PROJECTION)
 		GL.LoadIdentity
 		GLU.Perspective(70.0, aspect, 10.0, 100000.0)
+		GL.MatrixMode(GL::MODELVIEW)
+	end
+	def run
+		while true
+			handle_events
+			render
+		end
+	end
+	def handle_events
+		while event = SDL::Event2.poll
+			case event
+			when SDL::Event2::Active
+				Mouse.grab event.gain
+			when SDL::Event2::KeyDown
+				if event.sym == 27
+					SDL.quit 
+				elsif event.sym.chr == "`"
+					Mouse.grab_swap
+				else
+					@keyboard.call event.sym, true
+				end
+			when SDL::Event2::KeyUp
+				@keyboard.call event.sym, false
+			when SDL::Event2::MouseMotion
+				Mouse.input event.x, event.y
+			when SDL::Event2::MouseButtonDown
+				puts "mouse button down #{event.button}"
+			when SDL::Event2::MouseButtonUp
+				puts "mouse button up #{event.button}"
+			end
+		end
 	end
 	def render 
 		GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT)
 		@display.call
 		GL.Flush
-		GLUT.SwapBuffers
-		GLUT.PostRedisplay
-		GLUT.SetWindowTitle "#{@title} - FPS: #{fps}"
-	end
-	def run
-		GLUT.MainLoop
+		SDL.GLSwapBuffers
+		SDL::WM.setCaption "#{@title} - FPS: #{fps}", 'icon'
 	end
 	def fps
 		@frames += 1

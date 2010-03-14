@@ -31,13 +31,13 @@ class << self
 	end
 	def center
 		@@x, @@y = 0, 0
-		GLUT.WarpPointer @@window.w/2, @@window.h/2
+		SDL::Mouse.warp @@window.w/2, @@window.h/2
 	end
 	def hide
-		GLUT.SetCursor(GLUT::CURSOR_NONE);
+		SDL::Mouse.hide
 	end
 	def show
-		GLUT.SetCursor(GLUT::CURSOR_INHERIT);
+		SDL::Mouse.show
 	end
 end
 end

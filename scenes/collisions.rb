@@ -60,7 +60,7 @@ $bindings = {
 	:f => :left,
 	:g => :right
 }
-$window.keyboard = Proc.new{|key,x,y,pressed|
+$window.keyboard = Proc.new{|key,pressed|
 	k = key.chr.downcase.to_sym
 	b = $bindings[k]
 	if b.nil?
