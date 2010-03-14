@@ -1,5 +1,4 @@
-require "mouse"
-class Window
+class Game
 	attr_writer :display, :keyboard
 	attr_reader :title, :w, :h, :depth
 	def initialize title="Window", w=640, h=480, fullscreen=false, depth=32
@@ -113,5 +112,4 @@ class Window
 		@frames = 0
 		@fps
 	end
-	
 end
