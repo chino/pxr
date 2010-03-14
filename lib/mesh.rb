@@ -6,7 +6,7 @@ module Mesh
 		GL.NewList(dl_opaque, GL::COMPILE)
 		draw_opaque
 		GL.EndList
-		dl_opaque = @dl_opaque
+		@dl_opaque = dl_opaque
 		# trans
 		dl_trans = GL.GenLists(1)
 		GL.NewList(dl_trans, GL::COMPILE)
