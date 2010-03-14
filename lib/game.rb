@@ -99,6 +99,8 @@ class Game
 	end
 	def render 
 		GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT)
+		GL.MatrixMode(GL::MODELVIEW)
+		GL.LoadIdentity
 		@display.call
 		GL.Flush
 		SDL.GLSwapBuffers

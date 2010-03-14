@@ -1,35 +1,86 @@
+
+# create game 
+
+
 $game = Game.new("Model Viewer", $options[:width], $options[:height], $options[:fullscreen])
 
-GL.Disable(GL::CULL_FACE)
+$updates = []
 
-$network = Network.new( $options[:peer][:address], $options[:peer][:port], $options[:port] ) if $options[:peer][:address]
+$game.display = Proc.new{
+	$updates.each{|update| update.call }
+}
+
+
+
+# network interface
+
+
+$network = Network.new( 
+	$options[:peer][:address], $options[:peer][:port], $options[:port] 
+) if $options[:peer][:address]
+
+$players = {}
+$last_send = Time.now
+
+if $network
+	$updates << Proc.new {
+
+		# read data from players
+		data,info = $network.pump 
+		something,port,name,ip = info
+		player = $players[ip]
+		if player.nil?
+			player = $players[ip] = Model.new("nbia400.mxa")
+			$objects << player
+		end
+		player.unserialize! data if data
+
+		# send current update
+		#if (Time.now - $last_send).to_i > (60/10)
+			$network.send $camera.serialize
+			$last_send = Time.now
+		#end
+
+	}
+end
+
+
+
+# setup scene objects
+
+
+$lines     = Lines.new
 
 $ship2       = Model.new("nbia400.mxa")
-$lines       = Lines.new
-$level       = Model.new("ship.mxv")
-$fusionfarm  = Model.new("fusnfarm.rdl")
-$ball        = Model.new
-$ball2        = Model.new
-$suss					= Model.new "ssus.mx"
-
-$ball.pos       = Vector.new 3000,3000,3000
-$ball2.pos       = Vector.new -3000,-3000,-3000
-$ship2.pos      = Vector.new 550,-500,-5000
-$fusionfarm.pos = Vector.new 1000,-5000,4000
-
-$fusionfarm.scale = Vector.new 20,20,20
-$ball.scale = Vector.new 0.5,0.5,0.5
+$ship2.pos   = Vector.new 550,-500,-5000
 
 $ship      = Model.new("sxcop400.mxa")
 $ship.pos  = Vector.new -100,100,100
-
-$suss2	   = Model.new "ssus.mx"
+$suss2	     = Model.new "ssus.mx"
 $suss2.scale = Vector.new 0.5,0.5,0.5
-$suss2.pos = Vector.new 20,-25,-40
+$suss2.pos   = Vector.new 20,-25,-40
 $suss2.rotate 0,0,180
 $ship.attach $suss2
 
-$sun = Model.new
+$level       = Model.new("ship.mxv")
+
+$fusionfarm  = Model.new("fusnfarm.rdl")
+$fusionfarm.pos = Vector.new 1000,-5000,4000
+$fusionfarm.scale = Vector.new 20,20,20
+
+$ball        = Model.new
+$ball.pos    = Vector.new 3000,3000,3000
+$ball.scale = Vector.new 0.5,0.5,0.5
+
+$ball2       = Model.new
+$ball2.pos   = Vector.new -3000,-3000,-3000
+
+$updates << Proc.new{
+	$ball.rotate 5,5,5
+	$ball2.rotate -5,-5,-5
+}
+	
+$sun     = Model.new
 $sun.pos = Vector.new 500,500,-1000
 
 $earth = Model.new
@@ -44,22 +95,49 @@ $mars = Model.new
 $mars.scale = Vector.new 0.3,0.3,0.3
 $sun.attach $mars
 
+$updates << Proc.new{
+	$earth.orbit(
+		Vector.new(0,0,0),
+		200,0,0, # radius / distance / direction - from position
+		5,0,0 # rotate speed 
+	)
+	$moon.orbit(
+		Vector.new(0,0,0),
+		100,0,0, # radius / distance / direction - from position
+		20,0,0 # rotate speed 
+	)
+	$mars.orbit(
+		Vector.new(0,0,0),
+		500,0,0, # radius / distance / direction - from position
+		3,0,0 # rotate speed 
+	)
+}
+
+# object to draw
+
 $objects = [$level,$fusionfarm,$lines,$ship,$ship2,$ball,$ball2,$sun]
+
+$updates << Proc.new{
+	$objects.each do |o|
+		GL.PushMatrix
+		o.load_matrix
+		o.draw
+		GL.PopMatrix
+	end
+}
+
+# collision detection world
+
 $world = [$lines,$ship,$ship2,$ball,$ball2,$sun]
 
+
+# local player 
 $camera     = View.new
 $camera.pos = Vector.new -100,-50,-500
 
 $step = 10
 $movement = Vector.new 0,0,0
-$bindings = {
-	:w => :forward,
-	:s => :back,
-	:e => :up,
-	:d => :down,
-	:f => :left,
-	:g => :right
-}
+
 $game.keyboard = Proc.new{|key,pressed|
 	begin
 		k = key.chr.downcase.to_sym
@@ -82,38 +160,11 @@ $game.keyboard = Proc.new{|key,pressed|
 	else puts "unknown key binding #{k}"
 	end
 }
-$players = {}
-$last_send = Time.now
-$game.display = Proc.new{
 
-	# get network updates
-	unless $network.nil?
-		# read data from player
-		data,info = $network.pump 
-		something,port,name,ip = info
-		player = $players[ip]
-		if player.nil?
-			player = $players[ip] = Model.new("nbia400.mxa")
-			$objects << player
-		end
-		if data
-			player.unserialize! data
-		end
-		# send current update
-		#if (Time.now - $last_send).to_i > (60/10)
-			$network.send $camera.serialize
-			$last_send = Time.now
-		#end
-	end
+$updates.unshift Proc.new{
 
-	# rotate ball
-	$ball.rotate 5,5,5
-	$ball2.rotate -5,-5,-5
-	
-	# read mouse for rotation
 	x,y = $game.mouse_get
 
-	# apply rotation
 	$camera.rotate x, y
 
 	# apply movement
@@ -128,7 +179,6 @@ $game.display = Proc.new{
 	$world.each do |o|
 		distance = (o.pos - camera.pos).length
 		if distance < collision_distance
-#			$movement = Vector.new $radius,$radius,$radius
 			puts "#{Time.now} Collision!!!!"
 			collision = true
 		end
@@ -140,33 +190,10 @@ $game.display = Proc.new{
 	# modify coordinate system based on camera position
 	$camera.place_camera
 
-	# plantary orbits
-	$earth.orbit(
-		Vector.new(0,0,0),
-		200,0,0, # radius / distance / direction - from position
-		5,0,0 # rotate speed 
-	)
-	$moon.orbit(
-		Vector.new(0,0,0),
-		100,0,0, # radius / distance / direction - from position
-		20,0,0 # rotate speed 
-	)
-	$mars.orbit(
-		Vector.new(0,0,0),
-		500,0,0, # radius / distance / direction - from position
-		3,0,0 # rotate speed 
-	)
-
-	# draw at their locations
-	$objects.each do |o|
-		GL.PushMatrix
-		o.load_matrix
-		o.draw
-		GL.PopMatrix
-	end
-
-	# move back to the camera
-	GL.LoadIdentity
 }
+
+
+
+# run the game
 
 $game.run
