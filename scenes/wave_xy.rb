@@ -5,8 +5,8 @@ $quad = Quad.new
 $time = Time.now.to_f
 $wave = Proc.new{
 	$time = Time.now.to_f
-	$quad.verts.each_with_index do |vert,i|
-		vert[:vector][2] = Math.sin i*$time/100
+	$quad.verts.each do |vert|
+		vert[:vector][2] = Math.sin vert[:vector][0]+vert[:vector][1]+$time
 	end
 }
 
