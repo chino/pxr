@@ -2,23 +2,15 @@ $game  = Game.new("Model Viewer", $options[:width], $options[:height], $options[
 
 $quad = Quad.new
 
-$time = Time.now
+$time = Time.now.to_i
 $wave = Proc.new{
-next
-	if Time.now - $time < 1
+	if (Time.now.to_i - $time) < 1
 		next
 	end
-	$time = Time.now
-	$quad.verts.each do |vert|
-		case vert[:vector][2]
-		when 0 then vert[:vector][2] = 10
-		when 10 then vert[:vector][2] = -1
-		when -1 then vert[:vector][2] = -10
-		when -10 then vert[:vector][2] = 0
-		end
+	$time = Time.now.to_i
+	$quad.verts.each_with_index do |vert,i|
+		vert[:vector][2] = Math.sin i*$time
 	end
-
-	puts "updated " + $quad.verts[0][:vector][2].to_s
 }
 
 $objects = [$quad,Lines.new]
