@@ -23,18 +23,11 @@ $wave = Proc.new{
 $objects = [$quad,Lines.new]
 
 $camera     = View.new
-$camera.pos = Vector.new 1000,1000,-2000
+$camera.pos = Vector.new 3000,0,0
+$camera.rotate 0,-90,0
 
 $step = 5
 $movement = Vector.new 0,0,0
-$bindings = {
-	:w => :forward,
-	:s => :back,
-	:e => :up,
-	:d => :down,
-	:f => :left,
-	:g => :right
-}
 $game.keyboard = Proc.new{|key,pressed|
 	k = key.chr.downcase.to_sym
 	b = $bindings[k]
