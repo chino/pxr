@@ -1,14 +1,19 @@
-$window  = Window.new("Model Viewer", $options[:width], $options[:height], $options[:fullscreen])
+$game  = Game.new("Model Viewer", $options[:width], $options[:height], $options[:fullscreen])
 
 $quad = Quad.new
 
+$time = Time.now
 $wave = Proc.new{
+	if Time.now - $time < 1
+		next
+	end
+	$time = Time.now
 	$quad.verts.each do |vert|
-		case vert[:vector][2]
-		when 0 then vert[:vector][2] = 1000
-		when 1000 then vert[:vector][2] = -1
-		when -1 then vert[:vector][2] = -1000
-		when -1000 then vert[:vector][2] = 0
+		case vert[:vector][1]
+		when 0 then vert[:vector][1] = 1000
+		when 1000 then vert[:vector][1] = -1
+		when -1 then vert[:vector][1] = -1000
+		when -1000 then vert[:vector][1] = 0
 		end
 	end
 }
@@ -28,7 +33,7 @@ $bindings = {
 	:f => :left,
 	:g => :right
 }
-$window.keyboard = Proc.new{|key,x,y,pressed|
+$game.keyboard = Proc.new{|key,pressed|
 	k = key.chr.downcase.to_sym
 	b = $bindings[k]
 	if b.nil?
@@ -52,10 +57,10 @@ GL.PolygonMode(GL::FRONT, GL::LINE)
 GL.PolygonMode(GL::BACK, GL::LINE)
 
 
-$window.display = Proc.new{
+$game.display = Proc.new{
 
 	# read mouse for rotation
-	x,y = Mouse.get
+	x,y = $game.mouse_get
 
 	# apply rotation
 	$camera.rotate x, y
@@ -81,4 +86,4 @@ $window.display = Proc.new{
 	$wave.call
 }
 
-$window.run
+$game.run
