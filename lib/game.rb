@@ -82,11 +82,15 @@ class Game
 				if event.sym == 27
 					SDL.quit 
 					exit 0
-				elsif event.sym.chr == "`"
-					mouse_grab_swap
-				else
-					@keyboard.call event.sym, true
 				end
+				begin
+					if event.sym.chr == "`"
+						mouse_grab_swap
+						return
+					end
+				rescue
+				end
+				@keyboard.call event.sym, true
 			when SDL::Event2::KeyUp
 				@keyboard.call event.sym, false
 			when SDL::Event2::MouseMotion
