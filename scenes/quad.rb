@@ -4,6 +4,7 @@ $quad = Quad.new
 
 $time = Time.now
 $wave = Proc.new{
+next
 	if Time.now - $time < 1
 		next
 	end
