@@ -29,7 +29,11 @@ $camera.rotate 0,-90,0
 $step = 5
 $movement = Vector.new 0,0,0
 $game.keyboard = Proc.new{|key,pressed|
+begin
 	k = key.chr.downcase.to_sym
+rescue
+	next
+end
 	b = $bindings[k]
 	if b.nil?
 		puts "Unknown key binding #{k}"
