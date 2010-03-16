@@ -4,7 +4,7 @@ class Quad < View
 		super *args
 #		@render_type = GL::QUADS
 		@render_type = GL::POLYGON
-		@scale = Vector.new 100,100,0
+		@scale = Vector.new 100,100,100
 		@verts = []
 		@primitives = []
 		rows=20

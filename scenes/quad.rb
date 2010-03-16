@@ -10,10 +10,10 @@ $wave = Proc.new{
 	$time = Time.now
 	$quad.verts.each do |vert|
 		case vert[:vector][2]
-		when 0 then vert[:vector][2] = 1000
-		when 1000 then vert[:vector][2] = -1
-		when -1 then vert[:vector][2] = -1000
-		when -1000 then vert[:vector][2] = 0
+		when 0 then vert[:vector][2] = 10
+		when 10 then vert[:vector][2] = -1
+		when -1 then vert[:vector][2] = -10
+		when -10 then vert[:vector][2] = 0
 		end
 	end
 
