@@ -2,19 +2,27 @@ $game  = Game.new("Model Viewer", $options[:width], $options[:height], $options[
 
 $quad = Quad.new
 
+$quads = $quad.verts.length / 4
+$x = $y = 10 # $quads / 2
+$speed = 10
+$height = 10
 $time = Time.now.to_f
 $wave = Proc.new{
-	$time = Time.now.to_f
+	$time = Time.now.to_f * $speed
 	$quad.verts.each do |vert|
-		vert[:vector][2] = Math.sin vert[:vector][0]+$time*5
+		x,y = vert[:vector]
+		x,y = (x-$x),(y-$y)
+		dot = x*x+y*y
+		distance = Math.sqrt dot
+		vert[:vector][2] = Math.sin( distance + $time ) * $height
 	end
 }
 
 $objects = [$quad,Lines.new]
 
 $camera     = View.new
-$camera.pos = Vector.new 3000,0,0
-$camera.rotate 0,-90,0
+$camera.pos = Vector.new 927.193559446316,922.95736324225,-3646.84719642008
+$camera.orientation = Quat.new 0.0185038595272231,0.0268171902854991,0.176251223933536,0.983805850536435
 
 $step = 5
 $movement = Vector.new 0,0,0
@@ -47,6 +55,9 @@ GL.PolygonMode(GL::BACK, GL::LINE)
 
 
 $game.display = Proc.new{
+
+#puts $camera.pos.to_s
+#puts $camera.orientation.to_s
 
 	# read mouse for rotation
 	x,y = $game.mouse_get
