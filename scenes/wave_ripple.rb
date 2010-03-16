@@ -2,8 +2,7 @@ $game  = Game.new("Model Viewer", $options[:width], $options[:height], $options[
 
 $quad = Quad.new
 
-$quads = $quad.verts.length / 4
-$x = $y = 10 # $quads / 2
+$x = $y = Math.sqrt($quad.verts.length/4)/2 # length from center to edge of x and y
 $speed = 10
 $height = 2
 $time = Time.now.to_f
