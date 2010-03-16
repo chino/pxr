@@ -9,16 +9,18 @@ $wave = Proc.new{
 	end
 	$time = Time.now
 	$quad.verts.each do |vert|
-		case vert[:vector][1]
-		when 0 then vert[:vector][1] = 1000
-		when 1000 then vert[:vector][1] = -1
-		when -1 then vert[:vector][1] = -1000
-		when -1000 then vert[:vector][1] = 0
+		case vert[:vector][2]
+		when 0 then vert[:vector][2] = 1000
+		when 1000 then vert[:vector][2] = -1
+		when -1 then vert[:vector][2] = -1000
+		when -1000 then vert[:vector][2] = 0
 		end
 	end
+
+	puts "updated " + $quad.verts[0][:vector][2].to_s
 }
 
-$objects = [$quad]
+$objects = [$quad,Lines.new]
 
 $camera     = View.new
 $camera.pos = Vector.new 1000,1000,-2000
