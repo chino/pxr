@@ -31,6 +31,9 @@ class Quat
 	def to_a
 		[@x,@y,@z,@w]
 	end
+	def to_s
+		to_a.join(',')
+	end
 	def rotate! yaw=0, pitch=0, roll=0
 		# create 3 quats for pitch, yaw, roll
 		# and multiply those together to form a rotation quat
