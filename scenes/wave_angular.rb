@@ -7,7 +7,7 @@ $x = $y = Math.sqrt($quad.verts.length/4)/2
 
 # settings
 $speed = 0.5
-$height = 1
+$height = 4
 $waves = 5
 
 def normalize x,y
