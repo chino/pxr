@@ -6,8 +6,9 @@ $quad = Quad.new
 $x = $y = Math.sqrt($quad.verts.length/4)/2
 
 # settings
-$speed = 10
-$height = 4
+$speed = 0.5
+$height = 1
+$waves = 5
 
 def normalize x,y
 	dot = x*x + y*y
@@ -27,17 +28,11 @@ $wave = Proc.new{
 		# dot product of vector with it self is same as length of vector
 		distance = Math.sqrt(x1*x1+y1*y1).abs
 	
-		# normalized vector from center to point
-		x1,y1 = normalize x1, y1 unless x1==0 and y1==0
-
-		# refrence point to determine angle
-		x2,y2 = normalize 1, 1
-
-		# angle between two points
-		angle = Math.acos( x1*x2 + y1*y2 ) * $height
+		# angle around the center
+		angle = Math.atan2(y1,x1) * $waves
 
 		#
-		vert[:vector][2] = Math.cos(angle-t) * $height
+		vert[:vector][2] = Math.sin(angle-t) * $height #* distance
 	end
 }
 
@@ -75,7 +70,6 @@ end
 GL.Disable(GL::CULL_FACE)
 GL.PolygonMode(GL::FRONT, GL::LINE)
 GL.PolygonMode(GL::BACK, GL::LINE)
-
 
 $game.display = Proc.new{
 
