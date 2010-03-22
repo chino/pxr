@@ -5,6 +5,10 @@ require "sdl"
 require 'optparse'
 require 'pp'
 
+def debug msg
+	STDERR.puts msg
+end
+
 # parse options
 $options = {
 	:debug => false,
@@ -38,8 +42,8 @@ OptionParser.new do |opts|
 end.parse!
 
 if $options[:debug]
-	puts "Command line options:"
-	pp $options
+	debug "Command line options:"
+	debug pp($options)
 end
 
 # defines

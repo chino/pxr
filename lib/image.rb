@@ -8,9 +8,11 @@ class Image
 			return nil if @@images[image] == false
 			return @@images[image] unless @@images[image].nil?
 			unless File.exist? image
+				debug "Image not found: #{image}"
 				@@images[image] = false
 				return nil
 			end
+			debug "Image found: #{image}"
 			@@images[image] = Image.new image, *args
 			@@images[image]
 		end
