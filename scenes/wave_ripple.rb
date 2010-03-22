@@ -2,25 +2,23 @@ $game  = Game.new("Model Viewer", $options[:width], $options[:height], $options[
 
 $quad = Quad.new
 
-$x = $y = Math.sqrt($quad.verts.length/4)/2 # length from center to edge of x and y
-$speed = 10
+$x = $y = Math.sqrt($quad.primitives.length)/2 # length from center to edge of x and y
+
+$speed = 2
 $height = 2
-$time = Time.now.to_f
+
 $wave = Proc.new{
-	$time = Time.now.to_f * $speed
+	time = Time.now.to_f * $speed
 	$quad.verts.each do |vert|
 		x,y = vert[:vector]
-		x,y = (x-$x),(y-$y)
-		dot = x*x+y*y
-		distance = Math.sqrt dot
-		vert[:vector][2] = Math.sin( distance - $time ) * $height
+		vert[:vector][2] = Math.sin( Math.sqrt((x-$x)**2 + (y-$y)**2) - time ) * $height
 	end
 }
 
 $objects = [$quad,Lines.new]
 
 $camera     = View.new
-$camera.pos = Vector.new 927.193559446316,922.95736324225,-3646.84719642008
+$camera.pos = Vector.new 927,1100,-10100
 $camera.orientation = Quat.new 0.0185038595272231,0.0268171902854991,0.176251223933536,0.983805850536435
 
 $step = 5
@@ -49,9 +47,8 @@ end
 }
 
 GL.Disable(GL::CULL_FACE)
-GL.PolygonMode(GL::FRONT, GL::LINE)
-GL.PolygonMode(GL::BACK, GL::LINE)
-
+#GL.PolygonMode(GL::FRONT, GL::LINE)
+#GL.PolygonMode(GL::BACK, GL::LINE)
 
 $game.display = Proc.new{
 
