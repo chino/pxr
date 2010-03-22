@@ -5,10 +5,6 @@ require "sdl"
 require 'optparse'
 require 'pp'
 
-def debug msg
-	STDERR.puts msg
-end
-
 # parse options
 $options = {
 	:debug => false,
@@ -41,10 +37,13 @@ OptionParser.new do |opts|
 	}
 end.parse!
 
-if $options[:debug]
-	debug "Command line options:"
-	debug pp($options)
+def debug msg
+	return unless $options[:debug]
+	STDERR.puts msg
 end
+
+debug "Command line options:"
+debug pp($options)
 
 # defines
 ROOT=File.dirname($0)
