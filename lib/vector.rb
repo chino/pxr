@@ -1,7 +1,9 @@
 class Vector
 	attr_accessor :x, :y, :z
 	def initialize x=0,y=0,z=0
-		@x,@y,@z = x,y,z
+		@x=x
+		@y=y
+		@z=z
 	end
 	def quat
 		Quat.new @x, @y, @z, 0
@@ -37,7 +39,7 @@ class Vector
 		@x * q.x + @y * q.y + @z * q.z
 	end
 	def length
-		Math.sqrt dot
+		Math.sqrt @x * @x + @y * @y + @z * @z
 	end
 	def cross v2
 		Vector.new(
