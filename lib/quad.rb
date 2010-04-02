@@ -9,8 +9,8 @@ class Quad < View
 		@texture = 'data/images/yelo.png'
 		@verts = []
 		@primitives = []
-		rows=10
-		cols=10
+		rows=100
+		cols=100
 		cols.times do |x|
 			rows.times do |y|
 				add x,y

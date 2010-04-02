@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env ruby1.9
 require 'rubygems'
 require "opengl"
 require "sdl"
@@ -43,7 +43,7 @@ def debug msg
 end
 
 debug "Command line options:"
-debug pp($options)
+#debug pp($options)
 
 # defines
 ROOT=File.dirname($0)

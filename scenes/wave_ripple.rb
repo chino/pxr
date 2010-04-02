@@ -1,6 +1,7 @@
 $game  = Game.new("Model Viewer", $options[:width], $options[:height], $options[:fullscreen])
 
 $quad = Quad.new
+puts "verts => #{$quad.verts.length}"
 
 $x = $y = Math.sqrt($quad.primitives.length)/2 # length from center to edge of x and y
 
@@ -10,8 +11,9 @@ $height = 2
 $wave = Proc.new{
 	time = Time.now.to_f * $speed
 	$quad.verts.each do |vert|
-		x,y = vert[:vector]
-		vert[:vector][2] = Math.sin( Math.sqrt((x-$x)**2 + (y-$y)**2) - time ) * $height
+		x = vert[:vector][0] - $x
+		y = vert[:vector][1] - $y
+		vert[:vector][2] = Math.sin( Math.sqrt(x*x + y*y) - time ) * $height
 	end
 }
 
