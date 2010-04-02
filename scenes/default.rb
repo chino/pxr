@@ -48,6 +48,7 @@ end
 
 # setup scene objects
 
+$quad = Quad.new
 
 $lines     = Lines.new
 
@@ -115,7 +116,7 @@ $updates << Proc.new{
 
 # object to draw
 
-$objects = [$level,$fusionfarm,$lines,$ship,$ship2,$ball,$ball2,$sun]
+$objects = [$level,$fusionfarm,$lines,$ship,$ship2,$ball,$ball2,$sun,$quad]
 
 $updates << Proc.new{
 	$objects.each do |o|
@@ -170,36 +171,65 @@ $game.keyboard = Proc.new{|key,pressed|
 
 # camera/collision physics
 
-$world = [$lines,$ship,$ship2,$ball,$ball2,$sun]
+$world = [$lines,$ship,$ship2,$ball,$ball2,$sun,$quad]
+
+$movement_physics = Proc.new {
+
+	next unless $movement.length > 0
+
+	# apply movement
+	radius = 200 # radius of object collision
+	cd = (radius + radius) # collision distance
+	camera = $camera.dup;  c = $camera.dup
+	camera.move $movement; c.move $movement
+	camera.pos.z *= -1
+
+	# detect collisions with local player
+	$world.each do |o|
+		if o.respond_to? :side # plane
+			edge = 0 #o.normal + radius # edge of sphere
+			if o.side($camera.pos + edge) != o.side(c.pos + edge)
+					#puts "#{Time.now} we have passed through the plane!"
+					mv = c.pos - $camera.pos # movement vector
+				# find collision point on movement vector
+					fp = o.normal.dot mv
+					if fp == 0
+						puts "We are moving perpendicular to the plane"
+						next
+					end
+					t = -((o.normal.dot($camera.pos) + o.d) / fp)
+					cp = $camera.pos + (mv*t)
+					#puts "Intersection point #{cp}"
+				# check if point is within polygon
+					if o.within? cp
+				# reaction to collision
+						puts "#{Time.now} polygon collision!"
+# this reaction needs to move the player far enough away along the normal so that he can't pass the plane!
+						$camera.pos -= (o.normal * radius)
+					end
+			end
+		else # sphere
+			cv = (o.pos - camera.pos) # collision vector
+			d = cv.length # distance
+			if d < cd
+				puts "#{Time.now} collision!"
+				cvn = cv.normalize
+				$camera.pos -= cvn * cd
+			end
+		end
+	end
+
+	# apply movement
+	$camera.move $movement
+}
 
 $updates.unshift Proc.new{
 
 	x,y = $game.mouse_get
-
 	$camera.rotate x, y
 
-	# apply movement
-	radius = 20 # radius of object collision
-	collision_distance = (radius + radius) # o.radius + $camera.radius
-	camera = $camera.dup
-	camera.move $movement
-	camera.pos.z *= -1
+	$movement_physics.call
 
-	# detect collisions with local player if we allow movement
-	$world.each do |o|
-		collision_vec = (o.pos - camera.pos)
-		distance = collision_vec.length
-		if distance < collision_distance
-			puts "#{Time.now} Collision!!!!"
-			c = collision_vec.normalize
-			$movement -= c * $movement.dot(c)
-		end
-	end
-
-	# apply movement if no collision would result
-	$camera.move $movement
-
-	# modify coordinate system based on camera position
 	$camera.place_camera
 
 }
