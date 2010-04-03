@@ -142,7 +142,7 @@ $updates << Proc.new{
 $camera        = View.new
 $camera.pos    = Vector.new -100,-50,-500
 $camera.drag   = 0.1 # 10% drag
-$camera.radius = 40
+$camera.radius = 20
 
 $step = 10
 $bounce = 3.0 # 300%
@@ -191,7 +191,7 @@ $movement_physics = Proc.new {
 	next unless $camera.velocity.length > 0
 
 	# position after movement
-	ep = $camera.dup.move( $camera.velocity )
+	ep  = $camera.dup.move( $camera.velocity )
 	epw = ep.dup; epw.z = -epw.z # flipped z
 
 	# detect if movement would cause collision with other objects
@@ -199,35 +199,48 @@ $movement_physics = Proc.new {
 		# point -> plane
 		if o.respond_to? :side
 
+			#### local vars
+
+				sep   = ep.dup          # sphere end point
+				ssp   = $camera.pos.dup # sphere start point
+
 			#### calc vars
 
-				mv = ep - $camera.pos
-				mvdp = o.normal.dot mv
+				mv = sep - ssp
 
 			#### collision points on sphere
 
-				sp = $camera.pos + (o.normal * o.normal.dot($camera.pos)) + $camera.radius
-				ep =          ep + (o.normal * mvdp)                      + $camera.radius
+				# add radius to direction of plane normal to get tip of sphere for contact point
+				r = o.normal + $camera.radius
+				ssp += r
+				sep += r
 
 			#### detect if movement places us on other side of plane
 
-				next unless o.side(sp) != o.side(ep)
+				unless o.side(ssp) != o.side(sep)
+					#puts "#{Time.now} No collision"
+					next
+				end
+
+			#### calc vars
+
+				na = o.normal.dot mv
 
 			#### find collision point on movement vector
 
-				if mvdp == 0.0
+				if na == 0.0
 					puts "We are moving perpendicular to the plane"
-					# we can't continue cause t=(blah/mvdp) would devide by 0
+					# we can't continue cause t=(blah/na) would devide by 0
 					# collision response should stop us from ever being on the plane anyway
 					next
-				#elsif mvdp > 0
+				#elsif na > 0
 				#	puts "We are moving with the normal"
-				#elsif mvdp < 0
+				#elsif na < 0
 				#	puts "We are moving away from the normal"
 				end
 
-				t = -((o.normal.dot(sp) + o.d) / mvdp)
-				cp = sp + (mv*t)
+				t = -((o.normal.dot(ssp) + o.d) / na)
+				cp = ssp + (mv*t)
 
 			#### check if point is within polygon
 
@@ -240,8 +253,50 @@ $movement_physics = Proc.new {
 
 			#### collision response
 
-				# remove movement in direction of normal and apply bounce
-				$camera.velocity -= (o.normal * o.normal.dot(mv)) * $bounce
+=begin
+# i need a way to convert the normal from global cords to player cords
+# velocity is converted into global space before modifing the global position of the camera
+# in View.move you will find  pos += orientation.vector(velocity)
+# where orientation.vector is
+#   global_vector = quat.normalize * local_vector * quat.conjugate
+# thus I need a way to reverse this operation
+# perhaps
+#	  local_vector  = global_vector / quat.conjugate / quat.normalize
+# but then you also need a valid definition of quaternion devision
+
+				# convert normal into the velocity space 
+				q  = $camera.orientation.normalize
+				qn = o.normal.quat / q.conjugate / q
+
+				# quat needs convert to vec -- w should be 0 now
+				n  = Vector.new( qn.x, qn.y, qn.z )
+				
+				# restore movement in direction of normal
+				n *= na
+	
+				# increase strength by bounciness
+				#n *= $bounce
+
+				# remove from velocity
+				$camera.velocity -= n
+=end
+
+# for now since the above doesn't really work i can simply modify the camera pos which
+# is already in global cords just like the normal is and then simply let the movement apply
+# if you ask me i still think this approach works better.... 
+# it's simple and gives a good enough effect
+
+# with this trick it's basically the same affect slightly hackish but no information is lost
+# one case I can think that show's how it's better
+# this is of course with regards to how movement is currently done based on key press/release
+
+#   the players original direction is lost after modifing the velocity
+#   once the player slides off of the polygon he will continue to move along it's plane
+#   unless he lets go of the buttons and presses them again
+#   they should of proceeded in the original direction before modifying the velocity
+
+				# movement in direction of normal with bounciness
+				$camera.pos -= o.normal * na * $bounce
 
 		# sphere -> sphere
 		else
