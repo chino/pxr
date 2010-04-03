@@ -308,7 +308,7 @@ $movement_physics = Proc.new {
 				cvn = cv.normalize
 				# move sphere away from other sphere on collision vector
 				# allow movement to happen anyway
-				$camera.pos -= cvn * cd
+				$camera.pos -= cvn * cd * $bounce
 			end
 		end
 	end
