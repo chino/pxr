@@ -139,10 +139,13 @@ $updates << Proc.new{
 # local player 
 
 
-$camera     = View.new
-$camera.pos = Vector.new -100,-50,-500
+$camera        = View.new
+$camera.pos    = Vector.new -100,-50,-500
+$camera.drag   = 0.1 # 10% drag
 
 $step = 10
+$bounce = 3.0 # 300%
+$accell = 0.5 # 50% of movement
 $movement = Vector.new 0,0,0
 
 $game.keyboard = Proc.new{|key,pressed|
@@ -175,52 +178,80 @@ $world = [$lines,$ship,$ship2,$ball,$ball2,$sun,$quad]
 
 $movement_physics = Proc.new {
 
-	next unless $movement.length > 0
+# at what point is movement capped ?
 
-	# apply movement
-	radius = 200 # radius of object collision
-	cd = (radius + radius) # collision distance
-	camera = $camera.dup;  c = $camera.dup
-	camera.move $movement; c.move $movement
-	camera.pos.z *= -1
+	# apply movement to velocity
+	$camera.velocity += ($movement * $accell) if $movement.length > 0
 
-	# detect collisions with local player
+	# apply drag
+	$camera.velocity -= $camera.velocity * $camera.drag
+
+	# is there movement to apply ?
+	next unless $camera.velocity.length > 0
+
+	# position after movement
+	ep = $camera.dup.move( $camera.velocity )
+	epw = ep.dup; epw.z = -epw.z # flipped z
+
+	# detect if movement would cause collision with other objects
 	$world.each do |o|
-		if o.respond_to? :side # plane
-			edge = 0 #o.normal + radius # edge of sphere
-			if o.side($camera.pos + edge) != o.side(c.pos + edge)
-					#puts "#{Time.now} we have passed through the plane!"
-					mv = c.pos - $camera.pos # movement vector
-				# find collision point on movement vector
-					fp = o.normal.dot mv
-					if fp == 0
-						puts "We are moving perpendicular to the plane"
-						next
-					end
-					t = -((o.normal.dot($camera.pos) + o.d) / fp)
-					cp = $camera.pos + (mv*t)
-					#puts "Intersection point #{cp}"
-				# check if point is within polygon
-					if o.within? cp
-				# reaction to collision
-						puts "#{Time.now} polygon collision!"
-# this reaction needs to move the player far enough away along the normal so that he can't pass the plane!
-						$camera.pos -= (o.normal * radius)
-					end
-			end
-		else # sphere
-			cv = (o.pos - camera.pos) # collision vector
+		# point -> plane
+		if o.respond_to? :side
+
+			#### detect if movement places us on other side of plane
+
+				next unless o.side($camera.pos) != o.side(ep)
+
+			#### find collision point on movement vector
+
+				mv = ep - $camera.pos
+				fp = o.normal.dot mv
+				if fp == 0
+					puts "We are moving perpendicular to the plane"
+					next
+				end
+				t = -((o.normal.dot($camera.pos) + o.d) / fp)
+				cp = $camera.pos + (mv*t)
+				#puts "Intersection point #{cp}"
+
+			#### check if point is within polygon
+
+				next unless o.within? cp
+				puts "#{Time.now} polygon collision!"
+
+			#### react to collision
+			#### remove direction of normal from velocity
+
+				## attempt to convert normal to camera space
+
+					# velocity is in local player coridinates so we must convert normal
+					#n = $camera.orientation.vector(o.normal).normalize
+					# remove all movement along plane normal
+					#$camera.velocity -= (n * n.dot($camera.velocity)) * $bounce
+
+				## attempt to convert reverse movement to camera space
+
+					rv = o.normal * o.normal.dot(mv) # reverse velocity
+					rv = $camera.orientation.vector(rv.normalize) * rv.length # camera space
+					$camera.velocity -= rv * $bounce
+
+		# sphere -> sphere
+		else
+			cd = o.radius + $camera.radius # collision distance
+			cv = (o.pos - epw) # collision vector
 			d = cv.length # distance
 			if d < cd
 				puts "#{Time.now} collision!"
 				cvn = cv.normalize
+				# move sphere away from other sphere on collision vector
+				# allow movement to happen anyway
 				$camera.pos -= cvn * cd
 			end
 		end
 	end
 
 	# apply movement
-	$camera.move $movement
+	$camera.move $camera.velocity
 }
 
 $updates.unshift Proc.new{

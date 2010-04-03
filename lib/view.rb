@@ -1,8 +1,11 @@
 require "vector"
 require "quat"
 class View
-	attr_accessor :pos, :orientation, :scale
+	attr_accessor :pos, :orientation, :scale, :drag, :velocity, :radius
 	def initialize *args
+		@drag = 0 # 0.1 = 10%
+		@radius = 20
+		@velocity = Vector.new
 		@pos = Vector.new 0, 0, 0
 		@orientation = Quat.new(0, 0, 0, 1).normalize
 		@scale = Vector.new 1, 1, 1
