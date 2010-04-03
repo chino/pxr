@@ -198,21 +198,35 @@ $movement_physics = Proc.new {
 		# point -> plane
 		if o.respond_to? :side
 
+			#### calc vars
+
+				mv = ep - $camera.pos
+				mvdp = o.normal.dot mv
+
+			#### collision points on sphere
+
+				sp = $camera.pos + (o.normal * o.normal.dot($camera.pos)) + $camera.radius
+				ep =          ep + (o.normal * mvdp)                      + $camera.radius
+
 			#### detect if movement places us on other side of plane
 
-				next unless o.side($camera.pos) != o.side(ep)
+				next unless o.side(sp) != o.side(ep)
 
 			#### find collision point on movement vector
 
-				mv = ep - $camera.pos
-				fp = o.normal.dot mv
-				if fp == 0
+				if mvdp == 0.0
 					puts "We are moving perpendicular to the plane"
+					# we can't continue cause t=(blah/mvdp) would devide by 0
+					# collision response should stop us from ever being on the plane anyway
 					next
+				#elsif mvdp > 0
+				#	puts "We are moving with the normal"
+				#elsif mvdp < 0
+				#	puts "We are moving away from the normal"
 				end
-				t = -((o.normal.dot($camera.pos) + o.d) / fp)
-				cp = $camera.pos + (mv*t)
-				#puts "Intersection point #{cp}"
+
+				t = -((o.normal.dot(sp) + o.d) / mvdp)
+				cp = sp + (mv*t)
 
 			#### check if point is within polygon
 
