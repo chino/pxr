@@ -277,6 +277,8 @@ $movement_physics = Proc.new {
 				# increase strength by bounciness
 				#n *= $bounce
 
+# hmmm converting into local cords will also need -z flip !
+
 				# remove from velocity
 				$camera.velocity -= n
 =end
