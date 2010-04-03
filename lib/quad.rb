@@ -28,7 +28,7 @@ class Quad < View
 		]
 	end
 	def within? point
-		@pi2 ||= Math::PI * 2
+		@pi2 ||= sprintf('%.14f',Math::PI * 2)
 		radians = 0
 		@pairs.each do |v1,v2|
 			# vector from point to corner of polygon
@@ -37,7 +37,7 @@ class Quad < View
 			# angle between vectors
 			radians += Math.acos( v1.dot(v2) )
 		end
-		puts "#{radians}"
+		radians = sprintf('%.14f',radians)
 		radians == @pi2
 	end
 	def d
