@@ -61,7 +61,8 @@ class Quat
 	}
 	def vector direction
 		d = (@@directions[direction] || direction).quat
-		normalize * d * conjugate
+		q = normalize * d * conjugate
+		Vector.new( q.x, q.y, q.z )
 	end
 	def serialize repr=:full
 		case repr
