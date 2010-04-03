@@ -306,8 +306,8 @@ $movement_physics = Proc.new {
 			if d < cd
 				puts "#{Time.now} collision!"
 				cvn = cv.normalize
-				# move sphere away from other sphere on collision vector
-				# allow movement to happen anyway
+				# move back on collision vector by collision distance
+				# allow movement to happen anyway to give a simple bounce effect
 				$camera.pos -= cvn * cd * $bounce
 			end
 		end
@@ -318,6 +318,8 @@ $movement_physics = Proc.new {
 }
 
 $updates.unshift Proc.new{
+
+# still need some rotation velocity here
 
 	x,y = $game.mouse_get
 	$camera.rotate x, y
