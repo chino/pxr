@@ -22,11 +22,11 @@ class Vector
 		end
 	end
 	def - p2
-		Vector.new(
-			@x - p2.x,
-			@y - p2.y,
-			@z - p2.z
-		)
+		if p2.respond_to? :x
+			Vector.new( @x - p2.x, @y - p2.y, @z - p2.z )
+		else
+			Vector.new( @x - p2, @y - p2, @z - p2  )
+		end
 	end
 	def * i
 		Vector.new(
