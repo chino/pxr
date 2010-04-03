@@ -142,6 +142,7 @@ $updates << Proc.new{
 $camera        = View.new
 $camera.pos    = Vector.new -100,-50,-500
 $camera.drag   = 0.1 # 10% drag
+$camera.radius = 40
 
 $step = 10
 $bounce = 3.0 # 300%
@@ -230,24 +231,17 @@ $movement_physics = Proc.new {
 
 			#### check if point is within polygon
 
-				next unless o.within? cp
+				unless o.within? cp
+					puts "on plane but not not within polygon"
+					next
+				end
+
 				puts "#{Time.now} polygon collision!"
 
-			#### react to collision
-			#### remove direction of normal from velocity
+			#### collision response
 
-				## attempt to convert normal to camera space
-
-					# velocity is in local player coridinates so we must convert normal
-					#n = $camera.orientation.vector(o.normal).normalize
-					# remove all movement along plane normal
-					#$camera.velocity -= (n * n.dot($camera.velocity)) * $bounce
-
-				## attempt to convert reverse movement to camera space
-
-					rv = o.normal * o.normal.dot(mv) # reverse velocity
-					rv = $camera.orientation.vector(rv.normalize) * rv.length # camera space
-					$camera.velocity -= rv * $bounce
+				# remove movement in direction of normal and apply bounce
+				$camera.velocity -= (o.normal * o.normal.dot(mv)) * $bounce
 
 		# sphere -> sphere
 		else
