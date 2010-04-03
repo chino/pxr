@@ -28,16 +28,6 @@ class Quat
 			@w * q.w - @x * q.x - @y * q.y - @z * q.z
 		)
 	end
-# this is probably completely wrong
-# do not use this without testing 
-	def / q
-		Quat.new(
-			@w / q.x + @x / q.w + @y / q.z - @z / q.y,
-			@w / q.y + @y / q.w + @z / q.x - @x / q.z,
-			@w / q.z + @z / q.w + @x / q.y - @y / q.x,
-			@w / q.w - @x / q.x - @y / q.y - @z / q.z
-		)
-	end
 	def to_a
 		[@x,@y,@z,@w]
 	end
