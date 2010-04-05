@@ -144,7 +144,7 @@ $camera.pos    = Vector.new -100,-50,-500
 
 $drag   = 0.1
 $accell = 0.5
-$bounce = 1.5 # 150 percent
+$bounce = 0.0
 
 $movement = Vector.new 0,0,0
 
@@ -260,21 +260,46 @@ $movement_physics = Proc.new {
 
 			#### collision response
 
-				# remove movement in direction of normal * bounce factor
-				$camera.velocity -= o.normal * na * $bounce
+				# ammount of movement in direction of normal
+				m = o.normal * na
+
+				# increase by bounce factor
+				m += m * $bounce
+
+				# apply to velocity
+				$camera.velocity -= m
 
 		# sphere -> sphere
 		else
-			cd = o.radius + $camera.radius # collision distance
-			cv = (o.pos - epw) # collision vector
-			d = cv.length # distance
-			if d < cd
+
+			#### detect collision
+
+				# width of both objects combined
+				cd = o.radius + $camera.radius
+
+				# collision vector
+				cv = (o.pos - epw)
+
+				# distance along vector
+				d = cv.length
+
+				# are we close enough to collide?
+				next unless d < cd
 				puts "#{Time.now} collision!"
-				# remove movement in direction of collision * bounce factor
+
+			#### collision response
+
 				cvn = cv.normalize
-				ca = cvn.dot $camera.velocity
-				$camera.velocity -= cvn * ca * $bounce
-			end
+	
+				# remove all movement in direction of collision
+				m = cvn * cvn.dot( $camera.velocity )
+	
+				# add bounce based on amount of collision
+				m += m * $bounce
+
+				# apply to velocity
+				$camera.velocity -= m
+
 		end
 	end
 
@@ -282,17 +307,44 @@ $movement_physics = Proc.new {
 	$camera.pos += $camera.velocity
 }
 
-$updates.unshift Proc.new{
+$turn = Vector.new
+$turn_accell = 1.0
+$turn_drag = 0.5
 
-# still need some rotation velocity here
+$turn_physics = Proc.new{
 
 	x,y = $game.mouse_get
-	$camera.rotate x, y
 
+=begin
+	# convert to percentage of movement in resolution
+	x /= $game.w
+	y /= $game.h
+
+	# smooth scrolling ?
+	x *= x.abs
+	y *= y.abs
+=end
+
+	inputs = Vector.new x,y
+
+	# apply accelleration
+	inputs += inputs * $turn_accell
+
+	# add current movement to existing turn velocity
+	$turn += inputs
+
+	# apply drag
+	$turn -= $turn * $turn_drag
+
+	# apply current rotation
+	$camera.rotate $turn
+
+}
+
+$updates.unshift Proc.new{
+	$turn_physics.call
 	$movement_physics.call
-
 	$camera.place_camera
-
 }
 
 

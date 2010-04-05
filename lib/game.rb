@@ -3,7 +3,7 @@ class Game
 	attr_reader :title, :w, :h, :depth
 	def initialize title="Window", w=640, h=480, fullscreen=false, depth=32
 
-		@title, @w, @h, @depth = title, w, h, depth
+		@title, @w, @h, @depth = title, w.to_f, h.to_f, depth
 
 		SDL.init(SDL::INIT_VIDEO)
 		SDL.setGLAttr(SDL::GL_DOUBLEBUFFER,1)
@@ -67,7 +67,7 @@ class Game
 		x, y = @x, @y
 		@x, @y = 0, 0
 		SDL::Mouse.warp @w/2, @h/2
-		[x, y]
+		[x,y]
 	end
 	def mouse_set x,y
                 @x = x - (@w/2)
