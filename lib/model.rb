@@ -9,9 +9,10 @@ class Model < View
 		"rdl" => D1rdl
 	}
 	@@models = {}
-	attr_accessor :model
+	attr_accessor :model, :collision
 	def initialize file="ball1.mx"
 		super
+		@collision = :sphere
 		@path = "#{@@dir}/#{file}"
 		ext = @path.split('.').last.downcase
 		@model ||= @@models[@path]
