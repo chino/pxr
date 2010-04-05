@@ -3,6 +3,7 @@
 
 
 $game = Game.new("Model Viewer", $options[:width], $options[:height], $options[:fullscreen])
+$game.wireframe
 
 $updates = []
 
@@ -64,6 +65,7 @@ $suss2.rotate 0,0,180
 $ship.attach $suss2
 
 $level       = Model.new("ship.mxv")
+$level.collision = :mesh
 
 $fusionfarm  = Model.new("fusnfarm.rdl")
 $fusionfarm.pos = Vector.new 1000,-5000,4000
@@ -143,8 +145,8 @@ $camera        = View.new
 $camera.pos    = Vector.new -100,-50,-500
 
 $drag   = 0.1
-$accell = 0.5
-$bounce = 0.0
+$accell = 10.0
+$bounce = 0.5
 
 $movement = Vector.new 0,0,0
 
@@ -174,7 +176,8 @@ $game.keyboard = Proc.new{|key,pressed|
 
 # camera/collision physics
 
-$world = [$lines,$ship,$ship2,$ball,$ball2,$sun,$quad]
+$world = [$ship,$ship2,$ball,$ball2,$sun,$level]
+$pi2 = sprintf('%.14f',Math::PI * 2).to_f
 
 $movement_physics = Proc.new {
 
@@ -204,7 +207,13 @@ $movement_physics = Proc.new {
 	# detect if movement would cause collision with other objects
 	$world.each do |o|
 		# point -> plane
-		if o.respond_to? :normal
+		if o.respond_to? :collision and o.collision == :mesh
+
+				va = o.model.verts # vertex array
+
+o.model.primitives.each do |p|
+
+				normal = Vector.new p[:normal]
 
 			#### local vars
 
@@ -213,7 +222,7 @@ $movement_physics = Proc.new {
 
 			#### amount in direction of normal	
 
-				na = o.normal.dot $camera.velocity
+				na = normal.dot $camera.velocity
 
 			#### are we perpendicular to the plane ?
 
@@ -228,60 +237,88 @@ $movement_physics = Proc.new {
 			#### collision points on sphere
 
 				# vector the length of radius in direction of normal 
-				r = o.normal + $camera.radius
+				r = normal + $camera.radius
 
 				# flip the direction to point towards the plane
 				r *= -1 if na < 0
 
 				# add radius to the center to get tip of sphere for contact point
-				ssp += r
-				sep += r
+				#ssp += r
+				#sep += r
 
 			#### calculate the plane formula
 
-				d = (-o.normal.x*o.pos.x) - (o.normal.y*o.pos.y) - (o.normal.z*o.pos.z)
+				d = (-normal.x*p[:pos][0]) - (normal.y*p[:pos][1]) - (normal.z*p[:pos][2])
 
 			#### detect if movement places us on other side of plane
 
-				start_distance = o.normal.dot(ssp) + d
+				start_distance = normal.dot(ssp) + d
 				start_side = (start_distance > 0.0) ? :front : 
 											(start_distance < 0.0) ? :back :
 											:coincide
 
-				end_distance = o.normal.dot(sep) + d
+				end_distance = normal.dot(sep) + d
 				end_side = (end_distance > 0.0) ? :front : 
 											(end_distance < 0.0) ? :back :
 											:coincide
 
 				if start_side == end_side
-					debug "#{Time.now} No collision"
+					#debug "#{Time.now} No collision"
 					next
 				end
 
 			#### find collision point on movement vector
+#
+# apparently I'm able to get right through the middle of two triangle
+# by hitting the crack between them
+# 
+# what I probably need is ability to detect if the entire width of my object moving
+# causes a collision... 
+#
+# not just the exact point of my center position crossing the plane
+#
 
-				t = -((o.normal.dot(ssp) + d) / na)
+				t = -((normal.dot(ssp) + d) / na)
 				cp = ssp + ($camera.velocity*t)
 
 			#### check if point is within polygon
 
-				unless o.within? cp
-					#puts "on plane but not not within polygon"
+				# add angle between consequtive verts and cp
+				radians = 0
+				p[:verts].length.times do |i|
+					i2 = p[:verts][i+1].nil? ? 0 : i+1 # [i+1] or [0]
+					v1 = (Vector.new( va[p[:verts][i ]][:vector] ) - cp ).normalize
+					v2 = (Vector.new( va[p[:verts][i2]][:vector] ) - cp ).normalize
+begin
+					radians += Math.acos(v1.dot(v2))
+rescue
+	puts "acos arg out of range need to figure out what's wrong here"
+	puts p[:verts]
+	next
+end
+				end
+				radians = sprintf('%.14f',radians).to_f
+
+				# if add up to 360 degrees then point is within poly
+				unless radians == $pi2
+					debug "#{Time.now} not within polygon - #{radians} != #{$pi2}" if radians > 4
 					next
 				end
 
-				debug "#{Time.now} polygon collision!"
+				#debug "#{Time.now} polygon collision!"
 
 			#### collision response
 
 				# ammount of movement in direction of normal
-				m = o.normal * na
+				m = normal * na
 
 				# increase by bounce factor
 				m += m * $bounce
 
 				# apply to velocity
 				$camera.velocity -= m
+
+end # primitives.each
 
 		# sphere -> sphere
 		else
@@ -299,7 +336,7 @@ $movement_physics = Proc.new {
 
 				# are we close enough to collide?
 				next unless d < cd
-				debug "#{Time.now} collision!"
+				#debug "#{Time.now} collision!"
 
 			#### collision response
 
@@ -330,9 +367,7 @@ $turn_physics = Proc.new{
 	x,y = $game.mouse_get
 
 =begin
-	# convert to percentage of movement in resolution
-	x /= $game.w
-	y /= $game.h
+	# need to convert to -1->1 based on mouse sensitivity
 
 	# smooth scrolling ?
 	x *= x.abs
