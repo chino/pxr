@@ -204,7 +204,7 @@ $movement_physics = Proc.new {
 	# detect if movement would cause collision with other objects
 	$world.each do |o|
 		# point -> plane
-		if o.respond_to? :side
+		if o.respond_to? :normal
 
 			#### local vars
 
@@ -221,7 +221,7 @@ $movement_physics = Proc.new {
 				# collision response would have pushed us away from plane by now anyway
 				# so we don't really need to worry about doing anything here
 				if na == 0.0
-					puts "We are moving perpendicular to the plane"
+					debug "We are moving perpendicular to the plane"
 					next
 				end
 
@@ -237,26 +237,40 @@ $movement_physics = Proc.new {
 				ssp += r
 				sep += r
 
+			#### calculate the plane formula
+
+				d = (-o.normal.x*o.pos.x) - (o.normal.y*o.pos.y) - (o.normal.z*o.pos.z)
+
 			#### detect if movement places us on other side of plane
 
-				unless o.side(ssp) != o.side(sep)
-					#puts "#{Time.now} No collision"
+				start_distance = o.normal.dot(ssp) + d
+				start_side = (start_distance > 0.0) ? :front : 
+											(start_distance < 0.0) ? :back :
+											:coincide
+
+				end_distance = o.normal.dot(sep) + d
+				end_side = (end_distance > 0.0) ? :front : 
+											(end_distance < 0.0) ? :back :
+											:coincide
+
+				if start_side == end_side
+					debug "#{Time.now} No collision"
 					next
 				end
 
 			#### find collision point on movement vector
 
-				t = -((o.normal.dot(ssp) + o.d) / na)
+				t = -((o.normal.dot(ssp) + d) / na)
 				cp = ssp + ($camera.velocity*t)
 
 			#### check if point is within polygon
 
 				unless o.within? cp
-					puts "on plane but not not within polygon"
+					#puts "on plane but not not within polygon"
 					next
 				end
 
-				puts "#{Time.now} polygon collision!"
+				debug "#{Time.now} polygon collision!"
 
 			#### collision response
 
@@ -285,7 +299,7 @@ $movement_physics = Proc.new {
 
 				# are we close enough to collide?
 				next unless d < cd
-				puts "#{Time.now} collision!"
+				debug "#{Time.now} collision!"
 
 			#### collision response
 
@@ -332,6 +346,9 @@ $turn_physics = Proc.new{
 
 	# add current movement to existing turn velocity
 	$turn += inputs
+
+	#
+	next unless $turn.length > 0
 
 	# apply drag
 	$turn -= $turn * $turn_drag

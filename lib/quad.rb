@@ -40,19 +40,6 @@ class Quad < View
 		radians = sprintf('%.14f',radians)
 		radians == @pi2
 	end
-	def d
-		@d ||= (-@normal.x*@pos.x) - (@normal.y*@pos.y) - (@normal.z*@pos.z)
-	end
-	def side point
-		distance = @normal.dot(point) + d
-		if distance > 0.0
-			:front
-		elsif distance < 0.0
-			:back
-		else
-			:coincide
-		end
-	end
 	def add x,y
 		l = @verts.length
 		@primitives << { :verts => [ l+0,l+1,l+2,l+3 ], :texture => @texture }
