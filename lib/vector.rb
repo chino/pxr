@@ -1,9 +1,15 @@
 class Vector
 	attr_accessor :x, :y, :z
 	def initialize x=0,y=0,z=0
-		@x=x
-		@y=y
-		@z=z
+		if x.respond_to? :each # array given
+			@x = x[0]
+			@y = x[1]
+			@z = x[2]
+		else
+			@x=x
+			@y=y
+			@z=z
+		end
 	end
 	def quat
 		Quat.new @x, @y, @z, 0
