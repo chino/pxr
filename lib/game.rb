@@ -28,8 +28,6 @@ class Game
 		GL.FrontFace(GL::CW)
 		GL.Disable(GL::LIGHTING)
 		GL.Hint(GL::PERSPECTIVE_CORRECTION_HINT, GL::NICEST)
-		#GL.PolygonMode(GL::FRONT, GL::LINE)
-		#GL.PolygonMode(GL::BACK, GL::LINE)
 
 		@last_frame = 0
 		@frames = 0
@@ -37,6 +35,10 @@ class Game
 		@fov = 70.0
 		@x, @y = 0, 0
 
+	end
+	def wireframe
+		GL.PolygonMode(GL::FRONT, GL::LINE)
+		GL.PolygonMode(GL::BACK, GL::LINE)
 	end
 	def aspect
 		@w.to_f / @h.to_f
