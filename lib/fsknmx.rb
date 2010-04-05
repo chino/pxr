@@ -54,6 +54,7 @@ class FsknMx
 						@primitives << {
 							:texture => @textures[texture],
 							:verts => v,
+							:pos => @verts[v[0]][:vector], # position of polygon plane
 							:normal => normal,
 							:transparencies => has_transparencies
 						}
