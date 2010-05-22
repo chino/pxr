@@ -169,22 +169,15 @@ $xcop  = Model.new( "sxcop400.mxa", sphere_body({ :pos => Vector.new(-600,-500,-
 # models to draw
 $objects = [$level,$lines,$xcop,$nubia]
 
-radius = 50
-diameter = radius * 2
 100.times do |x|
-	o = rand(x) - x/2
-	p = o * diameter
-	ball = Model.new(
+	$objects << Model.new(
 		"ball1.mx",
 		sphere_body({
-			:pos => Vector.new(p,p,p),
-			:velocity => Vector.new(rand(10),rand(10),rand(10)),
-			:drag => 0,
-			:radius => radius
-			
+			:pos => Vector.new( rand(2000)-1000, rand(2000)-1000, rand(2000)-1000 ),
+			:velocity => Vector.new(rand(10)-5,rand(10)-5,rand(10)-5),
+			:drag => 0
 		})
 	)
-	$objects << ball
 end
 
 # draw routine
