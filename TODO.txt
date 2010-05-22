@@ -1,0 +1,30 @@
+
+Physics
+
+	* level collisions
+	* scene graph to make broad phase faster
+	* function to generate radius from mesh geometry
+	* different types of collision responses
+		* would be nice to have proper inertia
+		  so if i hit non moving objects we disperse velocity properly
+	* collision masks to define what things a body can interact with each other
+		body.group = SHIP
+		body.collides = SHIP|WALL|BULLET
+		def add_body body
+			@bodies << body
+			@groups[body.type] << body
+		end
+	* collision callbacks to support things like pickups that do not modify the ship trajectory
+		body.collision = Proc.new {|target|
+			target.add_power_up
+			make_sound
+			kill_pickup
+			return false # no collision response
+		}
+
+Others
+
+	More modular networking and rendering classes
+
+	Auto propagation of network registered models.
+
