@@ -60,7 +60,8 @@ $: << LIB
 
 # load libs
 # make sure your libs require their own dependencies
-Dir["#{LIB}/*.rb","#{CONF}/*.rb"].sort.each{|file| require file }
+Dir["#{LIB}/*.rb" ].sort.each{|file| require file }
+Dir["#{CONF}/*.rb"].sort.each{|file| require file }
 
 # profile the scene
 # dump profile to file

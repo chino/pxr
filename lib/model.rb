@@ -1,13 +1,5 @@
-require 'd1rdl'
-require 'fsknmx'
 class Model
 	@@dir = "data/models"
-	@@loaders = {
-		"mx"  => FsknMx,
-		"mxa" => FsknMx,
-		"mxv" => FsknMx,
-		"rdl" => D1rdl
-	}
 	@@models = {}
 	attr_accessor :model, :body, :scale
 	def pos; @body.nil? ? Vector.new(0,0,0) : @body.pos; end
@@ -18,7 +10,7 @@ class Model
 		ext = @path.split('.').last.downcase
 		@model ||= @@models[@path]
 		return unless @model.nil?
-		loader = @@loaders[ext]
+		loader = $loaders[ext]
 		throw "cannot determine model loader" if loader.nil?
 		@model = loader.new @path
 		@attachments = []

@@ -1,6 +1,6 @@
 require "mesh"
-require "model"
 require "opengl"
+require "model"
 require "vector"
 require "binreader"
 class D1rdl < Model

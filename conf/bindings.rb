@@ -8,3 +8,9 @@ $bindings = {
 }
 $move_accell = 1.0
 $turn_accell = 1.0
+$loaders = {
+	"mx"  => FsknMx,
+        "mxa" => FsknMx,
+        "mxv" => FsknMx,
+	"rdl" => D1rdl
+}
