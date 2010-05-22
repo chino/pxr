@@ -1,9 +1,8 @@
 require "mesh"
-require "view"
 require "opengl"
 require "vector"
 require "binreader"
-class D1rdl < View
+class D1rdl
 	include Mesh
 	include BinReader
 	def read_ushort

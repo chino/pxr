@@ -1,4 +1,5 @@
-class Lines < View
+require "model"
+class Lines < Model
 	include Mesh
 	def initialize *args
 		super *args

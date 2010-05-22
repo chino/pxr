@@ -1,6 +1,5 @@
-require 'view'
 require 'mesh'
-class Point < View
+class Point
 	include Mesh
 	attr_writer :size
 	def initialize *args
@@ -11,5 +10,7 @@ class Point < View
 		@primitives = []
 		@verts << { :vector => [0,0,0], :rgba => [255,255,255,255] }
 		@primitives << { :texture => nil, :verts => [0] }
+		@poisition = Vector.new
+		@orientation = Quat.new
 	end
 end

@@ -1,4 +1,5 @@
-class Quad < View
+require "model"
+class Quad < Model
 	include Mesh
 	attr_accessor :normal, :pairs, :collision
 	def initialize *args

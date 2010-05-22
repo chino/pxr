@@ -47,6 +47,9 @@ class Vector
 	def length
 		Math.sqrt @x * @x + @y * @y + @z * @z
 	end
+	def length2
+		dot
+	end
 	def cross v2
 		Vector.new(
 			@y*v2.z - @z*v2.y,

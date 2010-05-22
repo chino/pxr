@@ -1,6 +1,6 @@
 require 'd1rdl'
 require 'fsknmx'
-class Model < View
+class Model
 	@@dir = "data/models"
 	@@loaders = {
 		"mx"  => FsknMx,
@@ -9,10 +9,11 @@ class Model < View
 		"rdl" => D1rdl
 	}
 	@@models = {}
-	attr_accessor :model, :collision
-	def initialize file="ball1.mx"
-		super
-		@collision = :sphere
+	attr_accessor :model, :body, :scale
+	def pos; @body.nil? ? Vector.new(0,0,0) : @body.pos; end
+	def orientation; @body.nil? ? Vector.new(0,1,0).quat : @body.orientation; end
+	def initialize file="ball1.mx", body=nil
+		@body = body
 		@path = "#{@@dir}/#{file}"
 		ext = @path.split('.').last.downcase
 		@model ||= @@models[@path]
@@ -21,6 +22,8 @@ class Model < View
 		throw "cannot determine model loader" if loader.nil?
 		@model = loader.new @path
 		@attachments = []
+# TODO - need to scale mesh instead of using glScale
+		@scale = Vector.new 1, 1, 1
 	end
 	def draw mode=:both # :opaque , :trans
 		@model.draw mode
@@ -38,5 +41,18 @@ class Model < View
 	end
 	def detach model
 		@attachments.delete model
+	end
+	def load_matrix
+		up = orientation.vector :up
+		forward = orientation.vector :forward
+		right = orientation.vector :right
+		GL.MatrixMode(GL::MODELVIEW)
+		GL.MultMatrix [
+			right.x, right.y, right.z, 0.0,
+			up.x, up.y, up.z, 0.0,
+			forward.x, forward.y, forward.z, 0.0,
+			pos.x, pos.y, -pos.z, 1.0
+		]
+		GL.Scale( @scale.x, @scale.y, @scale.z )
 	end
 end
