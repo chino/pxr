@@ -25,6 +25,7 @@ module Physics
 		def self.sphere bodies
 			collisions = []
 			bodies.each do |moved|
+next
 				next unless moved.velocity.length2 > 0 # has movement
 				after = moved.dup
 				after.pos += after.velocity
@@ -106,8 +107,12 @@ module Physics
 		end
 		def drag
 			@bodies.each do |body|
-				body.velocity -= body.velocity * body.drag
-				body.rotation_velocity -= body.rotation_velocity * body.rotation_drag
+				if body.velocity.length2 > 0
+					body.velocity -= body.velocity * body.drag
+				end
+				if body.rotation_velocity.length2 > 0
+					body.rotation_velocity -= body.rotation_velocity * body.rotation_drag
+				end
 			end
 		end
 		def collisions
@@ -117,8 +122,12 @@ module Physics
 		end
 		def velocities
 			@bodies.each do |body|
-				body.pos += body.velocity
-				body.rotate body.rotation_velocity
+				if body.velocity.length2 > 0
+					body.pos += body.velocity
+				end
+				if body.rotation_velocity.length2 > 0
+					body.rotate body.rotation_velocity
+				end
 			end
 		end
 	end
