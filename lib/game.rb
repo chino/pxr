@@ -1,5 +1,5 @@
 class Game
-	attr_writer :display, :keyboard
+	attr_writer :display, :keyboard, :mouse_button
 	attr_reader :title, :w, :h, :depth
 	def initialize title="Window", w=640, h=480, fullscreen=false, depth=32
 
@@ -19,6 +19,7 @@ class Game
 
 		@display = Proc.new{}
 		@keyboard = Proc.new{}
+		@mouse_button = Proc.new{}
 
 		GL.Enable(GL::DEPTH_TEST)
 		GL.DepthFunc(GL::LESS) 
@@ -98,9 +99,9 @@ class Game
 			when SDL::Event2::MouseMotion
 				mouse_set event.x, event.y
 			when SDL::Event2::MouseButtonDown
-				puts "mouse button down #{event.button}"
+				@mouse_button.call event.button, true
 			when SDL::Event2::MouseButtonUp
-				puts "mouse button up #{event.button}"
+				@mouse_button.call event.button, false
 			end
 		end
 	end
