@@ -151,29 +151,15 @@ $updates << Proc.new{
 # Scene
 ####################################
 
-$quad = Quad.new
 $lines = Lines.new
-
 $level = Model.new("ship.mxv")
-
-$nubia = Model.new(
-	"nbia400.mxa",
-	sphere_body({
-		:pos => Vector.new(550,-500,-5000)
-	})
-)
-
-$xcop = Model.new(
-	"sxcop400.mxa",
-	sphere_body({
-		:pos => Vector.new(-100,100,100)
-	})
-)
+$nubia = Model.new( "nbia400.mxa",  sphere_body({ :pos => Vector.new(-550,-500,-5000) }) )
+$xcop  = Model.new( "sxcop400.mxa", sphere_body({ :pos => Vector.new(-600,-500,-5000) }) )
 
 $ball = Model.new(
 	"ball1.mx",
 	sphere_body({
-		:pos => Vector.new(3000,3000,3000),
+		:pos => Vector.new(30,30,30),
 		:rotation_velocity => Vector.new(5,5,5),
 		:rotation_drag => 0
 	})
@@ -182,14 +168,14 @@ $ball = Model.new(
 $ball2 = Model.new(
 	"ball1.mx",
 	sphere_body({
-		:pos => Vector.new(-3000,-3000,-3000),
+		:pos => Vector.new(-30,-30,-30),
 		:rotation_velocity => Vector.new(-5,-5,-5),
 		:rotation_drag => 0
 	})
 )
 
 # models to draw
-$objects = [$level,$lines,$xcop,$nubia,$ball,$ball2,$quad]
+$objects = [$level,$lines,$xcop,$nubia,$ball,$ball2]
 
 # draw routine
 $updates << Proc.new{
