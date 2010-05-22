@@ -41,7 +41,7 @@ module Physics
 	end
 	class Body
 		attr_accessor :pos, :orientation, :drag, :velocity, 
-				:rotation_velocity, :rotation_drag, :radius, :bounce
+				:rotation_velocity, :rotation_drag, :bounce
 		def initialize s={}
 			@pos = s[:pos] || Vector.new
 			@orientation = s[:orientation] || Quat.new(0, 0, 0, 1).normalize
@@ -88,6 +88,7 @@ module Physics
 		end
 	end
 	class SphereBody < Body
+		attr_accessor :radius
 		def initialize s={}
 			super(s)
 			@radius = s[:radius] || 50
