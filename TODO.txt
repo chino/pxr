@@ -28,3 +28,7 @@ Others
 
 	Auto propagation of network registered models.
 
+Performance
+
+	Allowing mouse grab gives me a few hundred fps more
+
