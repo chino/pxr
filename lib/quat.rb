@@ -7,6 +7,9 @@ class Quat
 	def length
 		Math.sqrt dot
 	end
+	def length2
+		dot
+	end
 	def dot q=self
 		@x * q.x + @y * q.y + @z * q.z + @w * q.w
 	end
@@ -14,6 +17,7 @@ class Quat
 		l = length
 		Quat.new( @x / l, @y / l, @z / l, @w / l )
 	end
+# todo - this probably only needs the dot product to avoid the sqrt
 	def normalized?
 		not length > 1.00001
 	end
