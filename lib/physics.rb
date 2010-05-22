@@ -46,9 +46,9 @@ module Physics
 			@pos = s[:pos] || Vector.new
 			@orientation = s[:orientation] || Quat.new(0, 0, 0, 1).normalize
 			@velocity = s[:velocity] || Vector.new
+			@drag = s[:drag] || 0.1
 			@rotation_velocity = s[:rotation_velocity] || Vector.new
 			@rotation_drag = s[:rotation_drag] || 0.5
-			@drag = s[:drag] || 0.1
 			@bounce = s[:bounce] || 0.5
 		end
 		# move body in eyespace

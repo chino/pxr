@@ -158,7 +158,9 @@ $xcop  = Model.new( "sxcop400.mxa", sphere_body({ :pos => Vector.new(-600,-500,-
 $ball = Model.new(
 	"ball1.mx",
 	sphere_body({
-		:pos => Vector.new(40,40,40),
+		:pos => Vector.new(120,120,120),
+		:velocity => Vector.new(-1,-1,-1),
+		:drag => 0,
 		:rotation_velocity => Vector.new(5,5,5),
 		:rotation_drag => 0
 	})
@@ -167,14 +169,27 @@ $ball = Model.new(
 $ball2 = Model.new(
 	"ball1.mx",
 	sphere_body({
-		:pos => Vector.new(-40,-40,-40),
+		:pos => Vector.new(-120,-120,-120),
+		:velocity => Vector.new(1,1,1),
+		:drag => 0,
+		:rotation_velocity => Vector.new(-5,-5,-5),
+		:rotation_drag => 0
+	})
+)
+
+$ball3 = Model.new(
+	"ball1.mx",
+	sphere_body({
+		:pos => Vector.new(-120,120,-120),
+		:velocity => Vector.new(1,-1,1),
+		:drag => 0,
 		:rotation_velocity => Vector.new(-5,-5,-5),
 		:rotation_drag => 0
 	})
 )
 
 # models to draw
-$objects = [$level,$lines,$xcop,$nubia,$ball,$ball2]
+$objects = [$level,$lines,$xcop,$nubia,$ball,$ball2,$ball3]
 
 # draw routine
 $updates << Proc.new{
