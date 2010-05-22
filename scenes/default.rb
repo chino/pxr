@@ -88,6 +88,37 @@ $updates << Proc.new{
 # Inputs
 ####################################
 
+$game.mouse_button = Proc.new{|button,pressed|
+	next unless pressed
+	pos = $camera.pos + $camera.orientation.vector(
+		Vector.new(0,0,$camera.radius*2)
+	)
+	$objects << Model.new(
+		"ball1.mx",
+		sphere_body({
+			:pos => pos,
+			:velocity => Vector.new(0,0,10),
+			:drag => 0,
+			:rotation_velocity => Vector.new(10,10,10),
+			:rotation_drag => 0
+		})
+	)
+}
+
+$updates << Proc.new{
+
+	x,y = $game.mouse_get
+
+	inputs = Vector.new x,y
+
+	# apply mouse accelleration
+	inputs += inputs * $turn_accell
+
+	# apply movement to velocity
+	$camera.rotation_velocity += inputs
+
+}
+
 $movement = Vector.new 0,0,0
 
 $game.keyboard = Proc.new{|key,pressed|
@@ -113,7 +144,7 @@ $game.keyboard = Proc.new{|key,pressed|
 	end
 }
 
-$apply_keyboard = Proc.new{
+$updates << Proc.new{
 	next unless $movement.length > 0
 
 	# convert movement into world coordinates
@@ -125,26 +156,6 @@ $apply_keyboard = Proc.new{
 	# apply movement to velocity
 	$camera.velocity += movement
 }
-
-$apply_mouse = Proc.new{
-
-	x,y = $game.mouse_get
-
-	inputs = Vector.new x,y
-
-	# apply mouse accelleration
-	inputs += inputs * $turn_accell
-
-	# apply movement to velocity
-	$camera.rotation_velocity += inputs
-
-}
-
-$updates << Proc.new{
-	$apply_mouse.call
-	$apply_keyboard.call
-}
-
 
 ####################################
 # Scene
