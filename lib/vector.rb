@@ -58,7 +58,9 @@ class Vector
 		)
 	end
 	def normalize
-		l = length; Vector.new( @x / l, @y / l, @z / l )
+		l = length
+		return Vector.new unless l > 0
+		Vector.new( @x / l, @y / l, @z / l )
 	end
 	def serialize repr=:full
 		case repr

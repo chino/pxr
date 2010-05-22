@@ -15,6 +15,7 @@ class Quat
 	end
 	def normalize
 		l = length
+		return Quat.new unless l > 0
 		Quat.new( @x / l, @y / l, @z / l, @w / l )
 	end
 # todo - this probably only needs the dot product to avoid the sqrt
