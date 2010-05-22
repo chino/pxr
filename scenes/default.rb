@@ -97,7 +97,7 @@ $game.mouse_button = Proc.new{|button,pressed|
 		"ball1.mx",
 		sphere_body({
 			:pos => pos,
-			:velocity => Vector.new(0,0,10),
+			:velocity => Vector.new(0,0,100),
 			:drag => 0,
 			:rotation_velocity => Vector.new(10,10,10),
 			:rotation_drag => 0
@@ -166,41 +166,26 @@ $level = Model.new( "ship.mxv" )
 $nubia = Model.new( "nbia400.mxa",  sphere_body({ :pos => Vector.new(-550,-500,-5000) }) )
 $xcop  = Model.new( "sxcop400.mxa", sphere_body({ :pos => Vector.new(-600,-500,-5000) }) )
 
-$ball = Model.new(
-	"ball1.mx",
-	sphere_body({
-		:pos => Vector.new(200,200,200),
-		:velocity => Vector.new(-1,-1,-1),
-		:drag => 0,
-		:rotation_velocity => Vector.new(5,5,5),
-		:rotation_drag => 0
-	})
-)
-
-$ball2 = Model.new(
-	"ball1.mx",
-	sphere_body({
-		:pos => Vector.new(-200,-200,-200),
-		:velocity => Vector.new(1,1,1),
-		:drag => 0,
-		:rotation_velocity => Vector.new(-5,-5,-5),
-		:rotation_drag => 0
-	})
-)
-
-$ball3 = Model.new(
-	"ball1.mx",
-	sphere_body({
-		:pos => Vector.new(-200,200,-200),
-		:velocity => Vector.new(1,-1,1),
-		:drag => 0,
-		:rotation_velocity => Vector.new(-5,-5,-5),
-		:rotation_drag => 0
-	})
-)
-
 # models to draw
-$objects = [$level,$lines,$xcop,$nubia,$ball,$ball2,$ball3]
+$objects = [$level,$lines,$xcop,$nubia]
+
+radius = 50
+diameter = radius * 2
+100.times do |x|
+	o = rand(x) - x/2
+	p = o * diameter
+	ball = Model.new(
+		"ball1.mx",
+		sphere_body({
+			:pos => Vector.new(p,p,p),
+			:velocity => Vector.new(rand(10),rand(10),rand(10)),
+			:drag => 0,
+			:radius => radius
+			
+		})
+	)
+	$objects << ball
+end
 
 # draw routine
 $updates << Proc.new{
