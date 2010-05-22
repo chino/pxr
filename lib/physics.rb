@@ -94,8 +94,8 @@ module Physics
 		end
 	end
 	class World
-		attr_accessor :bodies, :broadphase
-		def initialize broadphase=nil
+		attr_accessor :bodies
+		def initialize
 			@bodies = []
 		end
 		def update
