@@ -73,9 +73,8 @@ end
 # Camera
 ####################################
 
-$camera = sphere_body({
-	:pos => Vector.new(100,-50,500)
-})
+$camera = sphere_body({ :pos => Vector.new(0,0,1000) })
+$camera.rotate 0,180,180
 
 $updates << Proc.new{
 	Camera.place(
