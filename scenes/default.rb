@@ -73,7 +73,7 @@ end
 # Camera
 ####################################
 
-$camera = sphere_body({ :pos => Vector.new(0,0,1000) })
+$camera = sphere_body({ :pos => Vector.new(0,0,500) })
 $camera.rotate 0,180,180
 
 $updates << Proc.new{
@@ -158,7 +158,7 @@ $xcop  = Model.new( "sxcop400.mxa", sphere_body({ :pos => Vector.new(-600,-500,-
 $ball = Model.new(
 	"ball1.mx",
 	sphere_body({
-		:pos => Vector.new(30,30,30),
+		:pos => Vector.new(40,40,40),
 		:rotation_velocity => Vector.new(5,5,5),
 		:rotation_drag => 0
 	})
@@ -167,7 +167,7 @@ $ball = Model.new(
 $ball2 = Model.new(
 	"ball1.mx",
 	sphere_body({
-		:pos => Vector.new(-30,-30,-30),
+		:pos => Vector.new(-40,-40,-40),
 		:rotation_velocity => Vector.new(-5,-5,-5),
 		:rotation_drag => 0
 	})
