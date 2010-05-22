@@ -1,5 +1,5 @@
 require 'mesh'
-class Point
+class Point < Model
 	include Mesh
 	attr_writer :size
 	def initialize *args
@@ -10,7 +10,5 @@ class Point
 		@primitives = []
 		@verts << { :vector => [0,0,0], :rgba => [255,255,255,255] }
 		@primitives << { :texture => nil, :verts => [0] }
-		@poisition = Vector.new
-		@orientation = Quat.new
 	end
 end
