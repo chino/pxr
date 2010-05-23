@@ -150,7 +150,7 @@ module Physics
 		end
 		def set body
 			delete body
-			quad = body.pos.to_a.map{|i| (i.to_f / @size).to_i }
+			quad = (body.pos / @size).to_a.map{|f|f.to_i}
 			quad[2] = -quad[2]
 			body.quadrant = quad
 			setup quad
