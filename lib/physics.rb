@@ -70,7 +70,7 @@ module Physics
 	end
 	class Body
 		attr_accessor :pos, :orientation, :drag, :velocity, 
-				:rotation_velocity, :rotation_drag, :bounce, :mass, :quadrant
+				:rotation_velocity, :rotation_drag, :bounce, :mass
 		def initialize s={}
 			@pos = s[:pos] || Vector.new
 			@orientation = s[:orientation] || Quat.new(0, 0, 0, 1).normalize
@@ -80,7 +80,6 @@ module Physics
 			@rotation_drag = s[:rotation_drag] || 0.5
 			@bounce = s[:bounce] || 0.5
 			@mass = s[:mass] || 1
-			@quadrant = nil
 		end
 		# move body in eyespace
 		# vector { x=right-left, y=up-down, z=forward-back }
@@ -133,8 +132,12 @@ module Physics
 			@size = size
 		end
 		def delete body
-			return if body.quadrant.nil?
-			@quadrants[body.quadrant].delete(body) unless body.quadrant.nil?
+			quadrant = nil
+			@quadrants.each do |q,bodies|
+				unless bodies.delete(body).nil?
+					quadrant = q
+				end
+			end
 =begin
 			if @neighbors[body.quadrant]
 				@neighbors[body.quadrant].each do |neighbor|
@@ -145,14 +148,14 @@ module Physics
 			end
 			@neighbors.delete body.quadrant
 =end
-			@quadrants.delete(body.quadrant) unless @quadrants[body.quadrant].length > 0
-			body.quadrant = nil
+			if not quadrant.nil? and @quadrants[quadrant].length > 0
+				@quadrants.delete(quadrant)
+			end
 		end
 		def set body
 			delete body
 			quad = (body.pos / @size).to_a.map{|f|f.to_i}
 			quad[2] = -quad[2]
-			body.quadrant = quad
 			setup quad
 			@quadrants[quad] << body
 		end
