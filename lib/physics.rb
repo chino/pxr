@@ -25,7 +25,6 @@ module Physics
 		def self.sphere bodies
 			collisions = []
 			bodies.each do |moved|
-next
 				next unless moved.velocity.length2 > 0 # has movement
 				after = moved.dup
 				after.pos += after.velocity
