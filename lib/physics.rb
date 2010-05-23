@@ -126,7 +126,7 @@ module Physics
 	end
 	class Quadrants
 		attr_accessor :size
-		def initialize size=1000
+		def initialize size=200
 			@quadrants = {}
 			@neighbors = {}
 			@size = size
@@ -138,19 +138,8 @@ module Physics
 					quadrant = q
 				end
 			end
-=begin
-			if @neighbors[body.quadrant]
-				@neighbors[body.quadrant].each do |neighbor|
-					unless @neighbors[neighbor].nil?
-						@neighbors[neighbor].delete(body.quadrant)
-					end
-				end
-			end
-			@neighbors.delete body.quadrant
-=end
-			if not quadrant.nil? and @quadrants[quadrant].length > 0
-				@quadrants.delete(quadrant)
-			end
+			return if quadrant.nil? or @quadrants[quadrant].length > 0
+			@quadrants.delete(quadrant)
 		end
 		def set body
 			delete body
@@ -162,30 +151,20 @@ module Physics
 		def setup quad
 			return if @quadrants[quad]
 			@quadrants[quad] = [] 
-			build_neighbors quad
 		end
-		def build_neighbors quad
-=begin
-			@quadrants.each do |name,bodies|
-				next unless name[0] - quad[0] < 1
-				next unless name[1] - quad[1] < 1
-				next unless name[2] - quad[2] < 1
-				# only add neighbor relation to one group to limit searching later
-				@neighbors[name] = [] unless @neighbors[name]
-				@neighbors[name] << quad
-				#@neighbors[quad] = [] unless @neighbors[quad]
-				#@neighbors[quad] << name
-			end
-=end
+		def neighbors a, b
+			return false unless (a[0] - b[0]).abs < 2
+			return false unless (a[1] - b[1]).abs < 2
+			return false unless (a[2] - b[2]).abs < 2
+			return true
 		end
 		def each &block
 			@quadrants.each do |quadrant,bodies|
 				collection = bodies.dup
-=begin
-				@neighbors[quadrant].each do |quadrant|
-					collection << @quadrants[quadrant]
-				end unless @neighbors[quadrant].nil?
-=end
+				@quadrants.each do |q,bds|
+					next unless neighbors quadrant, q
+					collection << bds
+				end
 				yield collection.flatten.compact
 			end
 		end
