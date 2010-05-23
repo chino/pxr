@@ -41,6 +41,13 @@ class Vector
 			@z * i
 		)
 	end
+	def / d
+		Vector.new(
+			@x / d,
+			@y / d,
+			@x / d
+		)
+	end
 	def dot q=self
 		@x * q.x + @y * q.y + @z * q.z
 	end
