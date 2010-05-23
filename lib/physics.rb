@@ -33,18 +33,36 @@ module Physics
 	module BroadPhase
 		def self.sphere bodies
 			collisions = []
-			bodies.each_with_index do |moved,i|
-				next unless moved.velocity.length2 > 0 # has movement
-				after = moved.dup
-				after.pos += after.velocity
+			bodies.each_with_index do |a,i|
+				if a.velocity.length2 > 0
+					ae = a.dup
+					ae.pos += ae.velocity
+				end
 				j = i + 1
-				while j < bodies.length
-					body = bodies[j]
-					if Collision::Test::sphere_sphere body, after
-						collisions << [body,moved]
-						debug "collision"
+				for j in (i+1..bodies.length-1) # only check each pair once
+					b = bodies[j]
+
+					if a.velocity.length2 > 0
+						if Collision::Test::sphere_sphere( ae, b ) # test a's movement
+							collisions << [a,b]
+							next
+						end
 					end
-					j += 1
+
+					next unless b.velocity.length2 > 0
+
+					be = b.dup
+					be.pos += be.velocity
+					if Collision::Test::sphere_sphere( a, be ) # test b's movement
+						collisions << [a,b]
+						next
+					end
+
+					next unless a.velocity.length2 > 0
+
+					if Collision::Test::sphere_sphere( ae, be ) # test a's and b's movement
+						collisions << [a,b]
+					end
 				end
 			end
 			collisions
@@ -52,7 +70,7 @@ module Physics
 	end
 	class Body
 		attr_accessor :pos, :orientation, :drag, :velocity, 
-				:rotation_velocity, :rotation_drag, :bounce, :mass
+				:rotation_velocity, :rotation_drag, :bounce, :mass, :quadrant
 		def initialize s={}
 			@pos = s[:pos] || Vector.new
 			@orientation = s[:orientation] || Quat.new(0, 0, 0, 1).normalize
@@ -62,6 +80,7 @@ module Physics
 			@rotation_drag = s[:rotation_drag] || 0.5
 			@bounce = s[:bounce] || 0.5
 			@mass = s[:mass] || 1
+			@quadrant = nil
 		end
 		# move body in eyespace
 		# vector { x=right-left, y=up-down, z=forward-back }
@@ -106,10 +125,106 @@ module Physics
 			@radius = s[:radius] || 50
 		end
 	end
+	class Quadrants
+		attr_accessor :size
+		def initialize size=1000
+			@quadrants = {}
+			@neighbors = {}
+			@size = size
+		end
+		def delete body
+			return if body.quadrant.nil?
+			@quadrants[body.quadrant].delete(body) unless body.quadrant.nil?
+=begin
+			if @neighbors[body.quadrant]
+				@neighbors[body.quadrant].each do |neighbor|
+					unless @neighbors[neighbor].nil?
+						@neighbors[neighbor].delete(body.quadrant)
+					end
+				end
+			end
+			@neighbors.delete body.quadrant
+=end
+			@quadrants.delete(body.quadrant) unless @quadrants[body.quadrant].length > 0
+			body.quadrant = nil
+		end
+		def set body
+			delete body
+			quad = (body.pos / @size).to_a.map{|f|f.to_i}
+			quad[2] = -quad[2]
+			body.quadrant = quad
+			setup quad
+			@quadrants[quad] << body
+		end
+		def setup quad
+			return if @quadrants[quad]
+			@quadrants[quad] = [] 
+			build_neighbors quad
+		end
+		def build_neighbors quad
+=begin
+			@quadrants.each do |name,bodies|
+				next unless name[0] - quad[0] < 1
+				next unless name[1] - quad[1] < 1
+				next unless name[2] - quad[2] < 1
+				# only add neighbor relation to one group to limit searching later
+				@neighbors[name] = [] unless @neighbors[name]
+				@neighbors[name] << quad
+				#@neighbors[quad] = [] unless @neighbors[quad]
+				#@neighbors[quad] << name
+			end
+=end
+		end
+		def each &block
+			@quadrants.each do |quadrant,bodies|
+				collection = bodies.dup
+=begin
+				@neighbors[quadrant].each do |quadrant|
+					collection << @quadrants[quadrant]
+				end unless @neighbors[quadrant].nil?
+=end
+				yield collection.flatten.compact
+			end
+		end
+		def draw
+			lines = []
+			@quadrants.keys.each do |x,y,z|
+				x,y,z,s = x*@size, y*@size, z*@size, @size
+				if x == 0
+					lines << [ [x,y,z], [ x+s, y,    z    ] ]
+					lines << [ [x,y,z], [ x-s, y,    z    ] ]
+				else
+					sx = x < 0 ? -size : size
+					lines << [ [x,y,z], [ x+sx, y,    z    ] ]
+				end
+				if y == 0
+					lines << [ [x,y,z], [ x,    y+s, z    ] ]
+					lines << [ [x,y,z], [ x,    y-s, z    ] ]
+				else
+					sy = y < 0 ? -size : size
+					lines << [ [x,y,z], [ x,    y+sy, z    ] ]
+				end
+				if z == 0
+					lines << [ [x,y,z], [ x,    y,    z+s ] ]
+					lines << [ [x,y,z], [ x,    y,    z-s ] ]
+				else
+					sz = z < 0 ? -size : size
+					lines << [ [x,y,z], [ x,    y,    z+sz ] ]
+				end
+			end
+			@lines = Line.new lines
+			@lines.draw
+		end
+	end
 	class World
-		attr_accessor :bodies
+		attr_accessor :bodies, :quadrants
 		def initialize
 			@bodies = []
+			@quadrants = Quadrants.new
+		end
+		def add body
+			@bodies << body
+			@quadrants.set body
 		end
 		def update
 			drag
@@ -127,14 +242,21 @@ module Physics
 			end
 		end
 		def collisions
-			BroadPhase.sphere( @bodies ).each do |body,moved|
-				Collision::Response::sphere_sphere body, moved
+			pairs = []
+			@quadrants.each do |bodies|
+				BroadPhase.sphere( bodies ).each do |pair|
+					pairs << pair
+				end
+			end
+			pairs.each do |a,b|
+				Collision::Response::sphere_sphere a, b
 			end
 		end
 		def velocities
 			@bodies.each do |body|
 				if body.velocity.length2 > 0
 					body.pos += body.velocity
+					@quadrants.set body
 				end
 				if body.rotation_velocity.length2 > 0
 					body.rotate body.rotation_velocity

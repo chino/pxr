@@ -27,7 +27,7 @@ $updates << Proc.new{
 
 def sphere_body s
 	body = Physics::SphereBody.new(s)
-	$world.bodies << body
+	$world.add body
 	body
 end
 
@@ -55,7 +55,7 @@ if $options[:peer][:address]
 		player = $players[ip]
 		if player.nil?
 			player = $players[ip] = Model.new("nbia400.mxa")
-			$objects << player
+			$models << player
 		end
 		player.unserialize! data if data
 
@@ -90,9 +90,9 @@ $updates << Proc.new{
 
 $game.mouse_button = Proc.new{|button,pressed|
 	next unless pressed
-	pos = $camera.pos + $camera.orientation.vector( Vector.new(0,0,$camera.radius*2) )
+	pos = $camera.pos + $camera.orientation.vector( Vector.new(0,0,$camera.radius*3) )
 	vel = $camera.orientation.vector( Vector.new(0,0,100) )
-	$objects << Model.new(
+	$models << Model.new(
 		"ball1.mx",
 		sphere_body({
 			:pos => pos,
@@ -160,16 +160,19 @@ $updates << Proc.new{
 # Scene
 ####################################
 
-$lines = Lines.new
-$level = Model.new( "ship.mxv" )
-$nubia = Model.new( "nbia400.mxa",  sphere_body({ :pos => Vector.new(-550,-500,-5000) }) )
-$xcop  = Model.new( "sxcop400.mxa", sphere_body({ :pos => Vector.new(-600,-500,-5000) }) )
+$models = [] # objects to draw
 
-# models to draw
-$objects = [$level,$lines,$xcop,$nubia]
+def model *args
+	$models << Model.new( *args )
+end
+
+#model Lines.new
+model "ship.mxv"
+model "nbia400.mxa",  sphere_body({ :pos => Vector.new(-550.0,-500.0,-5000.0) }) 
+model "sxcop400.mxa", sphere_body({ :pos => Vector.new(-600.0,-500.0,-5000.0) }) 
 
 100.times do |x|
-	$objects << Model.new(
+	model(
 		"ball1.mx",
 		sphere_body({
 			:pos => Vector.new( rand(2000)-1000, rand(2000)-1000, rand(2000)-1000 ),
@@ -182,7 +185,7 @@ end
 # draw routine
 $updates << Proc.new{
 	# draw solid
-	$objects.each do |o|
+	$models.each do |o|
 		GL.PushMatrix
 		o.load_matrix
 		o.draw :opaque
@@ -190,13 +193,14 @@ $updates << Proc.new{
 	end
 	# draw transparent
 	Mesh.set_trans
-	$objects.each do |o|
+	$models.each do |o|
 		GL.PushMatrix
 		o.load_matrix
 		o.draw :trans
 		GL.PopMatrix
 	end
 	Mesh.unset_trans
+	$world.quadrants.draw
 }
 
 
