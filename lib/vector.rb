@@ -45,7 +45,7 @@ class Vector
 		Vector.new(
 			@x / d,
 			@y / d,
-			@x / d
+			@z / d
 		)
 	end
 	def dot q=self
