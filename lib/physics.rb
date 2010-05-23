@@ -33,16 +33,18 @@ module Physics
 	module BroadPhase
 		def self.sphere bodies
 			collisions = []
-			bodies.each do |moved|
+			bodies.each_with_index do |moved,i|
 				next unless moved.velocity.length2 > 0 # has movement
 				after = moved.dup
 				after.pos += after.velocity
-				bodies.each do |body|
-					next if body == moved
+				j = i + 1
+				while j < bodies.length
+					body = bodies[j]
 					if Collision::Test::sphere_sphere body, after
 						collisions << [body,moved]
 						debug "collision"
 					end
+					j += 1
 				end
 			end
 			collisions
