@@ -6,7 +6,7 @@ module Physics
 			def self.sphere_sphere a, b
 				distance = a.radius + b.radius
 				vector = a.pos - b.pos
-				vector.dot <= distance**2
+				vector.length2 <= distance**2
 			end
 		end
 		module Response
