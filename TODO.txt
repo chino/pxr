@@ -28,6 +28,8 @@ Others
 
 	Auto propagation of network registered models.
 
+	Is velocity potentially going negative?
+
 Performance
 
 	Allowing mouse grab gives me a few hundred fps more
