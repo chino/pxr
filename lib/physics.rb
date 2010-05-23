@@ -10,14 +10,23 @@ module Physics
 			end
 		end
 		module Response
-			def self.sphere_sphere body, moved
-				v = body.pos - moved.pos
+			def self.sphere_sphere a, b
+				v = a.pos - b.pos
 				vn = v.normalize
-				mv = vn * vn.dot( moved.velocity )
-				bounce = body.bounce + moved.bounce
-				mv += mv * bounce
-				moved.velocity -= mv
-				moved.pos += moved.velocity
+				bounce = a.bounce + b.bounce
+				u1 = vn * vn.dot(a.velocity) # collision component of a's velocity
+				u2 = vn * vn.dot(b.velocity) # collision component of b's velocity
+				a.velocity -= u1 # remove collision component from velocity
+				b.velocity -= u2 # remove collision component from velocity
+				vi = u1 * a.mass + u2 * b.mass # both objects would have the same velocity if inelastic
+				vea = u1 * (a.mass - b.mass) + u2 * 2 * b.mass # velocity for elastic collision for object a
+				veb = u2 * (b.mass - a.mass) + u1 * 2 * a.mass # velocity for elastic collision for object b
+				fva = vea * bounce + vi * (1 - bounce) # if bounce = 1, use elastic; if bounce = 0, use inelastic
+				fvb = veb * bounce + vi * (1 - bounce) # for values between 0 and 1, pick a point in the middle
+				fva /= (a.mass + b.mass) # final velocity of a
+				fvb /= (a.mass + b.mass) # final velocity of b
+				a.velocity += fva
+				b.velocity += fvb
 			end
 		end
 	end
@@ -41,7 +50,7 @@ module Physics
 	end
 	class Body
 		attr_accessor :pos, :orientation, :drag, :velocity, 
-				:rotation_velocity, :rotation_drag, :bounce
+				:rotation_velocity, :rotation_drag, :bounce, :mass
 		def initialize s={}
 			@pos = s[:pos] || Vector.new
 			@orientation = s[:orientation] || Quat.new(0, 0, 0, 1).normalize
@@ -50,6 +59,7 @@ module Physics
 			@rotation_velocity = s[:rotation_velocity] || Vector.new
 			@rotation_drag = s[:rotation_drag] || 0.5
 			@bounce = s[:bounce] || 0.5
+			@mass = s[:mass] || 1
 		end
 		# move body in eyespace
 		# vector { x=right-left, y=up-down, z=forward-back }
