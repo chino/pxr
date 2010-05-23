@@ -171,7 +171,7 @@ model "ship.mxv"
 model "nbia400.mxa",  sphere_body({ :pos => Vector.new(-550.0,-500.0,-5000.0) }) 
 model "sxcop400.mxa", sphere_body({ :pos => Vector.new(-600.0,-500.0,-5000.0) }) 
 
-100.times do |x|
+50.times do |x|
 	model(
 		"ball1.mx",
 		sphere_body({
