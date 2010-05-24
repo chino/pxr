@@ -45,27 +45,21 @@ if $options[:peer][:address]
 	)
 
 	$players = {}
-	$last_send = Time.now
 
 	$updates << Proc.new {
 
+		# send my position
+		$network.send $camera.serialize
+
 		# read data from players
 		data,info = $network.pump 
+		next if data.nil?
 		something,port,name,ip = info
-		player = $players[ip]
-		if player.nil?
-			player = $players[ip] = Model.new("nbia400.mxa")
-			$models << player
-		end
-		player.unserialize! data if data
-
-		# send current update
-		#if (Time.now - $last_send).to_i > (60/10)
-			$network.send $camera.serialize
-			$last_send = Time.now
-		#end
+		$players[ip] = model( "nbia400.mxa", sphere_body({}) ) if $players[ip].nil?
+		$players[ip].body.unserialize! data 
 
 	}
+
 end
 
 
@@ -163,7 +157,9 @@ $updates << Proc.new{
 $models = [] # objects to draw
 
 def model *args
-	$models << Model.new( *args )
+	model = Model.new( *args )
+	$models << model
+	model
 end
 
 #model Lines.new
