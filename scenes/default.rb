@@ -171,17 +171,6 @@ model "ship.mxv"
 model "nbia400.mxa",  sphere_body({ :pos => Vector.new(-550.0,-500.0,-5000.0) }) 
 model "sxcop400.mxa", sphere_body({ :pos => Vector.new(-600.0,-500.0,-5000.0) }) 
 
-50.times do |x|
-	model(
-		"ball1.mx",
-		sphere_body({
-			:pos => Vector.new( rand(2000)-1000, rand(2000)-1000, rand(2000)-1000 ),
-			:velocity => Vector.new(rand(10)-5,rand(10)-5,rand(10)-5),
-			:drag => 0
-		})
-	)
-end
-
 # draw routine
 $updates << Proc.new{
 	# draw solid
