@@ -178,7 +178,7 @@ module Physics
 				draw_quad( q ).each do |line|
 					lines << line
 				end
-				neighbors( q ) do |q|
+				neighbors( q ) do |q,bds|
 					draw_quad(q,[255,0,0,0]).each do |line|
 						lines << line
 					end
