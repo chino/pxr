@@ -126,7 +126,7 @@ module Physics
 	end
 	class Quadrants
 		attr_accessor :size
-		def initialize size=200
+		def initialize size=500
 			@quadrants = {}
 			@neighbors = {}
 			@size = size
@@ -152,50 +152,67 @@ module Physics
 			return if @quadrants[quad]
 			@quadrants[quad] = [] 
 		end
-		def neighbors a, b
+		def neighbors? a, b
+#			return false if a == b
 			return false unless (a[0] - b[0]).abs < 2
 			return false unless (a[1] - b[1]).abs < 2
 			return false unless (a[2] - b[2]).abs < 2
 			return true
 		end
+		def neighbors quadrant, &block
+			@quadrants.each do |q,bds|
+				next unless neighbors?( quadrant, q )
+				yield q,bds
+			end
+		end
 		def each &block
 			@quadrants.each do |quadrant,bodies|
 				collection = bodies.dup
-				@quadrants.each do |q,bds|
-					next unless neighbors quadrant, q
-					collection << bds
-				end
+				neighbors(quadrant) {|q,bds| collection << bds }
 				yield collection.flatten.compact
 			end
 		end
 		def draw
 			lines = []
-			@quadrants.keys.each do |x,y,z|
-				x,y,z,s = x*@size, y*@size, z*@size, @size
-				if x == 0
-					lines << [ [x,y,z], [ x+s, y,    z    ] ]
-					lines << [ [x,y,z], [ x-s, y,    z    ] ]
-				else
-					sx = x < 0 ? -size : size
-					lines << [ [x,y,z], [ x+sx, y,    z    ] ]
+			@quadrants.keys.each do |q|
+				draw_quad( q ).each do |line|
+					lines << line
 				end
-				if y == 0
-					lines << [ [x,y,z], [ x,    y+s, z    ] ]
-					lines << [ [x,y,z], [ x,    y-s, z    ] ]
-				else
-					sy = y < 0 ? -size : size
-					lines << [ [x,y,z], [ x,    y+sy, z    ] ]
-				end
-				if z == 0
-					lines << [ [x,y,z], [ x,    y,    z+s ] ]
-					lines << [ [x,y,z], [ x,    y,    z-s ] ]
-				else
-					sz = z < 0 ? -size : size
-					lines << [ [x,y,z], [ x,    y,    z+sz ] ]
+				neighbors( q ) do |q|
+					draw_quad(q,[255,0,0,0]).each do |line|
+						lines << line
+					end
 				end
 			end
 			@lines = Line.new lines
 			@lines.draw
+		end
+		def draw_quad q,c=nil
+			x,y,z = q
+			x,y,z,s = x*@size, y*@size, z*@size, @size
+			lines = []
+			if x == 0
+				lines << [ [x,y,z], [ x+s, y, z ], c ]
+				lines << [ [x,y,z], [ x-s, y, z ], c ]
+			else
+				sx = x < 0 ? -size : size
+				lines << [ [x,y,z], [ x+sx, y, z ], c ]
+			end
+			if y == 0
+				lines << [ [x,y,z], [ x, y+s, z ], c ]
+				lines << [ [x,y,z], [ x, y-s, z ], c ]
+			else
+				sy = y < 0 ? -size : size
+				lines << [ [x,y,z], [ x, y+sy, z ], c ]
+			end
+			if z == 0
+				lines << [ [x,y,z], [ x, y, z+s ], c ]
+				lines << [ [x,y,z], [ x, y, z-s ], c ]
+			else
+				sz = z < 0 ? -size : size
+				lines << [ [x,y,z], [ x, y, z+sz ], c ]
+			end
+			return lines
 		end
 	end
 	class World
