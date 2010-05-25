@@ -10,7 +10,7 @@ class Line < Model
 			@verts << { :vector => start, :rgba => color }
 			@verts << { :vector => stop, :rgba => color }
 			@primitives << {
-				:texture => nil, 
+				:texture => texture, 
 				:verts => [
 					@verts.length-2,
 					@verts.length-1
