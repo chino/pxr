@@ -70,7 +70,7 @@ module Physics
 	end
 	class Body
 		attr_accessor :pos, :orientation, :drag, :velocity, 
-				:rotation_velocity, :rotation_drag, :bounce, :mass
+				:rotation_velocity, :rotation_drag, :bounce, :mass, :quadrant
 		def initialize s={}
 			@pos = s[:pos] || Vector.new
 			@orientation = s[:orientation] || Quat.new(0, 0, 0, 1).normalize
@@ -80,6 +80,7 @@ module Physics
 			@rotation_drag = s[:rotation_drag] || 0.5
 			@bounce = s[:bounce] || 0.5
 			@mass = s[:mass] || 1
+			@quadrant = nil
 		end
 		# move body in eyespace
 		# vector { x=right-left, y=up-down, z=forward-back }
@@ -123,23 +124,31 @@ module Physics
 			super(s)
 			@radius = s[:radius] || 50
 		end
+		def compute_radius triangles
+			biggest = 0
+			center = Vector.new
+			triangles.each do |triangle|
+				triangle[:verts].each do |vert|
+					v = Vector.new(vert)
+					r = (center - v).length2
+					biggest = r if r > biggest
+				end
+			end
+			Math.sqrt(biggest)
+		end
 	end
 	class Quadrants
 		attr_accessor :size
-		def initialize size=500
+		def initialize size=100
 			@quadrants = {}
-			@neighbors = {}
 			@size = size
 		end
 		def delete body
-			quadrant = nil
-			@quadrants.each do |q,bodies|
-				unless bodies.delete(body).nil?
-					quadrant = q
-				end
-			end
-			return if quadrant.nil? or @quadrants[quadrant].length > 0
-			@quadrants.delete(quadrant)
+			return if body.quadrant.nil?
+			@quadrants[body.quadrant].delete body
+			return if @quadrants[body.quadrant].length > 0
+			@quadrants.delete(body.quadrant)
+			body.quadrant = nil
 		end
 		def set body
 			delete body
@@ -147,13 +156,14 @@ module Physics
 			quad[2] = -quad[2]
 			setup quad
 			@quadrants[quad] << body
+			body.quadrant = quad
 		end
 		def setup quad
 			return if @quadrants[quad]
 			@quadrants[quad] = [] 
 		end
 		def neighbors? a, b
-#			return false if a == b
+			return false if a == b
 			return false unless (a[0] - b[0]).abs < 2
 			return false unless (a[1] - b[1]).abs < 2
 			return false unless (a[2] - b[2]).abs < 2
@@ -243,6 +253,7 @@ module Physics
 		def collisions
 			pairs = []
 			@quadrants.each do |bodies|
+#bodies = @bodies
 				BroadPhase.sphere( bodies ).each do |pair|
 					pairs << pair
 				end
