@@ -9,7 +9,7 @@ require 'pp'
 $options = {
 	:debug => false,
 	:profile => false,
-	:scene => "default",
+	:scene => "scenes/default.rb",
 	:port => 2300,
 	:peer => {
 		:address => false,
@@ -50,7 +50,6 @@ ROOT=File.dirname($0)
 DATA="#{ROOT}/data"
 LIB="#{ROOT}/lib"
 CONF="#{ROOT}/conf"
-SCENES="#{ROOT}/scenes"
 PROFILE="#{ROOT}/profile.txt"
 SCENE=$options[:scene]
 DEBUG=$options[:debug]
@@ -79,4 +78,4 @@ if $options[:profile]
 end
 
 # load scene
-require "#{SCENES}/#{$options[:scene]}"
+require "#{$options[:scene]}"
