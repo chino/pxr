@@ -2,13 +2,20 @@ require 'mesh'
 class Point < Model
 	include Mesh
 	attr_writer :size
-	def initialize *args
-		super *args
+	def initialize points=[]
+		@scale = Vector.new 1,1,1
+		@body = nil
+		@pos = Vector.new
 		@render_type = GL::POINTS
 		@size = 1.0
 		@verts = []
 		@primitives = []
-		@verts << { :vector => [0,0,0], :rgba => [255,255,255,255] }
-		@primitives << { :texture => nil, :verts => [0] }
+		points.each do |pos,color,texture|
+			color ||= [255,255,255,255]
+			@verts << { :vector => pos, :rgba => color }
+			@primitives << { :texture => texture, :verts => [
+				@verts.length - 1
+			]}
+		end
 	end
 end
