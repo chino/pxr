@@ -1,9 +1,13 @@
 class Model
 	@@dir = "data/models"
 	@@models = {}
-	attr_accessor :model, :body, :scale
-	def pos; @body.nil? ? Vector.new(0,0,0) : @body.pos; end
-	def orientation; @body.nil? ? Vector.new(0,1,0).quat : @body.orientation; end
+	attr_accessor :model, :body, :scale, :pos, :orientation
+	def pos
+		@body.nil? ? @pos||=Vector.new : @body.pos
+	end
+	def orientation
+		@body.nil? ? @orientation||=Vector.new(0,1,0).quat : @body.orientation
+	end
 	def initialize file="ball1.mx", body=nil
 		@body = body
 		@path = "#{@@dir}/#{file}"
