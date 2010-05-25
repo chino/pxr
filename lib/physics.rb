@@ -14,6 +14,8 @@ module Physics
 				v = a.pos - b.pos
 				vn = v.normalize
 				bounce = a.bounce + b.bounce
+				# http://en.wikipedia.org/wiki/Inelastic_collision
+				# http://en.wikipedia.org/wiki/Elastic_collision
 				u1 = vn * vn.dot(a.velocity) # collision component of a's velocity
 				u2 = vn * vn.dot(b.velocity) # collision component of b's velocity
 				a.velocity -= u1 # remove collision component from velocity
@@ -124,17 +126,15 @@ module Physics
 			super(s)
 			@radius = s[:radius] || 50
 		end
-		def compute_radius triangles
+		def compute_radius verts
 			biggest = 0
 			center = Vector.new
-			triangles.each do |triangle|
-				triangle[:verts].each do |vert|
-					v = Vector.new(vert)
-					r = (center - v).length2
-					biggest = r if r > biggest
-				end
+			verts.each do |vert|
+				v = Vector.new(vert[:vector])
+				r = (center - v).length2
+				biggest = r if r > biggest
 			end
-			Math.sqrt(biggest)
+			@radius = Math.sqrt(biggest)
 		end
 	end
 	class Quadrants
@@ -253,7 +253,6 @@ module Physics
 		def collisions
 			pairs = []
 			@quadrants.each do |bodies|
-#bodies = @bodies
 				BroadPhase.sphere( bodies ).each do |pair|
 					pairs << pair
 				end
