@@ -160,10 +160,11 @@ $updates << Proc.new{
 
 $models = [] # objects to draw
 
-def model *args
-	model = Model.new( *args )
-	$models << model
-	model
+def model file, body=nil
+	m = Model.new( file, body )
+	body.compute_radius m.model.verts unless body.nil?
+	$models << m
+	m
 end
 
 #model Lines.new

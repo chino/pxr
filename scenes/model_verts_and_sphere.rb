@@ -167,7 +167,7 @@ end
 
 $b = sphere_body({ :pos => Vector.new( 0,0,0 ) })
 m = model( "xcop400.mxa", $b )
-$b.radius = $b.compute_radius( m.model.verts )
+$b.compute_radius( m.model.verts )
 puts "radius = " + $b.radius.to_s
 
 verts = []; m.model.verts.each do |vert|
