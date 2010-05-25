@@ -90,16 +90,13 @@ $game.mouse_button = Proc.new{|button,pressed|
 	next unless pressed
 	pos = $camera.pos + $camera.orientation.vector( Vector.new(0,0,$camera.radius*3) )
 	vel = $camera.orientation.vector( Vector.new(0,0,100) )
-	$models << Model.new(
-		"ball1.mx",
-		sphere_body({
+	model( "ball1.mx", sphere_body({
 			:pos => pos,
 			:velocity => vel,
 			:drag => 0,
 			:rotation_velocity => Vector.new(10,10,10),
 			:rotation_drag => 0
-		})
-	)
+	}))
 }
 
 $updates << Proc.new{
