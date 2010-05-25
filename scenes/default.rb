@@ -164,8 +164,8 @@ end
 
 #model Lines.new
 model "ship.mxv"
-model "nbia400.mxa",  sphere_body({ :pos => Vector.new(-550.0,-500.0,-5000.0) }) 
-model "sxcop400.mxa", sphere_body({ :pos => Vector.new(-600.0,-500.0,-5000.0) }) 
+model "nbia400.mxa", sphere_body({ :pos => Vector.new(-550.0,-500.0,-5000.0) }) 
+model "xcop400.mxa", sphere_body({ :pos => Vector.new(-600.0,-500.0,-5000.0) }) 
 
 # draw routine
 $updates << Proc.new{
