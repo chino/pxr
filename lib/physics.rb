@@ -72,7 +72,7 @@ module Physics
 	end
 	class Body
 		attr_accessor :pos, :orientation, :drag, :velocity, 
-				:rotation_velocity, :rotation_drag, :bounce, :mass, :quadrant
+				:rotation_velocity, :rotation_drag, :bounce, :mass, :cell
 		def initialize s={}
 			@pos = s[:pos] || Vector.new
 			@orientation = s[:orientation] || Quat.new(0, 0, 0, 1).normalize
@@ -82,7 +82,7 @@ module Physics
 			@rotation_drag = s[:rotation_drag] || 0.5
 			@bounce = s[:bounce] || 0.5
 			@mass = s[:mass] || 1
-			@quadrant = nil
+			@cell = nil
 		end
 		# move body in eyespace
 		# vector { x=right-left, y=up-down, z=forward-back }
@@ -137,30 +137,30 @@ module Physics
 			@radius = Math.sqrt(biggest)
 		end
 	end
-	class Quadrants
+	class Grid
 		attr_accessor :size
 		def initialize size=100
-			@quadrants = {}
+			@grid = {}
 			@size = size
 		end
 		def delete body
-			return if body.quadrant.nil?
-			@quadrants[body.quadrant].delete body
-			return if @quadrants[body.quadrant].length > 0
-			@quadrants.delete(body.quadrant)
-			body.quadrant = nil
+			return if body.cell.nil?
+			@grid[body.cell].delete body
+			return if @grid[body.cell].length > 0
+			@grid.delete(body.cell)
+			body.cell = nil
 		end
 		def set body
 			delete body
-			quad = (body.pos / @size).to_a.map{|f|f.to_i}
-			quad[2] = -quad[2]
-			setup quad
-			@quadrants[quad] << body
-			body.quadrant = quad
+			cell = (body.pos / @size).to_a.map{|f|f.to_i}
+			cell[2] = -cell[2]
+			setup cell
+			@grid[cell] << body
+			body.cell = cell
 		end
-		def setup quad
-			return if @quadrants[quad]
-			@quadrants[quad] = [] 
+		def setup cell
+			return if @grid[cell]
+			@grid[cell] = [] 
 		end
 		def neighbors? a, b
 			return false if a == b
@@ -169,27 +169,27 @@ module Physics
 			return false unless (a[2] - b[2]).abs < 2
 			return true
 		end
-		def neighbors quadrant, &block
-			@quadrants.each do |q,bds|
-				next unless neighbors?( quadrant, q )
+		def neighbors cell, &block
+			@grid.each do |q,bds|
+				next unless neighbors?( cell, q )
 				yield q,bds
 			end
 		end
 		def each &block
-			@quadrants.each do |quadrant,bodies|
+			@grid.each do |cell,bodies|
 				collection = bodies.dup
-				neighbors(quadrant) {|q,bds| collection << bds }
+				neighbors(cell) {|q,bds| collection << bds }
 				yield collection.flatten.compact
 			end
 		end
 		def draw
 			lines = []
-			@quadrants.keys.each do |q|
-				draw_quad( q ).each do |line|
+			@grid.keys.each do |q|
+				draw_cell( q ).each do |line|
 					lines << line
 				end
 				neighbors( q ) do |q,bds|
-					draw_quad(q,[255,0,0,0]).each do |line|
+					draw_cell(q,[255,0,0,0]).each do |line|
 						lines << line
 					end
 				end
@@ -197,7 +197,7 @@ module Physics
 			@lines = Line.new lines
 			@lines.draw
 		end
-		def draw_quad q,c=nil
+		def draw_cell q,c=nil
 			x,y,z = q
 			x,y,z,s = x*@size, y*@size, z*@size, @size
 			lines = []
@@ -226,14 +226,14 @@ module Physics
 		end
 	end
 	class World
-		attr_accessor :bodies, :quadrants
+		attr_accessor :bodies, :grid
 		def initialize
 			@bodies = []
-			@quadrants = Quadrants.new
+			@grid = Grid.new
 		end
 		def add body
 			@bodies << body
-			@quadrants.set body
+			@grid.set body
 		end
 		def update
 			drag
@@ -252,7 +252,7 @@ module Physics
 		end
 		def collisions
 			pairs = []
-			@quadrants.each do |bodies|
+			@grid.each do |bodies|
 				BroadPhase.sphere( bodies ).each do |pair|
 					pairs << pair
 				end
@@ -265,7 +265,7 @@ module Physics
 			@bodies.each do |body|
 				if body.velocity.length2 > 0
 					body.pos += body.velocity
-					@quadrants.set body
+					@grid.set body
 				end
 				if body.rotation_velocity.length2 > 0
 					body.rotate body.rotation_velocity

@@ -187,7 +187,7 @@ $updates << Proc.new{
 		GL.PopMatrix
 	end
 	Mesh.unset_trans
-	$world.quadrants.draw
+	$world.grid.draw
 }
 
 
