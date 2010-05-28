@@ -15,7 +15,7 @@ class Render
 		flags = SDL::OPENGL
 		flags |= SDL::FULLSCREEN if @fullscreen
 		SDL.setVideoMode( @width, @height, @depth, flags )
-		reshape s[:width], s[:height]
+		reshape( @width, @height )
 		GL.Enable(GL::DEPTH_TEST)
 		GL.DepthFunc(GL::LESS) 
 		GL.ShadeModel(GL::SMOOTH)
@@ -39,10 +39,8 @@ class Render
 		GL.PolygonMode(GL::FRONT, GL::LINE)
 		GL.PolygonMode(GL::BACK, GL::LINE)
 	end
-	def draw pos=Vector.new, orientation=Quat.new
+	def draw pos, orientation
 		GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT)
-		GL.MatrixMode(GL::MODELVIEW)
-		GL.LoadIdentity
 		look_at( pos, orientation )
 		draw_models( :opaque )
 		draw_models( :trans )
@@ -67,7 +65,7 @@ class Render
 		end
 		unset_trans if mode == :trans
 	end
-	def look_at pos=Vector.new, orientation=Quat.new
+	def look_at pos, orientation
 		up = orientation.vector :up
 		forward = orientation.vector :forward
 		GL.MatrixMode(GL::MODELVIEW)
@@ -78,7 +76,7 @@ class Render
 			up.x,up.y,-up.z
 		)		
 	end
-	def load_matrix pos=Vector.new, orientation=Quat.new
+	def load_matrix pos, orientation
 		up = orientation.vector :up
 		forward = orientation.vector :forward
 		right = orientation.vector :right

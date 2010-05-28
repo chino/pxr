@@ -130,11 +130,7 @@ $inputs.on_poll Proc.new{
 
 $render = Render.new($options)
 
-$player = sphere_body({ 
-	:pos => Vector.new(0,0,500),
-	:drag => $move_drag, 
-	:rotation_drag => $turn_drag 
-})
+$player = sphere_body({ :pos => Vector.new(0,0,500), :drag => $move_drag, :rotation_drag => $turn_drag })
 $player.rotate 0,180,180
 
 $render.models << Lines.new
