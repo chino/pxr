@@ -16,3 +16,4 @@ $loaders = {
         "mxv" => FsknMx,
 	"rdl" => D1rdl
 }
+$models = "data/models"

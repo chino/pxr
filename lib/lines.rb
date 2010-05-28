@@ -1,8 +1,9 @@
-require "model"
-class Lines < Model
+class Lines
 	include Mesh
-	def initialize *args
-		super *args
+	attr_accessor :pos, :orientation
+	def initialize
+		@pos = Vector.new
+		@orientation = Quat.new
 		@render_type = GL::LINES
 		@verts = []
 		@primitives = []

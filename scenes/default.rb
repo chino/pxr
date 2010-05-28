@@ -1,29 +1,9 @@
 
 ####################################
-# Game 
-####################################
-
-$game = Game.new(
-	"Model Viewer", 
-	$options[:width], 
-	$options[:height], 
-	$options[:fullscreen]
-)
-
-# add routines to $updates to run each frame
-$updates = []
-$game.display = Proc.new{ $updates.each{|update| update.call } }
-
-
-####################################
 # Physics
 ####################################
 
 $world = Physics::World.new
-
-$updates << Proc.new{
-	$world.update
-}
 
 def sphere_body s
 	body = Physics::SphereBody.new(s)
@@ -33,7 +13,7 @@ end
 
 
 ####################################
-# network interface
+# Networking
 ####################################
 
 if $options[:peer][:address]
@@ -46,10 +26,10 @@ if $options[:peer][:address]
 
 	$players = {}
 
-	$updates << Proc.new {
+	$update_network = Proc.new {
 
 		# send my position
-		$network.send $camera.serialize
+		$network.send $player.serialize
 
 		# read data from players
 		data,info = $network.pump 
@@ -64,33 +44,18 @@ end
 
 
 ####################################
-# Camera
-####################################
-
-$camera = sphere_body({
-	:pos => Vector.new(0,0,500),
-	:drag => $move_drag,
-	:rotation_drag => $turn_drag
-})
-$camera.rotate 0,180,180
-
-$updates << Proc.new{
-	Camera.place(
-		$camera.pos,
-		$camera.orientation
-	)
-}
-
-
-####################################
 # Inputs
 ####################################
 
-$game.mouse_button = Proc.new{|button,pressed|
+$inputs = Input.new($options)
+
+$inputs.mouse_button = Proc.new{|button,pressed|
 	next unless pressed
-	pos = $camera.pos + $camera.orientation.vector( Vector.new(0,0,$camera.radius*3) )
-	vel = $camera.orientation.vector( Vector.new(0,0,100) )
-	model( "ball1.mx", sphere_body({
+	pos = $player.pos + $player.orientation.vector( Vector.new(0,0,$player.radius*3) )
+	vel = $player.orientation.vector( Vector.new(0,0,100) )
+	$render.models << Model.new(
+		"ball1.mx", 
+		sphere_body({
 			:pos => pos,
 			:velocity => vel,
 			:drag => 0,
@@ -99,23 +64,9 @@ $game.mouse_button = Proc.new{|button,pressed|
 	}))
 }
 
-$updates << Proc.new{
-
-	x,y = $game.mouse_get
-
-	inputs = Vector.new x,y
-
-	# apply mouse accelleration
-	inputs += inputs * $turn_accell
-
-	# apply movement to velocity
-	$camera.rotation_velocity += inputs
-
-}
-
 $movement = Vector.new 0,0,0
 
-$game.keyboard = Proc.new{|key,pressed|
+$inputs.keyboard = Proc.new{|key,pressed|
 	begin
 		k = key.chr.downcase.to_sym
 	rescue
@@ -138,62 +89,69 @@ $game.keyboard = Proc.new{|key,pressed|
 	end
 }
 
-$updates << Proc.new{
-	next unless $movement.length > 0
+def handle_mouse
+
+	# get accumulated mouse movement
+	v = Vector.new( $inputs.mouse_get )
+	return unless v.length2 > 0
+
+	# apply mouse accelleration
+	v += v * $turn_accell
+
+	# apply movement to velocity
+	$player.rotation_velocity += v
+
+end
+
+def handle_keyboard
+
+	return unless $movement.length2 > 0
 
 	# convert movement into world coordinates
-	movement = $camera.orientation.vector($movement)
+	movement = $player.orientation.vector($movement)
 
 	# apply movement accelleration
 	movement += movement * $move_accell
 
 	# apply movement to velocity
-	$camera.velocity += movement
+	$player.velocity += movement
+
+end
+
+$inputs.on_poll Proc.new{
+	handle_mouse
+	handle_keyboard
 }
+
 
 ####################################
 # Scene
 ####################################
 
-$models = [] # objects to draw
+$render = Render.new($options)
 
-def model file, body=nil
-	m = Model.new( file, body )
-	body.compute_radius m.model.verts unless body.nil?
-	$models << m
-	m
-end
+$player = sphere_body({ 
+	:pos => Vector.new(0,0,500),
+	:drag => $move_drag, 
+	:rotation_drag => $turn_drag 
+})
+$player.rotate 0,180,180
 
-#model Lines.new
-model "ship.mxv"
-model "nbia400.mxa", sphere_body({ :pos => Vector.new(-550.0,-500.0,-5000.0) }) 
-model "xcop400.mxa", sphere_body({ :pos => Vector.new(-600.0,-500.0,-5000.0) }) 
-
-# draw routine
-$updates << Proc.new{
-	# draw solid
-	$models.each do |o|
-		GL.PushMatrix
-		o.load_matrix
-		o.draw :opaque
-		GL.PopMatrix
-	end
-	# draw transparent
-	Mesh.set_trans
-	$models.each do |o|
-		GL.PushMatrix
-		o.load_matrix
-		o.draw :trans
-		GL.PopMatrix
-	end
-	Mesh.unset_trans
-	$world.grid.draw
-}
+$render.models << Lines.new
+$render.models << Model.new("ship.mxv")
+$render.models << Model.new("nbia400.mxa", sphere_body({ :pos => Vector.new(-550.0,-500.0,-5000.0) }))
+$render.models << Model.new("xcop400.mxa", sphere_body({ :pos => Vector.new(-600.0,-500.0,-5000.0) }))
 
 
 ####################################
 # Main Loop
 ####################################
 
-$game.run
-
+loop do
+	$inputs.poll
+	$world.update
+	$update_network unless $update_network.nil?
+	$render.draw( $player.pos, $player.orientation )
+	$world.grid.draw
+	SDL::WM.setCaption "PXR - FPS: #{$render.fps}", 'icon'
+end

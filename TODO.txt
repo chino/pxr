@@ -2,11 +2,8 @@
 Physics
 
 	* level collisions
-	* scene graph to make broad phase faster
-	* function to generate radius from mesh geometry
-	* different types of collision responses
-		* would be nice to have proper inertia
-		  so if i hit non moving objects we disperse velocity properly
+	* fix coeficient of restitution
+
 	* collision masks to define what things a body can interact with each other
 		body.group = SHIP
 		body.collides = SHIP|WALL|BULLET
@@ -14,23 +11,24 @@ Physics
 			@bodies << body
 			@groups[body.type] << body
 		end
-	* collision callbacks to support things like pickups that do not modify the ship trajectory
-		body.collision = Proc.new {|target|
-			target.add_power_up
-			make_sound
-			kill_pickup
-			return false # no collision response
-		}
 
-Others
+	* collision callbacks to support things like 
+		* pickups that do not modify the ship trajectory
+		* sounds
 
-	More modular networking and rendering classes
+Networking
 
-	Auto propagation of network registered models.
+	* more modular networking
 
-	Is velocity potentially going negative?
+	* auto propagation of network registered models
 
-Performance
+Controls
 
-	Allowing mouse grab gives me a few hundred fps more
+	* some type of centralized controls
+
+Questions
+
+	* does mouse code really need to know w/h ?
+
+	* why mouse grab gives me a few hundred fps more ???
 

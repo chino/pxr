@@ -15,8 +15,12 @@ module Mesh
 		@dl_trans = dl_trans
 	end
 	def free_dl
-		GL.DeleteLists(@dl_opaque, 1)
-		GL.DeleteLists(@dl_trans, 1)
+		GL.DeleteLists(@dl_opaque, 1) unless @dl_opaque.nil?
+		GL.DeleteLists(@dl_trans, 1) unless @dl_trans.nil?
+	end
+	def remake_dl
+		free_dl
+		make_dl
 	end
 	def draw mode=:both # :opaque, :trans
 		draw_opaque if mode==:both or mode==:opaque
@@ -40,17 +44,7 @@ module Mesh
 			draw_primitive primitive unless primitive[:transparencies]
 		end
 	end
-	def self.set_trans
-		GL.DepthMask(GL::FALSE)
-		GL.Enable(GL::BLEND)
-		GL.BlendFunc(GL::SRC_ALPHA,GL::ONE)
-	end
-	def self.unset_trans
-		GL.DepthMask(GL::TRUE)
-		GL.Disable(GL::BLEND)
-	end
 	def draw_primitive primitive
-		#Mesh.set_trans if primitive[:transparencies]
 		image = Image.get primitive[:texture]
 		if !image.nil? and image.colorkey
 			GL.Enable(GL::ALPHA_TEST)
@@ -69,6 +63,21 @@ module Mesh
 		GL.End
 		GL.Disable(GL::ALPHA_TEST) if !image.nil? and image.colorkey
 		image.unbind if image
-		#Mesh.unset_trans if primitive[:transparencies]
+	end
+	def attach model
+		@attachments = [] if @attachments.nil?
+		@attachments << model
+	end
+	def detach model
+		@attachments.delete model
+	end
+	def scale x,y,z
+		@verts.each do |vert|
+			vert[:vector] = [
+				vert[:vector][0] * x,
+				vert[:vector][1] * y,
+				vert[:vector][2] * z
+			]
+		end
 	end
 end
