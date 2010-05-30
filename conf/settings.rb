@@ -10,10 +10,19 @@ $move_accell = 1.0
 $move_drag   = 0.1
 $turn_accell = 1.0
 $turn_drag   = 0.5
-$loaders = {
-	"mx"  => FsknMx,
-        "mxa" => FsknMx,
-        "mxv" => FsknMx,
-	"rdl" => D1rdl
-}
+$loaders = {}
 $models = "data/models"
+$options = {
+	:debug => false,
+	:profile => false,
+	:scene => "scenes/default.rb",
+	:port => 2300,
+	:peer => {
+		:address => false,
+		:port => 2300
+	},
+	:fullscreen => false,
+	:width => 640.0,
+	:height => 480.0,
+	:fov => 70.0
+}

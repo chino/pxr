@@ -5,20 +5,17 @@ require "sdl"
 require 'optparse'
 require 'pp'
 
-# parse options
-$options = {
-	:debug => false,
-	:profile => false,
-	:scene => "scenes/default.rb",
-	:port => 2300,
-	:peer => {
-		:address => false,
-		:port => 2300
-	},
-	:fullscreen => false,
-	:width => 640,
-	:height => 480
-}
+# defines
+ROOT=File.dirname($0)
+DATA="#{ROOT}/data"
+LIB="#{ROOT}/lib"
+CONF="#{ROOT}/conf"
+PROFILE="#{ROOT}/profile.txt"
+
+# load configs
+Dir["#{CONF}/*.rb"].sort.each{|file| require file }
+
+# override command line options
 OptionParser.new do |opts|
 	opts.banner = "Usage: #{$0} [options]"
 	opts.on("-h", "--help", "This help"){|v| puts opts; exit 0 }
@@ -26,7 +23,8 @@ OptionParser.new do |opts|
 	opts.on("--profile", "Profile the scene"){|v| $options[:profile] = v }
 	opts.on("--port PORT", "Local port to use for networking"){|v| $options[:port] = v }
 	opts.on("-f", "--fullscreen", "Run in fullscreen mode"){|v| $options[:fullscreen] = v }
-	opts.on("-r", "--res RES", "Resolution <width:height>"){|v| $options[:width],$options[:height] = v.split(":").map{|x|x.to_i} }
+	opts.on("-r", "--res RES", "Resolution <width:height>"){|v| 
+		$options[:width],$options[:height] = v.split(":").map{|x|x.to_i} }
 	opts.on("-p", "--peer PEER", "Specify the remote peer (host) to connect to"){|v| 
 		v =~ /([^:]*):?([0-9]*)?/
 		$options[:peer][:address] = $1
@@ -37,22 +35,14 @@ OptionParser.new do |opts|
 	}
 end.parse!
 
+# debug routine
 def debug msg
 	return unless $options[:debug]
 	STDERR.puts msg
 end
 
-debug "Command line options:"
+#debug "Command line options:"
 #debug pp($options)
-
-# defines
-ROOT=File.dirname($0)
-DATA="#{ROOT}/data"
-LIB="#{ROOT}/lib"
-CONF="#{ROOT}/conf"
-PROFILE="#{ROOT}/profile.txt"
-SCENE=$options[:scene]
-DEBUG=$options[:debug]
 
 # append load paths
 $: << LIB
@@ -60,7 +50,6 @@ $: << LIB
 # load libs
 # make sure your libs require their own dependencies
 Dir["#{LIB}/*.rb" ].sort.each{|file| require file }
-Dir["#{CONF}/*.rb"].sort.each{|file| require file }
 
 # profile the scene
 # dump profile to file
