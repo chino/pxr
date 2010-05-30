@@ -142,3 +142,4 @@ class D1rdl < Model
 		sprintf "(%f,%f,%f)", x, y, z
 	end
 end
+$loaders["rdl"] = D1rdl

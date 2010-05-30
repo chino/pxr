@@ -17,6 +17,8 @@ module Mesh
 	def free_dl
 		GL.DeleteLists(@dl_opaque, 1) unless @dl_opaque.nil?
 		GL.DeleteLists(@dl_trans, 1) unless @dl_trans.nil?
+		@dl_opaque = nil
+		@dl_trans = nil
 	end
 	def remake_dl
 		free_dl
@@ -64,20 +66,23 @@ module Mesh
 		GL.Disable(GL::ALPHA_TEST) if !image.nil? and image.colorkey
 		image.unbind if image
 	end
+	def attachments
+		@attachments ||= []
+	end
 	def attach model
-		@attachments = [] if @attachments.nil?
-		@attachments << model
+		attachments << model
 	end
 	def detach model
-		@attachments.delete model
+		attachments.delete model
 	end
-	def scale x,y,z
+	def scale v
 		@verts.each do |vert|
 			vert[:vector] = [
-				vert[:vector][0] * x,
-				vert[:vector][1] * y,
-				vert[:vector][2] * z
+				vert[:vector][0] * v.x,
+				vert[:vector][1] * v.y,
+				vert[:vector][2] * v.z
 			]
 		end
+		remake_dl
 	end
 end

@@ -1,9 +1,10 @@
 class Lines
 	include Mesh
-	attr_accessor :pos, :orientation
+	attr_accessor :pos, :orientation, :attachments
 	def initialize
 		@pos = Vector.new
 		@orientation = Quat.new
+		@attachments = []
 		@render_type = GL::LINES
 		@verts = []
 		@primitives = []

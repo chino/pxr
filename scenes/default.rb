@@ -53,15 +53,23 @@ $inputs.mouse_button = Proc.new{|button,pressed|
 	next unless pressed
 	pos = $player.pos + $player.orientation.vector( Vector.new(0,0,$player.radius*3) )
 	vel = $player.orientation.vector( Vector.new(0,0,100) )
-	$render.models << Model.new(
-		"ball1.mx", 
-		sphere_body({
+	m = Model.new({
+		:file => "ball1.mx", 
+		:scale => Vector.new(0.5,0.5,0.5),
+		:body => sphere_body({
 			:pos => pos,
 			:velocity => vel,
 			:drag => 0,
 			:rotation_velocity => Vector.new(10,10,10),
 			:rotation_drag => 0
-	}))
+		})
+	})
+# TODO - attachments are broken
+#	m2 = Model.new({ :file => "ball1.mx", :body => sphere_body({ :pos => Vector.new(0,0,10), })})
+#	m2.body.pos = Vector.new(0,0,0)
+#	m2.body.velocity = Vector.new
+#	m.mesh.attach m2.mesh
+	$render.models << m
 }
 
 $movement = Vector.new 0,0,0
@@ -134,9 +142,11 @@ $player = sphere_body({ :pos => Vector.new(0,0,500), :drag => $move_drag, :rotat
 $player.rotate 0,180,180
 
 $render.models << Lines.new
-$render.models << Model.new("ship.mxv")
-$render.models << Model.new("nbia400.mxa", sphere_body({ :pos => Vector.new(-550.0,-500.0,-5000.0) }))
-$render.models << Model.new("xcop400.mxa", sphere_body({ :pos => Vector.new(-600.0,-500.0,-5000.0) }))
+$render.models << Model.new({ :file => "ship.mxv" })
+$render.models << Model.new({ :file => "nbia400.mxa", 
+	:body => sphere_body({ :pos => Vector.new(-550.0,-500.0,-5000.0) })})
+$render.models << Model.new({ :file => "xcop400.mxa",
+	:body => sphere_body({ :pos => Vector.new(-600.0,-500.0,-5000.0) })})
 
 
 ####################################

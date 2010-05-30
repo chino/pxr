@@ -86,3 +86,6 @@ class FsknMx
 		sprintf "(%f,%f,%f)", x, y, z
 	end
 end
+$loaders["mx"]   = FsknMx
+$loaders["mxa"]  = FsknMx
+$loaders["mxv"]  = FsknMx

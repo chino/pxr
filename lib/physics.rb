@@ -3,10 +3,56 @@ require "quat"
 module Physics
 	module Collision
 		module Test
+			def self.ray_sphere p, d, sp, sr, data=nil
+				m = p - sp
+				b = m.dot(d)
+				c = m.dot(m) - sr**2
+				# test if start point is outside of sphere and pointing away
+				return false if c > 0.0 and b > 0.0
+				discr = b*b - c
+				# if negative than ray missed sphere
+				return false if discr < 0.0
+				# user doesn't want to know when/where collision happened
+				return true if data.nil?
+				t = -b - Math.sqrt(discr)
+				# if t is negative ray started inside sphere so clamp t
+				t = 0.0 if t < 0.0
+				q = p + (d * t)
+				# return values back to user
+				data[:t] = t
+				data[:q] = q
+				return true
+			end
+			def self.segment_sphere p, d, sp, sr, l
+				rv = {}
+				# test if the ray passes through the sphere
+				return false unless ray_sphere( p, d, sp, sr, rv )
+				# test that collision point is on the line segment
+				rv[:t] <= l
+			end
 			def self.sphere_sphere a, b
-				distance = a.radius + b.radius
-				vector = a.pos - b.pos
-				vector.length2 <= distance**2
+
+					# reduce test to only a single moving sphere
+					# b becomes a stationary sphere 
+					# v represents movement of both spheres
+					v = a.velocity - b.velocity
+
+					# reduce test to line segment vs sphere
+					# b's radius will increase by a's
+					# and 'a' becomes a point
+					r = b.radius + a.radius
+
+					# length of movement
+					vlen = v.length2
+
+					# both spheres apparently have same velocity
+					# they must be moving parrallel so cannot collide
+					# TODO - do we need to now detect if they are already touching? 
+					return false if v.length2 == 0.0
+
+					# test if line segment passes through sphere
+					# line segment representing movement in 'v' from start to finish
+					segment_sphere( a.pos, v/vlen, b.pos, r, vlen )
 			end
 		end
 		module Response
@@ -36,35 +82,12 @@ module Physics
 		def self.sphere bodies
 			collisions = []
 			bodies.each_with_index do |a,i|
-				if a.velocity.length2 > 0
-					ae = a.dup
-					ae.pos += ae.velocity
-				end
-				j = i + 1
-				for j in (i+1..bodies.length-1) # only check each pair once
-					b = bodies[j]
-
-					if a.velocity.length2 > 0
-						if Collision::Test::sphere_sphere( ae, b ) # test a's movement
-							collisions << [a,b]
-							next
-						end
-					end
-
-					next unless b.velocity.length2 > 0
-
-					be = b.dup
-					be.pos += be.velocity
-					if Collision::Test::sphere_sphere( a, be ) # test b's movement
-						collisions << [a,b]
-						next
-					end
-
-					next unless a.velocity.length2 > 0
-
-					if Collision::Test::sphere_sphere( ae, be ) # test a's and b's movement
-						collisions << [a,b]
-					end
+				a_has_velocity = a.velocity.length2 > 0
+				# only check each pair once
+				j = i + 1; for j in (i+1..bodies.length-1); b = bodies[j]
+					# only check if either sphere moving
+					next unless a_has_velocity or b.velocity.length2 > 0
+					collisions << [a,b] if Collision::Test::sphere_sphere a,b
 				end
 			end
 			collisions

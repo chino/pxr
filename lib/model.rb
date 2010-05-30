@@ -1,15 +1,18 @@
 class Model
 	attr_accessor :mesh, :body
-	def initialize file, body=nil
+	def initialize s
 
-		@body = nil
+		@body = s[:body]
 
 		## init mesh
-		path = "#{$models}/#{file}"
+		path = "#{$models}/#{s[:file]}"
 		ext = path.split('.').last.downcase
 		loader = $loaders[ext]
 		throw "unknown mesh loader for #{ext}" if loader.nil?
 		@mesh = loader.new path
+
+		## scale object
+		@mesh.scale s[:scale] unless s[:scale].nil?
 
 		## figure out radius
 		@body.compute_radius( @mesh.verts ) unless @body.nil?
@@ -27,5 +30,8 @@ class Model
 	end
 	def draw *args
 		@mesh.draw *args
+	end
+	def attachments
+		@mesh.attachments
 	end
 end

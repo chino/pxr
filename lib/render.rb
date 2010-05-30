@@ -50,20 +50,19 @@ class Render
 	end
 	def draw_models mode=:opaque
 		set_trans if mode == :trans
-		@models.each do |m|
+		@models.each do |model|
 			GL.PushMatrix
-			load_matrix( m.pos, m.orientation )
-			m.draw( mode )
-# TODO - should make this routine recurisve so attachments can have attachments
-			m.attachments.each do |a|
-				GL.PushMatrix
-				load_matrix( a.pos, a.orientation )
-				a.draw( mode )
-				GL.PopMatrix
-			end if m.respond_to? :attachments
+			load_matrix( model.pos, model.orientation )
+			model.draw( mode )
+			draw_attachments( model )
 			GL.PopMatrix
 		end
 		unset_trans if mode == :trans
+	end
+	def draw_attachments model
+		model.attachments.each do |m|
+			draw_models m
+		end
 	end
 	def look_at pos, orientation
 		up = orientation.vector :up
