@@ -138,7 +138,10 @@ $inputs.on_poll Proc.new{
 
 $render = Render.new($options)
 
-$player = sphere_body({ :pos => Vector.new(0,0,500), :drag => $move_drag, :rotation_drag => $turn_drag })
+$player = sphere_body({
+	:pos => Vector.new(-550.0,-500.0,-4600.0),
+	:drag => $move_drag,
+	:rotation_drag => $turn_drag })
 $player.rotate 0,180,180
 
 $render.models << Lines.new
@@ -157,7 +160,10 @@ loop do
 	$inputs.poll
 	$world.update
 	$update_network unless $update_network.nil?
-	$render.draw( $player.pos, $player.orientation )
-	$world.grid.draw
+	$render.draw( $player.pos, $player.orientation ) do
+		next unless $options[:debug]
+		$world.grid.draw
+		$world.bodies.each{|body| body.render_radius }
+	end
 	SDL::WM.setCaption "PXR - FPS: #{$render.fps}", 'icon'
 end

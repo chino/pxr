@@ -23,27 +23,24 @@ module Physics
 				data[:q] = q
 				return true
 			end
-			def self.segment_sphere p, d, sp, sr, l
-				rv = {}
+			def self.segment_sphere p, d, sp, sr, l, info
 				# test if the ray passes through the sphere
-				return false unless ray_sphere( p, d, sp, sr, rv )
+				return false unless ray_sphere( p, d, sp, sr, info )
 				# test that collision point is on the line segment
-				rv[:t] <= l
+				info[:t] <= l
 			end
-			def self.sphere_sphere a, b
+			def self.sphere_sphere a, b, info
 
 					# reduce test to only a single moving sphere
 					# b becomes a stationary sphere 
 					# v represents movement of both spheres
 					v = a.velocity - b.velocity
+					vlen = v.length2
 
 					# reduce test to line segment vs sphere
 					# b's radius will increase by a's
 					# and 'a' becomes a point
 					r = b.radius + a.radius
-
-					# length of movement
-					vlen = v.length2
 
 					# both spheres apparently have same velocity
 					# they must be moving parrallel so cannot collide
@@ -52,16 +49,17 @@ module Physics
 
 					# test if line segment passes through sphere
 					# line segment representing movement in 'v' from start to finish
-					segment_sphere( a.pos, v/vlen, b.pos, r, vlen )
+					segment_sphere( a.pos, v/vlen, b.pos, r, vlen, info )
 			end
 		end
 		module Response
-			def self.sphere_sphere a, b
+			# http://en.wikipedia.org/wiki/Inelastic_collision
+			# http://en.wikipedia.org/wiki/Elastic_collision
+			def self.sphere_sphere a, b, info
 				v = a.pos - b.pos
 				vn = v.normalize
 				bounce = a.bounce + b.bounce
-				# http://en.wikipedia.org/wiki/Inelastic_collision
-				# http://en.wikipedia.org/wiki/Elastic_collision
+				bounce = 1.0 if bounce > 1
 				u1 = vn * vn.dot(a.velocity) # collision component of a's velocity
 				u2 = vn * vn.dot(b.velocity) # collision component of b's velocity
 				a.velocity -= u1 # remove collision component from velocity
@@ -76,6 +74,10 @@ module Physics
 				a.velocity += fva
 				b.velocity += fvb
 			end
+			def self.stop_bodies a, b
+				a.velocity = Vector.new
+				b.velocity = Vector.new
+			end
 		end
 	end
 	module BroadPhase
@@ -87,7 +89,8 @@ module Physics
 				j = i + 1; for j in (i+1..bodies.length-1); b = bodies[j]
 					# only check if either sphere moving
 					next unless a_has_velocity or b.velocity.length2 > 0
-					collisions << [a,b] if Collision::Test::sphere_sphere a,b
+					# collect spheres which collide and the time/place it happens
+					info = {}; collisions << [a,b,info] if Collision::Test::sphere_sphere a,b,info
 				end
 			end
 			collisions
@@ -159,6 +162,21 @@ module Physics
 			end
 			@radius = Math.sqrt(biggest)
 		end
+		def render_radius
+			c = [255,0,0,0]
+			x,y,z = @pos.to_a
+			z = -z
+			r = @radius
+			verts = []
+			verts << [[x+r,y,  z  ],c]
+			verts << [[x-r,y,  z  ],c]
+			verts << [[x,  y+r,z  ],c]
+			verts << [[x,  y-r,z  ],c]
+			verts << [[x,  y,  z+r],c]
+			verts << [[x,  y,  z-r],c]
+			points = Point.new(verts)
+			points.draw
+		end
 	end
 	class Grid
 		attr_accessor :size
@@ -187,9 +205,9 @@ module Physics
 		end
 		def neighbors? a, b
 			return false if a == b
-			return false unless (a[0] - b[0]).abs < 2
-			return false unless (a[1] - b[1]).abs < 2
-			return false unless (a[2] - b[2]).abs < 2
+			return false if (a[0] - b[0]).abs > 1
+			return false if (a[1] - b[1]).abs > 1
+			return false if (a[2] - b[2]).abs > 1
 			return true
 		end
 		def neighbors cell, &block
@@ -275,13 +293,16 @@ module Physics
 		end
 		def collisions
 			pairs = []
+# TODO
+# what this should really do is find out how many cells an object would move
+# then get a list of all bodies within that range of cells to test against
 			@grid.each do |bodies|
 				BroadPhase.sphere( bodies ).each do |pair|
 					pairs << pair
 				end
 			end
-			pairs.each do |a,b|
-				Collision::Response::sphere_sphere a, b
+			pairs.each do |a,b,info|
+				Collision::Response::sphere_sphere a,b,info
 			end
 		end
 		def velocities

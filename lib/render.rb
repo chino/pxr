@@ -39,9 +39,10 @@ class Render
 		GL.PolygonMode(GL::FRONT, GL::LINE)
 		GL.PolygonMode(GL::BACK, GL::LINE)
 	end
-	def draw pos, orientation
+	def draw pos, orientation, &block
 		GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT)
 		look_at( pos, orientation )
+		block.call if block_given?
 		draw_models( :opaque )
 		draw_models( :trans )
 		GL.Flush
