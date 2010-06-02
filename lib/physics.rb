@@ -3,7 +3,7 @@ require "quat"
 module Physics
 	module Collision
 		module Test
-			def self.ray_sphere p, d, sp, sr, data=nil
+			def self.ray_sphere p, d, sp, sr, info=nil
 				m = p - sp
 				b = m.dot(d)
 				c = m.dot(m) - sr**2
@@ -13,14 +13,16 @@ module Physics
 				# if negative than ray missed sphere
 				return false if discr < 0.0
 				# user doesn't want to know when/where collision happened
-				return true if data.nil?
+				return true if info.nil?
 				t = -b - Math.sqrt(discr)
 				# if t is negative ray started inside sphere so clamp t
 				t = 0.0 if t < 0.0
-				q = p + (d * t)
+				fa = p + (d * t)
+				fb = sp + (d * t)
 				# return values back to user
-				data[:t] = t
-				data[:q] = q
+				info[:t] = t
+				info[:fa] = fa
+				info[:fb] = fb
 				return true
 			end
 			def self.segment_sphere p, d, sp, sr, l, info
@@ -37,25 +39,36 @@ module Physics
 					v = a.velocity - b.velocity
 					vlen = v.length2
 
+					# both spheres apparently have same velocity
+					# they must be moving parrallel so cannot collide
+					# TODO - do we need to now detect if they are already touching? 
+					return false if vlen == 0.0
+
 					# reduce test to line segment vs sphere
 					# b's radius will increase by a's
 					# and 'a' becomes a point
 					r = b.radius + a.radius
 
-					# both spheres apparently have same velocity
-					# they must be moving parrallel so cannot collide
-					# TODO - do we need to now detect if they are already touching? 
-					return false if v.length2 == 0.0
-
 					# test if line segment passes through sphere
 					# line segment representing movement in 'v' from start to finish
 					segment_sphere( a.pos, v/vlen, b.pos, r, vlen, info )
+
 			end
 		end
 		module Response
-			# http://en.wikipedia.org/wiki/Inelastic_collision
-			# http://en.wikipedia.org/wiki/Elastic_collision
 			def self.sphere_sphere a, b, info
+
+				# since drag is only applied per frame we don't need to update velocity
+				#a.velocity = info[:fa] - a.pos
+				#b.velocity = info[:fb] - b.pos
+
+				# update sphere positions to the location where they collide
+				a.pos = info[:fa]
+				b.pos = info[:fb]
+
+				# http://en.wikipedia.org/wiki/Inelastic_collision
+				# http://en.wikipedia.org/wiki/Elastic_collision
+
 				v = a.pos - b.pos
 				vn = v.normalize
 				bounce = a.bounce + b.bounce
@@ -73,6 +86,7 @@ module Physics
 				fvb /= (a.mass + b.mass) # final velocity of b
 				a.velocity += fva
 				b.velocity += fvb
+
 			end
 			def self.stop_bodies a, b
 				a.velocity = Vector.new
