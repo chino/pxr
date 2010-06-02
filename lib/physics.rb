@@ -310,11 +310,12 @@ module Physics
 # TODO
 # what this should really do is find out how many cells an object would move
 # then get a list of all bodies within that range of cells to test against
-			@grid.each do |bodies|
+#			@grid.each do |bodies|
+bodies = @bodies
 				BroadPhase.sphere( bodies ).each do |pair|
 					pairs << pair
 				end
-			end
+#			end
 			pairs.each do |a,b,info|
 				Collision::Response::sphere_sphere a,b,info
 			end
