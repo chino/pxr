@@ -69,23 +69,36 @@ module Physics
 				# http://en.wikipedia.org/wiki/Inelastic_collision
 				# http://en.wikipedia.org/wiki/Elastic_collision
 
-				v = a.pos - b.pos
+				v = a.pos - b.pos # vector between spheres
 				vn = v.normalize
-				bounce = a.bounce + b.bounce
-				bounce = 1.0 if bounce > 1
-				u1 = vn * vn.dot(a.velocity) # collision component of a's velocity
-				u2 = vn * vn.dot(b.velocity) # collision component of b's velocity
-				a.velocity -= u1 # remove collision component from velocity
-				b.velocity -= u2 # remove collision component from velocity
-				vi = u1 * a.mass + u2 * b.mass # both objects would have the same velocity if inelastic
+				u1 = vn * vn.dot(a.velocity) # collision component of velocity
+				u2 = vn * vn.dot(b.velocity)
+				a.velocity -= u1 # remove collision component
+				b.velocity -= u2
+				vi = u1 * a.mass + u2 * b.mass # vi states if collision is elastic or inelastic
 				vea = u1 * (a.mass - b.mass) + u2 * 2 * b.mass # velocity for elastic collision for object a
 				veb = u2 * (b.mass - a.mass) + u1 * 2 * a.mass # velocity for elastic collision for object b
+				bounce = a.bounce + b.bounce # bounce must be between 0 and 1
+				bounce = 1.0 if bounce > 1
+				bounce = 0.0 if bounce < 0
 				fva = vea * bounce + vi * (1 - bounce) # if bounce = 1, use elastic; if bounce = 0, use inelastic
 				fvb = veb * bounce + vi * (1 - bounce) # for values between 0 and 1, pick a point in the middle
 				fva /= (a.mass + b.mass) # final velocity of a
 				fvb /= (a.mass + b.mass) # final velocity of b
 				a.velocity += fva
 				b.velocity += fvb
+
+				# detect if objects are stuck inside one another after movement
+				
+				afp = a.pos + a.velocity # pos after movement
+				bfp = b.pos + b.velocity
+				radius = a.radius + b.radius # collision distance
+				return unless (afp - bfp).length2 <= radius**2 # penetration
+
+				# separate the objects				
+
+				a.pos += (vn * a.radius) # move them apart by their radius
+				b.pos -= (vn * b.radius)
 
 			end
 			def self.stop_bodies a, b
