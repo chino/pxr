@@ -18,7 +18,7 @@ $options = {
 	:scene => "scenes/default.rb",
 	:port => 2300,
 	:peer => {
-		:address => false,
+		:address => nil,
 		:port => 2300
 	},
 	:fullscreen => false,

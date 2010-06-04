@@ -16,31 +16,36 @@ end
 # Networking
 ####################################
 
-if $options[:peer][:address]
-
-	$network = Network.new( 
+if $options[:peer][:address].nil?
+	$network = Network::Server.new($options[:port])
+else
+	$network = Network::Client.new(
 		$options[:peer][:address], 
 		$options[:peer][:port], 
-		$options[:port] 
+		$options[:port]
 	)
-
-	$players = {}
-
-	$update_network = Proc.new {
-
-		# send my position
-		$network.send $player.serialize
-
-		# read data from players
-		data,info = $network.pump 
-		next if data.nil?
-		something,port,name,ip = info
-		$players[ip] = model( "nbia400.mxa", sphere_body({}) ) if $players[ip].nil?
-		$players[ip].body.unserialize! data 
-
-	}
-
 end
+
+$players = {}
+$last_sent = Time.now
+$pps = 1.0/30.0
+
+$update_network = Proc.new {
+	if (Time.now - $last_sent).to_i >= $pps
+		$network.send_data $player.serialize
+		$last_sent = Time.now
+	end
+	$network.pump {|ip,msg|
+		if $players[ip].nil?
+			$players[ip] = Model.new({
+				:file => "nbia400.mxa",
+				:body => sphere_body({})
+			})
+			$render.models << $players[ip]
+		end
+		$players[ip].body.unserialize! msg
+	}
+}
 
 
 ####################################
@@ -159,7 +164,7 @@ $render.models << Model.new({ :file => "xcop400.mxa",
 loop do
 	$inputs.poll
 	$world.update
-	$update_network unless $update_network.nil?
+	$update_network.call
 	$render.draw( $player.pos, $player.orientation ) do
 		next unless $options[:debug]
 		$world.grid.draw
