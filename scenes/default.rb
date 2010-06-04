@@ -31,7 +31,7 @@ $last_sent = Time.now
 $pps = 1.0/30.0
 
 $update_network = Proc.new {
-	if (Time.now - $last_sent).to_i >= $pps
+	if (Time.now - $last_sent).to_f >= $pps
 		$network.send_data $player.serialize
 		$last_sent = Time.now
 	end
