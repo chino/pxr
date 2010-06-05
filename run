@@ -35,17 +35,13 @@ OptionParser.new do |opts|
 	}
 end.parse!
 
-# debug routine
-def debug msg
-	return unless $options[:debug]
-	STDERR.puts msg
-end
+# append load paths
+$: << LIB
+
+require 'funcs'
 
 #debug "Command line options:"
 #debug pp($options)
-
-# append load paths
-$: << LIB
 
 # load libs
 # make sure your libs require their own dependencies
