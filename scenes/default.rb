@@ -17,7 +17,7 @@ end
 ####################################
 
 $last_sent = Time.now
-$pps = 1.0/10.0
+$pps = 1.0/60.0
 
 class Player < Network::Player
         def post_init

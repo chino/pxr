@@ -171,15 +171,15 @@ module Physics
 		def unserialize! str, repr=:short
 			case repr
 			when :full
-				pos_s, velocity_c, orient_s, rotation_velocity_s = str.unpack "a12a16a16a16"
+				pos_s, velocity_s, orient_s, rotation_velocity_s = str.unpack "a12a12a16a16"
 				@orientation.unserialize! orient_s, :full
 			when :short
-				pos_s, velocity_c, orient_s, rotation_velocity_s = str.unpack "a12a12a8a16"
+				pos_s, velocity_s, orient_s, rotation_velocity_s = str.unpack "a12a12a8a16"
 				@orientation.unserialize! orient_s, :short
 			end
 			@pos.unserialize! pos_s, :full
-			@velocity.unserialize! pos_s, :full
-			@rotation_velocity.unserialize! pos_s, :full
+			@velocity.unserialize! velocity_s, :full
+			@rotation_velocity.unserialize! rotation_velocity_s, :full
 		end
 	end
 	class SphereBody < Body
