@@ -16,35 +16,40 @@ end
 # Networking
 ####################################
 
+$last_sent = Time.now
+$pps = 1.0/10.0
+
+class Player < Network::Player
+        def post_init
+                puts "new player joined from #{@ip}:#{@port}"
+		@model = Model.new({
+			:file => "nbia400.mxa",
+			:body => sphere_body({})
+		})
+		$render.models << @model
+        end
+        def receive_data data
+		@model.body.unserialize! data
+        end
+end
+
 if $options[:peer][:address].nil?
-	$network = Network::Server.new($options[:port])
+	$network = Network::Server.new($options[:port],Player)
 else
 	$network = Network::Client.new(
 		$options[:peer][:address], 
 		$options[:peer][:port], 
-		$options[:port]
+		$options[:port],
+		Player
 	)
 end
-
-$players = {}
-$last_sent = Time.now
-$pps = 1.0/10.0
 
 $update_network = Proc.new {
 	if (Time.now - $last_sent).to_f >= $pps
 		$network.send_data $player.serialize
 		$last_sent = Time.now
 	end
-	$network.pump {|ip,msg|
-		if $players[ip].nil?
-			$players[ip] = Model.new({
-				:file => "nbia400.mxa",
-				:body => sphere_body({})
-			})
-			$render.models << $players[ip]
-		end
-		$players[ip].body.unserialize! msg
-	}
+	$network.pump
 }
 
 

@@ -155,22 +155,31 @@ module Physics
 			# Convert to string suitable for network transmission
 			case repr
 			when :full
-				@pos.serialize(:full) + @orientation.serialize(:full)
+				@pos.serialize(:full) + # 12
+				@velocity.serialize(:full) + # 12
+				@orientation.serialize(:full) + # 16
+				@rotation_velocity.serialize(:full) # 16
+				# 56
 			when :short
-				@pos.serialize(:full) + @orientation.serialize(:short)
+				@pos.serialize(:full) + # 12
+				@velocity.serialize(:full) + # 12
+				@orientation.serialize(:short) + # 8 
+				@rotation_velocity.serialize(:full) # 16
+				# 48
 			end
 		end
 		def unserialize! str, repr=:short
 			case repr
 			when :full
-				pos_s, orient_s = str.unpack "a12a16"
-				@pos.unserialize! pos_s, :full
+				pos_s, velocity_c, orient_s, rotation_velocity_s = str.unpack "a12a16a16a16"
 				@orientation.unserialize! orient_s, :full
 			when :short
-				pos_s, orient_s = str.unpack "a12a8"
-				@pos.unserialize! pos_s, :full
+				pos_s, velocity_c, orient_s, rotation_velocity_s = str.unpack "a12a12a8a16"
 				@orientation.unserialize! orient_s, :short
 			end
+			@pos.unserialize! pos_s, :full
+			@velocity.unserialize! pos_s, :full
+			@rotation_velocity.unserialize! pos_s, :full
 		end
 	end
 	class SphereBody < Body
