@@ -15,7 +15,7 @@ class Network
 			r = (type == :read) ? [@socket] : nil
 			s = (type == :send) ? [@socket] : nil
 			r = s = [@socket] if type == :both
-			IO.select( r, s, nil, 0.01 )
+			IO.select( r, s, nil, 0 )
 		end
 		def send ip, port, data
 			connect ip, port
