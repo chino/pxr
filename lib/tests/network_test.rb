@@ -2,18 +2,32 @@
 $: << "../"
 require 'network'
 
-$options = {:debug => false}
+$options = {:debug => true}
 
-server = Network::Server.new( 2300 )
-client = Network::Client.new( 'localhost', 2300, 2301 )
+class Server < Network::Player
+	def post_init
+		puts "server post_init"
+	end
+	def receive_data data
+		puts "server received data: #{data}"
+	end
+end
+
+class Client < Network::Player
+	def post_init
+		puts "client post_init"
+	end
+	def receive_data data
+		puts "client received data: #{data}"
+	end
+end
+
+server = Network::Server.new( 2300, Server )
+client = Network::Client.new( 'localhost', 2300, 2301, Client )
 
 loop do
-	client.send_data( sprintf("%20s",'hi') )
-	client.pump do |ip,msg|
-		puts "client recieved: #{ip} #{msg}"
-	end
-	server.send_data( sprintf("%20s",'hi') )
-	server.pump do |ip,msg|
-		puts "server recieved: #{ip} #{msg}"
-	end
+	client.send_data( 'hi from client' )
+	server.pump
+	server.send_data( 'hi from server' )
+	client.pump
 end
