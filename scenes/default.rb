@@ -28,7 +28,7 @@ end
 
 $players = {}
 $last_sent = Time.now
-$pps = 1.0/30.0
+$pps = 1.0/10.0
 
 $update_network = Proc.new {
 	if (Time.now - $last_sent).to_f >= $pps
