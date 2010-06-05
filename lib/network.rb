@@ -109,7 +109,7 @@ class Network
 			return if data.nil?
 			msg = id + data
 			@players.each do |address,c|
-				next if id == c.id
+				next if id == c.id_packed
 				send( c.ip, c.port, msg )
 			end
 		end
