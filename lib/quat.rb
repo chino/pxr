@@ -25,6 +25,11 @@ class Quat
 	def conjugate
 		Quat.new( -@x, -@y, -@z, @w )
 	end
+	def conjugate!
+		@x = -@x
+		@y = -@y
+		@z = -@z
+	end
 	def * q
 		Quat.new(
 			@w * q.x + @x * q.w + @y * q.z - @z * q.y,
