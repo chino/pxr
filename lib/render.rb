@@ -85,7 +85,7 @@ class Render
 			right.x, right.y, right.z, 0.0,
 			up.x, up.y, up.z, 0.0,
 			forward.x, forward.y, forward.z, 0.0,
-			pos.x, pos.y, -pos.z, 1.0
+			pos.x, pos.y, pos.z, 1.0
 		]
 	end
 	def set_trans

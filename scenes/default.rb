@@ -159,9 +159,9 @@ $player.rotate 0,180,180
 $render.models << Lines.new
 $render.models << Model.new({ :file => "ship.mxv" })
 $render.models << Model.new({ :file => "nbia400.mxa", 
-	:body => sphere_body({ :pos => Vector.new(-400.0,-500.0,-5000.0) })})
+	:body => sphere_body({ :pos => Vector.new(-400.0,-500.0,5000.0) })})
 $render.models << Model.new({ :file => "xcop400.mxa",
-	:body => sphere_body({ :pos => Vector.new(-600.0,-500.0,-5000.0) })})
+	:body => sphere_body({ :pos => Vector.new(-600.0,-500.0,5000.0) })})
 
 
 ####################################
