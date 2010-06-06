@@ -30,6 +30,8 @@ class Player < Network::Player
         end
         def receive_data data
 		@model.body.unserialize! data
+		@model.body.orientation.conjugate!
+		# TODO - does rotation velocity also need to be conjugated ?
         end
 end
 
