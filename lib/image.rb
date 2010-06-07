@@ -64,10 +64,15 @@ class Image
 		unbind
 	end
 	def bind
+		if @colorkey
+			GL.Enable(GL::ALPHA_TEST)
+			GL.AlphaFunc(GL::GREATER,(100.0/255.0))	
+		end
 		GL.Enable(GL::TEXTURE_2D)
 		GL.BindTexture(GL::TEXTURE_2D, @id)
 	end
 	def unbind
+		GL.Disable(GL::ALPHA_TEST) if @colorkey
 		GL.Disable(GL::TEXTURE_2D)
 	end
 end

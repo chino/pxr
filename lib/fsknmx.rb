@@ -52,7 +52,7 @@ class FsknMx
 						pad16 = read_short
 						normal = [ read_float, read_float, read_float ]
 						@primitives << {
-							:texture => @textures[texture],
+							:texture => Image.get( @textures[texture] ),
 							:verts => v,
 							:pos => @verts[v[0]][:vector], # position of polygon plane
 							:normal => normal,
