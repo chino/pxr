@@ -60,7 +60,8 @@ module Mesh
 			vert = @verts[index]
 			GL.Color4ubv vert[:rgba]||[255,255,255,255]
 			GL.TexCoord2f vert[:tu], vert[:tv] if vert[:tu] and vert[:tv]
-			GL.Vertex3fv vert[:vector]
+			GL.Vertex3fv vert[:vector] if vert[:vector].length == 3
+			GL.Vertex2fv vert[:vector] if vert[:vector].length == 2
 		end
 		GL.End
 		GL.Disable(GL::ALPHA_TEST) if !image.nil? and image.colorkey

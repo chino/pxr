@@ -1,7 +1,8 @@
 class Render
-	attr_accessor :models, :fps, :width, :height, :depth, :fov
+	attr_accessor :models, :ortho_models, :fps, :width, :height, :depth, :fov, :surface
 	def initialize s
 		@models = []
+		@ortho_models = []
 		@fps = 0
 		@frames = 0
 		@last_frame = 0
@@ -14,7 +15,7 @@ class Render
 		SDL.setGLAttr(SDL::GL_DOUBLEBUFFER,1)
 		flags = SDL::OPENGL
 		flags |= SDL::FULLSCREEN if @fullscreen
-		SDL.setVideoMode( @width, @height, @depth, flags )
+		@surface = SDL.setVideoMode( @width, @height, @depth, flags )
 		reshape( @width, @height )
 		GL.Enable(GL::DEPTH_TEST)
 		GL.DepthFunc(GL::LESS) 
@@ -42,9 +43,10 @@ class Render
 	def draw pos, orientation, &block
 		GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT)
 		look_at( pos, orientation )
-		block.call if block_given?
 		draw_models( :opaque )
 		draw_models( :trans )
+		block.call if block_given?
+		draw_ortho if @ortho_models.length > 0
 		GL.Flush
 		SDL.GLSwapBuffers
 		update_fps
@@ -64,6 +66,20 @@ class Render
 		model.attachments.each do |m|
 			draw_models m
 		end
+	end
+	def draw_ortho
+		GL.MatrixMode(GL::MODELVIEW)
+	        GL.LoadIdentity
+		GL.MatrixMode(GL::PROJECTION)
+		GL.PushMatrix
+		GL.LoadIdentity()
+		GLU.Ortho2D(0.0,@width,0.0,@height)
+		GL.Translate(0.0,-@height,0.0)
+		@ortho_models.each do |m|
+			m.draw
+		end
+		GL.PopMatrix
+		GL.MatrixMode(GL::MODELVIEW)
 	end
 	def look_at pos, orientation
 		up = orientation.vector :up
@@ -107,4 +123,5 @@ class Render
 		@frames = 0
 		@fps
 	end
-end
+
+		end
