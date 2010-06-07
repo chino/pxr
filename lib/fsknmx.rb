@@ -28,7 +28,7 @@ class FsknMx
 				exec_type = read_short
 				has_transparencies = exec_type & 0x001 == 1
 				read_short.times {|v|
-					vert = [ read_float, read_float, -read_float ]
+					vert = [ read_float, read_float, read_float ]
 					reserved = read_int
 					blue, green, red, alpha = read_char, read_char, read_char, read_char 
 					specular, tu, tv = read_int, read_float, read_float

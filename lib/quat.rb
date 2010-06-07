@@ -65,8 +65,8 @@ class Quat
 	@@directions = {
 		:up => Vector.new(0,1,0),
 		:down => Vector.new(0,-1,0),
-		:forward => Vector.new(0,0,1),
-		:back => Vector.new(0,0,-1),
+		:forward => Vector.new(0,0,-1),
+		:back => Vector.new(0,0,1),
 		:right => Vector.new(1,0,0),
 		:left => Vector.new(-1,0,0)
 	}

@@ -30,8 +30,6 @@ class Player < Network::Player
         end
         def receive_data data
 		@model.body.unserialize! data
-		@model.body.orientation.conjugate!
-		# TODO - does rotation velocity also need to be conjugated ?
         end
 end
 
@@ -103,8 +101,8 @@ $inputs.keyboard = Proc.new{|key,pressed|
 	when :left     then pressed ? $movement.x = -1 : $movement.x = 0 
 	when :up       then pressed ? $movement.y =  1 : $movement.y = 0 
 	when :down     then pressed ? $movement.y = -1 : $movement.y = 0 
-	when :forward  then pressed ? $movement.z =  1 : $movement.z = 0 
-	when :back     then pressed ? $movement.z = -1 : $movement.z = 0
+	when :forward  then pressed ? $movement.z = -1 : $movement.z = 0 
+	when :back     then pressed ? $movement.z =  1 : $movement.z = 0
 	else puts "unknown key binding #{k}"
 	end
 }
@@ -119,7 +117,7 @@ def handle_mouse
 	v += v * $turn_accell
 
 	# apply movement to velocity
-	$player.rotation_velocity += v
+	$player.rotation_velocity -= v
 
 end
 
@@ -151,7 +149,7 @@ $inputs.on_poll Proc.new{
 $render = Render.new($options)
 
 $player = sphere_body({
-	:pos => Vector.new(-550.0,-500.0,-4600.0),
+	:pos => Vector.new(-550.0,-500.0,4600.0),
 	:drag => $move_drag,
 	:rotation_drag => $turn_drag })
 $player.rotate 0,180,180

@@ -71,9 +71,9 @@ class Render
 		GL.MatrixMode(GL::MODELVIEW)
 		GL.LoadIdentity
 		gluLookAt(
-			pos.x,pos.y,-pos.z,
-			pos.x+forward.x,pos.y+forward.y,-pos.z-forward.z,
-			up.x,up.y,-up.z
+			pos.x,pos.y,pos.z,
+			pos.x+forward.x,pos.y+forward.y,pos.z+forward.z,
+			up.x,up.y,up.z
 		)		
 	end
 	def load_matrix pos, orientation
