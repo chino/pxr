@@ -61,8 +61,8 @@ $inputs = Input.new($options)
 
 $inputs.mouse_button = Proc.new{|button,pressed|
 	next unless pressed
-	pos = $player.pos + $player.orientation.vector( Vector.new(0,0,$player.radius*3) )
-	vel = $player.orientation.vector( Vector.new(0,0,100) )
+	pos = $player.pos + $player.orientation.vector( Vector.new(0,0,-$player.radius*3) )
+	vel = $player.orientation.vector( Vector.new(0,0,-100) )
 	m = Model.new({
 		:file => "ball1.mx", 
 		:scale => Vector.new(0.5,0.5,0.5),
