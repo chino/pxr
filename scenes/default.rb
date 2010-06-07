@@ -16,10 +16,9 @@ end
 # Networking
 ####################################
 
-$last_sent = Time.now
-$pps = 1.0/60.0
-
 class Player < Network::Player
+	UPDATE = 0
+	BULLET = 1
         def post_init
                 puts "new player joined from #{@ip}:#{@port}"
 		@model = Model.new({
@@ -29,13 +28,28 @@ class Player < Network::Player
 		$render.models << @model
         end
         def receive_data data
-		@model.body.unserialize! data
+		type = data.slice!(0..0).unpack('c')[0]
+		case type
+		when UPDATE
+			@model.body.unserialize! data
+		when BULLET
+			pos_s, orientation_s = data.unpack("a12a8")
+			pos = Vector.new
+			pos.unserialize! pos_s, :full
+			orientation = Quat.new
+			orientation.unserialize! orientation_s, :short
+			new_bullet( pos, orientation )
+		else
+			debug "unknown packet from player #{@id}"
+		end
         end
 end
 
 if $options[:peer][:address].nil?
+	$hosting = true
 	$network = Network::Server.new($options[:port],Player)
 else
+	$hosting = false
 	$network = Network::Client.new(
 		$options[:peer][:address], 
 		$options[:peer][:port], 
@@ -44,9 +58,15 @@ else
 	)
 end
 
+$last_sent = Time.now
+$pps = 1.0/30.0
+
 $update_network = Proc.new {
 	if (Time.now - $last_sent).to_f >= $pps
-		$network.send_data $player.serialize
+		$network.send_data(
+			[Player::UPDATE].pack('c') + 
+			$player.serialize
+		)
 		$last_sent = Time.now
 	end
 	$network.pump
@@ -62,24 +82,15 @@ $inputs = Input.new($options)
 $inputs.mouse_button = Proc.new{|button,pressed|
 	next unless pressed
 	pos = $player.pos + $player.orientation.vector( Vector.new(0,0,-$player.radius*3) )
-	vel = $player.orientation.vector( Vector.new(0,0,-100) )
-	m = Model.new({
-		:file => "ball1.mx", 
-		:scale => Vector.new(0.5,0.5,0.5),
-		:body => sphere_body({
-			:pos => pos,
-			:velocity => vel,
-			:drag => 0,
-			:rotation_velocity => Vector.new(10,10,10),
-			:rotation_drag => 0
-		})
-	})
+	new_bullet( pos, $player.orientation )
+	send_bullet( pos, $player.orientation )
+
 # TODO - attachments are broken
 #	m2 = Model.new({ :file => "ball1.mx", :body => sphere_body({ :pos => Vector.new(0,0,10), })})
 #	m2.body.pos = Vector.new(0,0,0)
 #	m2.body.velocity = Vector.new
 #	m.mesh.attach m2.mesh
-	$render.models << m
+
 }
 
 $movement = Vector.new 0,0,0
@@ -145,6 +156,31 @@ $inputs.on_poll Proc.new{
 ####################################
 # Scene
 ####################################
+
+def new_bullet pos, orientation
+	vel = orientation.vector( Vector.new(0,0,-100) )
+	m = Model.new({
+		:file => "ball1.mx", 
+		:scale => Vector.new(0.5,0.5,0.5),
+		:body => sphere_body({
+			:pos => pos,
+			:velocity => vel,
+			:drag => 0,
+			:rotation_velocity => Vector.new(10,10,10),
+			:rotation_drag => 0
+		})
+	})
+	$render.models << m
+	m
+end
+
+def send_bullet pos, orientation
+	$network.send_data(
+		[Player::BULLET].pack('c') +
+		pos.serialize(:full) + 
+		orientation.serialize(:short)
+	)
+end
 
 $render = Render.new($options)
 
