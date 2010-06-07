@@ -201,7 +201,6 @@ module Physics
 		def render_radius
 			c = [255,0,0,0]
 			x,y,z = @pos.to_a
-			z = -z
 			r = @radius
 			verts = []
 			verts << [[x+r,y,  z  ],c]
@@ -230,7 +229,6 @@ module Physics
 		def set body
 			delete body
 			cell = (body.pos / @size).to_a.map{|f|f.to_i}
-			cell[2] = -cell[2]
 			setup cell
 			@grid[cell] << body
 			body.cell = cell
