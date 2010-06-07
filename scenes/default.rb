@@ -188,15 +188,14 @@ $player = sphere_body({
 	:pos => Vector.new(-550.0,-500.0,4600.0),
 	:drag => $move_drag,
 	:rotation_drag => $turn_drag })
-$player.rotate 0,180,180
+$player.rotate 180,0,0
 
-$render.models << Lines.new
+$render.models << Lines.new # TODO - where are they?
 $render.models << Model.new({ :file => "ship.mxv" })
 $render.models << Model.new({ :file => "nbia400.mxa", 
 	:body => sphere_body({ :pos => Vector.new(-400.0,-500.0,5000.0) })})
 $render.models << Model.new({ :file => "xcop400.mxa",
 	:body => sphere_body({ :pos => Vector.new(-600.0,-500.0,5000.0) })})
-
 
 ####################################
 # Main Loop
@@ -207,9 +206,10 @@ loop do
 	$world.update
 	$update_network.call
 	$render.draw( $player.pos, $player.orientation ) do
-		next unless $options[:debug]
-		$world.grid.draw
-		$world.bodies.each{|body| body.render_radius }
+		if $options[:debug]
+			$world.grid.draw
+			$world.bodies.each{|body| body.render_radius }
+		end
 	end
 	SDL::WM.setCaption "PXR - FPS: #{$render.fps}", 'icon'
 end
