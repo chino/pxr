@@ -3,7 +3,7 @@ class Lines
 	attr_accessor :pos, :orientation, :attachments
 	def initialize
 		@pos = Vector.new
-		@orientation = Quat.new
+		@orientation = Vector.new(0,1,0).quat
 		@attachments = []
 		@render_type = GL::LINES
 		@verts = []

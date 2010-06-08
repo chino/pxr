@@ -74,8 +74,9 @@ class Render
 		GL.PushMatrix
 		GL.LoadIdentity()
 		GLU.Ortho2D(0.0,@width,0.0,@height)
-		GL.Translate(0.0,-@height,0.0)
+#		GL.Translate(0.0,-@height,0.0)
 		@ortho_models.each do |m|
+$test = true
 			m.draw
 		end
 		GL.PopMatrix

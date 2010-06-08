@@ -190,7 +190,8 @@ $player = sphere_body({
 	:rotation_drag => $turn_drag })
 $player.rotate 180,0,0
 
-$render.models << Lines.new # TODO - where are they?
+$render.models << Lines.new
+$render.ortho_models << Lines.new # TODO - where are they?
 $render.models << Model.new({ :file => "ship.mxv" })
 $render.models << Model.new({ :file => "nbia400.mxa", 
 	:body => sphere_body({ :pos => Vector.new(-400.0,-500.0,5000.0) })})
