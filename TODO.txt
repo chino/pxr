@@ -2,7 +2,6 @@
 Physics
 
 	* level collisions
-	* fix coeficient of restitution
 
 	* collision masks to define what things a body can interact with each other
 		body.group = SHIP
@@ -16,9 +15,9 @@ Physics
 		* pickups that do not modify the ship trajectory
 		* sounds
 
-Networking
+	* proper support for collision with attachments
 
-	* more modular networking
+Networking
 
 	* auto propagation of network registered models
 

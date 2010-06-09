@@ -188,16 +188,6 @@ module Physics
 			super(s)
 			@radius = s[:radius] || 50
 		end
-		def compute_radius verts
-			biggest = 0
-			center = Vector.new
-			verts.each do |vert|
-				v = Vector.new(vert[:vector])
-				r = (center - v).length2
-				biggest = r if r > biggest
-			end
-			@radius = Math.sqrt(biggest)
-		end
 		def render_radius
 			c = [255,0,0,0]
 			x,y,z = @pos.to_a
@@ -211,6 +201,27 @@ module Physics
 			verts << [[x,  y,  z-r],c]
 			points = Point.new(verts)
 			points.draw
+		end
+	end
+	class PlaneBody < Body
+		attr_accessor :normal
+		def initialize s={}
+			super(s)
+			@normal = if not s[:normal].nil?
+					s[:normal]
+				elsif not @orientation.nil?
+					@orientation.vector(:forward)
+				else
+					Vector.new 0,1,0
+				end
+		end
+		def distance
+			# TODO - if plane moves then plane formula needs to be recomputed
+			@distance ||= (-@normal.x*@pos.x) - (@normal.y*@pos.y) - (@normal.z*@pos.z)
+		end
+		def side pos
+			p = normal.dot( pos ) + distance
+			(p > 0.0) ? :front : (p < 0.0) ? :back : :coincide
 		end
 	end
 	class Grid

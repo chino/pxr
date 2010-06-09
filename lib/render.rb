@@ -43,29 +43,38 @@ class Render
 	def draw pos, orientation, &block
 		GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT)
 		look_at( pos, orientation )
-		draw_models( :opaque )
-		draw_models( :trans )
+		draw_models( clip_behind( pos, orientation ) )
 		block.call if block_given?
 		draw_ortho if @ortho_models.length > 0
 		GL.Flush
 		SDL.GLSwapBuffers
 		update_fps
 	end
-	def draw_models mode=:opaque
-		set_trans if mode == :trans
-		@models.each do |model|
-			GL.PushMatrix
-			load_matrix( model.pos, model.orientation )
-			model.draw( mode )
-			draw_attachments( model )
-			GL.PopMatrix
+	def clip_behind pos, orientation
+		plane = Physics::PlaneBody.new({
+			:pos => pos,
+			:orientation => orientation 
+		})
+		@models.select do |model|
+			next true if model.radius.nil?
+			# edge of sphere towards me
+			# accounts for being inside of large objects
+			pos = model.pos + (plane.normal * model.radius)
+			plane.side( pos ) != :back
 		end
-		unset_trans if mode == :trans
 	end
-	def draw_attachments model
-		model.attachments.each do |m|
-			draw_models m
-		end
+	def draw_models models
+		models.each{|model| draw_model( :opaque, model ) }
+		set_trans
+		models.each{|model| draw_model( :trans, model ) }
+		unset_trans
+	end
+	def draw_model mode, model
+		GL.PushMatrix
+		load_matrix( model.pos, model.orientation )
+		model.draw( mode )
+		model.attachments.each{|model| draw_model( mode, model ) }
+		GL.PopMatrix
 	end
 	def draw_ortho
 		GL.MatrixMode(GL::MODELVIEW)
@@ -76,7 +85,6 @@ class Render
 		GLU.Ortho2D(0.0,@width,0.0,@height)
 #		GL.Translate(0.0,-@height,0.0)
 		@ortho_models.each do |m|
-$test = true
 			m.draw
 		end
 		GL.PopMatrix
@@ -124,5 +132,4 @@ $test = true
 		@frames = 0
 		@fps
 	end
-
-		end
+end

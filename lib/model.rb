@@ -15,7 +15,7 @@ class Model
 		@mesh.scale s[:scale] unless s[:scale].nil?
 
 		## figure out radius
-		@body.compute_radius( @mesh.verts ) unless @body.nil?
+		@body.radius = @mesh.radius unless @body.nil?
 
 	end
 	def pos
@@ -27,6 +27,9 @@ class Model
 		@body.nil? ? 
 			@orientation ||= Vector.new(0,1,0).quat : 
 			@body.orientation
+	end
+	def radius
+		@mesh.radius
 	end
 	def draw *args
 		@mesh.draw *args

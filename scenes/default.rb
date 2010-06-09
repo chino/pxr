@@ -5,7 +5,7 @@
 
 $world = Physics::World.new
 
-def sphere_body s
+def sphere_body s={}
 	body = Physics::SphereBody.new(s)
 	$world.add body
 	body

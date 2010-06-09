@@ -1,5 +1,5 @@
 module Mesh
-	attr_accessor :primitives, :verts
+	attr_accessor :primitives, :verts, :radius
 	def make_dl
 		# opaque
 		dl_opaque = GL.GenLists(1)
@@ -79,5 +79,18 @@ module Mesh
 			]
 		end
 		remake_dl
+	end
+	def radius
+		@radius ||= compute_radius
+	end
+	def compute_radius
+		biggest = 0
+		center = Vector.new
+		@verts.each do |vert|
+			v = Vector.new(vert[:vector])
+			r = (center - v).length2
+			biggest = r if r > biggest
+		end
+		@radius = Math.sqrt(biggest)
 	end
 end
