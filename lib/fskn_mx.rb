@@ -1,6 +1,7 @@
 require "mesh"
 require "image"
 require "binreader"
+require "geometry"
 class FsknMx
 	include Mesh
 	include BinReader
