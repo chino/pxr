@@ -93,4 +93,19 @@ module Mesh
 		end
 		@radius = Math.sqrt(biggest)
 	end
+	def normal_rendering
+		if @normal_rendering.nil?
+			lines = []
+			@primitives.each do |primitive|
+				next unless primitive[:normal]
+				normal = Vector.new primitive[:normal]
+				start  = Vector.new primitive[:pos]
+				stop   = start + ( normal * 50 )
+				lines << [start.to_a, stop.to_a]
+			end
+			@normal_rendering = Line.new(lines)
+			@normal_rendering.make_dl
+		end
+		@normal_rendering
+	end
 end
