@@ -198,6 +198,7 @@ $render.models << Model.new({ :file => "xcop400.mxa",
 	:body => sphere_body({ :pos => Vector.new(-600.0,-500.0,5000.0) })})
 
 $level = Model.new({ :file => "ship.mxv" })
+$level_bsp = FsknBsp.new("data/models/ship.bsp")
 $render.models << $level
 
 ####################################
