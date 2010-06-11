@@ -53,7 +53,7 @@ module Mesh
 		GL.Normal3fv primitive[:normal] if primitive[:normal]
 		primitive[:verts].each do |index|
 			vert = @verts[index]
-			GL.Color4ubv vert[:rgba]||[255,255,255,255]
+			GL.Color4ubv vert[:rgba] || [255,255,255,255]
 			GL.TexCoord2f vert[:tu], vert[:tv] if vert[:tu] and vert[:tv]
 			GL.Vertex3fv vert[:vector] if vert[:vector].length == 3
 			GL.Vertex2fv vert[:vector] if vert[:vector].length == 2
