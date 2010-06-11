@@ -54,7 +54,11 @@ class FsknMx
 						@primitives << {
 							:texture => Image.get( @textures[texture] ),
 							:verts => v,
-							:pos => @verts[v[0]][:vector], # position of polygon plane
+							:pos => Geometry::Triangle.centroid(
+								Vector.new(@verts[v[0]][:vector]),
+								Vector.new(@verts[v[1]][:vector]),
+								Vector.new(@verts[v[2]][:vector])
+							).to_a,
 							:normal => normal,
 							:transparencies => has_transparencies
 						}

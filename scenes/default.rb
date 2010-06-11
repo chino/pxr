@@ -192,11 +192,13 @@ $player.rotate 180,0,0
 
 $render.models << Lines.new
 $render.ortho_models << Lines.new # TODO - where are they?
-$render.models << Model.new({ :file => "ship.mxv" })
 $render.models << Model.new({ :file => "nbia400.mxa", 
 	:body => sphere_body({ :pos => Vector.new(-400.0,-500.0,5000.0) })})
 $render.models << Model.new({ :file => "xcop400.mxa",
 	:body => sphere_body({ :pos => Vector.new(-600.0,-500.0,5000.0) })})
+
+$level = Model.new({ :file => "ship.mxv" })
+$render.models << $level
 
 ####################################
 # Main Loop
@@ -210,6 +212,7 @@ loop do
 		if $options[:debug]
 			$world.grid.draw
 			$world.bodies.each{|body| body.render_radius }
+			$render.draw_model( :opaque, $level.mesh.normal_rendering )
 		end
 	end
 	SDL::WM.setCaption "PXR - FPS: #{$render.fps}", 'icon'
