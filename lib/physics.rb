@@ -217,7 +217,7 @@ module Physics
 		end
 		def distance
 			# TODO - if plane moves then plane formula needs to be recomputed
-			@distance ||= (-@normal.x*@pos.x) - (@normal.y*@pos.y) - (@normal.z*@pos.z)
+			@distance ||= @normal.dot(@pos) * -1
 		end
 		def side pos
 			p = normal.dot( pos ) + distance
