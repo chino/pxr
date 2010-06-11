@@ -17,6 +17,8 @@ Physics
 
 	* proper support for collision with attachments
 
+	* allow objects to have gravity ?
+
 Networking
 
 	* auto propagation of network registered models
@@ -31,3 +33,57 @@ Questions
 
 	* why mouse grab gives me a few hundred fps more ???
 
+Rendering
+
+	* proper frustum culling
+
+	* bsp culling ?
+
+Research
+
+	http://rb-gsl.rubyforge.org/   The GNU Scientific Library (GSL) is a numerical library for C and C++ programmers.  The library provides a wide range of mathematical routines such as random number generators, special functions and least-squares fitting. There are over 1000 functions in total with an extensive test suite.    bunch of shit , some that caught my eye: Vectors, Matrices, Linear Algebra, interpolation, root-finding, least-squares-fitting, ieee floating point, discrete wavelet transforms, splines and more...
+
+	http://narray.rubyforge.org/   NArray is an Numerical N-dimensional Array class. Supported element types are 1/2/4-byte Integer, single/double-precision Real/Complex, and Ruby Object. This extension library incorporates fast calculation and easy manipulation of large numerical arrays into the Ruby language. NArray has features similar to NumPy, but NArray has vector and matrix subclasses.
+
+	http://rubyforge.org/projects/ruby-ftgl/   FTGL is a free cross-platform Open Source C++ library that uses Freetype2 to simplify rendering fonts in OpenGL applications. FTGL supports bitmaps, pixmaps, texture maps, outlines, polygon mesh, and extruded polygon rendering modes.
+
+	http://www.kitp.ucsb.edu/~paxton/tioga.html  might be of interest ... i think it has a latex wrapper .. idk...
+
+
+Spatial Partitioning
+
+	I also read some other interesting notes in my book.
+	One key point is that I can mix my grid with other type of spatial systems.
+	Such as each grid cell having inside of it an octree, bsp tree, or some other system.
+	These hybrid systems usually offer better mix in the end.
+
+	using a bit mask to define which grid cell*S* a body is in.
+	This way you can easily detect if two bodies are in the same cells 
+	by doing an AND operation on both of their bit masks.
+	This approach would remove the need to find neighbour cells because 
+	items would be inserted in every cell they overlap.
+	At that point it might even be easier to simply test every body 
+	against every other body instead of continuously updating container 
+	arrays ? It's something to think about.
+
+	Also generating a time stamp for each collision sweep can allow us to tag 
+	objects as being already tested within this "timestamp" test.
+
+	Currently if I remember correctly I can still end up testing two spheres 
+	against each other more than once.
+
+
+(09:37:56 AM) meth: and i was thinking if you want the balls to have a timeout... they can blow up !!!
+(09:38:45 AM) meth: maybe they can start like growing/shrinking rapidly and then collapse to a point like a black hole and explode !
+(09:38:46 AM) meth: lol
+(09:38:56 AM) meth: maybe a shock wave ?
+(09:39:03 AM) meth: that would be cool
+
+
+Graphity !!!
+
+
+Tesselate forsaken models
+
+
+Render bsp planes
