@@ -2,10 +2,13 @@ require 'binreader'
 class FsknBsp
 	class Node
 		attr_accessor :normal, :distance, :front, :back, :color
-		def initialize tree, normal, distance, front, back
+		def initialize tree, normal, distance, front, back, color
 			@tree, @normal, @distance, @front, @back, @color = 
 				tree, normal, distance, front, back, color
 		end
+		def pos
+			@pos ||= @normal * @distance
+		end 
 	end
 	include BinReader
 	attr_accessor :groups
