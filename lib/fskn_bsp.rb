@@ -26,12 +26,15 @@ class FsknBsp
 			end
 			@groups << tree
 		end
+		count = 0
 		@groups.each do |tree|
 			tree.each do |node|
+				count += 1
 				node.front = (node.front == 0) ? false : tree[ node.front ]
 				node.back  = (node.back  == 0) ? false : tree[ node.back ]
 			end
 		end
+		puts "#{count} nodes in bsp file #{file}" if $options[:debug]
 	end
 	def render_planes
 		if @planes.nil?
