@@ -84,14 +84,19 @@ module Mesh
 		@radius ||= compute_radius
 	end
 	def compute_radius
+		@radius = Mesh.compute_radius(
+			Vector.new,
+			@verts 
+		)
+	end
+	def self.compute_radius center, verts
 		biggest = 0
-		center = Vector.new
-		@verts.each do |vert|
+		verts.each do |vert|
 			v = Vector.new(vert[:vector])
 			r = (center - v).length2
 			biggest = r if r > biggest
 		end
-		@radius = Math.sqrt(biggest)
+		radius = Math.sqrt(biggest)
 	end
 	def normal_rendering
 		if @normal_rendering.nil?

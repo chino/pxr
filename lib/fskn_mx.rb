@@ -52,15 +52,19 @@ class FsknMx
 						]
 						pad16 = read_short
 						normal = [ read_float, read_float, read_float ]
+						verts = [ @verts[v[0]], @verts[v[1]], @verts[v[2]] ]
+						pos = Geometry::Triangle.centroid(
+							Vector.new(verts[0][:vector]),
+							Vector.new(verts[1][:vector]), 
+							Vector.new(verts[2][:vector])
+						)
+						radius = Mesh.compute_radius( pos, verts )
 						@primitives << {
 							:texture => Image.get( @textures[texture] ),
-							:verts => v,
-							:pos => Geometry::Triangle.centroid(
-								Vector.new(@verts[v[0]][:vector]),
-								Vector.new(@verts[v[1]][:vector]),
-								Vector.new(@verts[v[2]][:vector])
-							).to_a,
-							:normal => normal,
+							:verts   => v,
+							:pos     => pos.to_a,
+							:radius  => radius,
+							:normal  => normal,
 							:transparencies => has_transparencies
 						}
 					}
