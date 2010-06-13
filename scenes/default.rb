@@ -191,23 +191,15 @@ $player = sphere_body({
 $player.rotate 180,0,0
 
 $render.models << Lines.new
-#$render.ortho_models << Lines.new # TODO - where are they?
-#$render.models << Model.new({ :file => "nbia400.mxa", 
-#	:body => sphere_body({ :pos => Vector.new(-400.0,-500.0,5000.0) })})
-#$render.models << Model.new({ :file => "xcop400.mxa",
-#	:body => sphere_body({ :pos => Vector.new(-600.0,-500.0,5000.0) })})
-
-$level = Model.new({ :file => "ship.mxv" })
-#$render.models << $level
+$render.ortho_models << Lines.new # TODO - where are they?
+$render.models << Model.new({ :file => "nbia400.mxa", 
+	:body => sphere_body({ :pos => Vector.new(-400.0,-500.0,5000.0) })})
+$render.models << Model.new({ :file => "xcop400.mxa",
+	:body => sphere_body({ :pos => Vector.new(-600.0,-500.0,5000.0) })})
 
 $level_bsp = FsknBsp.new("data/models/ship.bsp")
-$node = $level_bsp.groups[0][0]
-#$render.models << Quad.new( $node.pos, $node.normal )
-$render.models << Quad.new({
-	:pos => Vector.new(0,0,0), 
-	:normal => Vector.new(0,0,1),
-	:texture => Image.get('data/images/yelo.png')
-})
+$render.models << Model.new({ :file => "ship.mxv" })
+
 
 ####################################
 # Main Loop
@@ -223,6 +215,7 @@ loop do
 			$world.bodies.each{|body| body.render_radius }
 			$render.draw_model( :opaque, $level.mesh.normal_rendering )
 		end
+		puts "in level = #{$level_bsp.point_inside_trees?($player.pos)}" if $options[:debug]
 	end
 	SDL::WM.setCaption "PXR - FPS: #{$render.fps}", 'icon'
 end
