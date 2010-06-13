@@ -135,6 +135,7 @@ module Physics
 			@rotation_drag = s[:rotation_drag] || 0.5
 			@bounce = s[:bounce] || 0.5
 			@mass = s[:mass] || 1
+			throw "error: mass cannot be zero..." if @mass == 0
 			@cell = nil
 		end
 		# move body in eyespace
@@ -226,7 +227,7 @@ module Physics
 	end
 	class Grid
 		attr_accessor :size
-		def initialize size=100
+		def initialize size=1000
 			@grid = {}
 			@size = size
 		end
@@ -248,34 +249,41 @@ module Physics
 			return if @grid[cell]
 			@grid[cell] = [] 
 		end
-		def neighbors? a, b
-			return false if a == b
-			return false if (a[0] - b[0]).abs > 1
-			return false if (a[1] - b[1]).abs > 1
-			return false if (a[2] - b[2]).abs > 1
-			return true
+		def build_row cell, y
+			x,y,z = cell[0], cell[1]+y, cell[2]
+			cells = []
+			c = [x,  y,z  ]; cells << c if @grid[c]
+			c = [x,  y,z+1]; cells << c if @grid[c]
+			c = [x,  y,z-1]; cells << c if @grid[c]
+			c = [x+1,y,z+1]; cells << c if @grid[c]
+			c = [x+1,y,z  ]; cells << c if @grid[c]
+			c = [x+1,y,z-1]; cells << c if @grid[c]
+			c = [x-1,y,z+1]; cells << c if @grid[c]
+			c = [x-1,y,z  ]; cells << c if @grid[c]
+			c = [x-1,y,z-1]; cells << c if @grid[c]
+			cells
 		end
-		def neighbors cell, &block
-			@grid.each do |q,bds|
-				next unless neighbors?( cell, q )
-				yield q,bds
-			end
+		def build_cube cell, &block
+			cells  = []
+			cells += build_row(cell,  0)
+			cells += build_row(cell,  1)
+			cells += build_row(cell, -1)
+			cells
 		end
 		def each &block
-			@grid.each do |cell,bodies|
-				collection = bodies.dup
-				neighbors(cell) {|q,bds| collection << bds }
-				yield collection.flatten.compact
+			@grid.keys.each do |cell|
+				bodies = []
+				build_cube(cell).each do |cell|
+					bodies << @grid[cell]
+				end
+				yield bodies.flatten
 			end
 		end
 		def draw
 			lines = []
-			@grid.keys.each do |q|
-				draw_cell( q ).each do |line|
-					lines << line
-				end
-				neighbors( q ) do |q,bds|
-					draw_cell(q,[255,0,0,0]).each do |line|
+			@grid.keys.each do |cell|
+				build_cube(cell).each do |cell|
+					draw_cell(cell,[255,0,0,0]).each do |line|
 						lines << line
 					end
 				end
@@ -315,11 +323,9 @@ module Physics
 		attr_accessor :bodies, :grid
 		def initialize
 			@bodies = []
-			@grid = Grid.new
 		end
 		def add body
 			@bodies << body
-			@grid.set body
 		end
 		def update
 			drag
@@ -338,15 +344,9 @@ module Physics
 		end
 		def collisions
 			pairs = []
-# TODO
-# what this should really do is find out how many cells an object would move
-# then get a list of all bodies within that range of cells to test against
-#			@grid.each do |bodies|
-bodies = @bodies
-				BroadPhase.sphere( bodies ).each do |pair|
-					pairs << pair
-				end
-#			end
+			BroadPhase.sphere( @bodies ).each do |pair|
+				pairs << pair
+			end
 			pairs.each do |a,b,info|
 				Collision::Response::sphere_sphere a,b,info
 			end
@@ -355,7 +355,6 @@ bodies = @bodies
 			@bodies.each do |body|
 				if body.velocity.length2 > 0
 					body.pos += body.velocity
-					@grid.set body
 				end
 				if body.rotation_velocity.length2 > 0
 					body.rotate body.rotation_velocity
