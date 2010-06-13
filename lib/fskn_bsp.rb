@@ -10,6 +10,15 @@ class FsknBsp
 			@pos ||= @normal * -@distance
 		end 
 	end
+	@@colors = [
+		[255,255,255,255],
+		[255,255,0,255],
+		[255,0,0,255],
+		[0,255,0,255],
+		[0,255,255,255],
+		[0,0,255,255],
+		[255,0,255,255]
+	]
 	include BinReader
 	attr_accessor :groups
 	def initialize file
@@ -22,6 +31,7 @@ class FsknBsp
 				normal = Vector.new(-read_float,read_float,read_float)
 				distance,front,back,color = read_float,read_int,read_int
 				color = [read_char,read_char,read_char,read_char]
+				color = @@colors[g % @@colors.length]
 				tree << Node.new( tree, normal, distance, front, back, color )
 			end
 			@groups << tree
