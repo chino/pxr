@@ -225,6 +225,11 @@ if $options[:debug]
 	$render.models << $level.mesh.normal_rendering
 end
 
+pic = FsknPic.new("data/models/ship.pic")
+pic.pickups.each do |pickup|
+	$world.bodies << pickup.body
+	$render.models << pickup
+end
 
 ####################################
 # Main Loop
