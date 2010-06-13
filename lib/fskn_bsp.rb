@@ -73,7 +73,7 @@ class FsknBsp
 		})
 	end
 	def point_inside_trees? pos
-		$level_bsp.groups.each do |group|
+		@groups.each do |group|
 			return true if point_inside_tree?( pos, group[0] )
 		end
 		return false
