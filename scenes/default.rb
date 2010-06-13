@@ -215,7 +215,6 @@ loop do
 	$update_network.call
 	$render.draw( $player.pos, $player.orientation ) do
 		if $options[:debug]
-			$world.grid.draw
 			$world.bodies.each{|body| body.render_radius }
 			puts "in level = #{$level_bsp.point_inside_trees?($player.pos)}"
 		end
