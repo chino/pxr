@@ -280,7 +280,7 @@ module Physics
 					end
 				end
 			end
-			@lines = Line.new lines
+			@lines = Line.new({ :lines => lines })
 			@lines.draw
 		end
 		def draw_cell q,c=nil

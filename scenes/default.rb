@@ -84,13 +84,6 @@ $inputs.mouse_button = Proc.new{|button,pressed|
 	pos = $player.pos + $player.orientation.vector( Vector.new(0,0,-$player.radius*3) )
 	new_bullet( pos, $player.orientation )
 	send_bullet( pos, $player.orientation )
-
-# TODO - attachments are broken
-#	m2 = Model.new({ :file => "ball1.mx", :body => sphere_body({ :pos => Vector.new(0,0,10), })})
-#	m2.body.pos = Vector.new(0,0,0)
-#	m2.body.velocity = Vector.new
-#	m.mesh.attach m2.mesh
-
 }
 
 $movement = Vector.new 0,0,0
@@ -190,15 +183,26 @@ $player = sphere_body({
 	:rotation_drag => $turn_drag })
 $player.rotate 180,0,0
 
-$render.models << Lines.new
-$render.ortho_models << Lines.new # TODO - where are they?
+$cross_hair = Line.new({
+	:pos   => Vector.new($render.width/2,$render.height/2,0),
+	:scale => 10,
+	:lines => [ [[-1,0],[1,0]], [[0,-1],[0,1]], ]
+})
+$render.ortho_models << $cross_hair
+
 $render.models << Model.new({ :file => "nbia400.mxa", 
 	:body => sphere_body({ :pos => Vector.new(-400.0,-500.0,5000.0) })})
 $render.models << Model.new({ :file => "xcop400.mxa",
 	:body => sphere_body({ :pos => Vector.new(-600.0,-500.0,5000.0) })})
 
 $level_bsp = FsknBsp.new("data/models/ship.bsp")
-$render.models << Model.new({ :file => "ship.mxv" })
+$level = Model.new({ :file => "ship.mxv" })
+$render.models << $level
+
+if $options[:debug]
+	$render.models << Lines.new({:scale => Vector.new(100000,100000,100000)})
+	$render.models << $level.mesh.normal_rendering
+end
 
 
 ####################################
@@ -213,9 +217,8 @@ loop do
 		if $options[:debug]
 			$world.grid.draw
 			$world.bodies.each{|body| body.render_radius }
-			$render.draw_model( :opaque, $level.mesh.normal_rendering )
+			puts "in level = #{$level_bsp.point_inside_trees?($player.pos)}"
 		end
-		puts "in level = #{$level_bsp.point_inside_trees?($player.pos)}" if $options[:debug]
 	end
 	SDL::WM.setCaption "PXR - FPS: #{$render.fps}", 'icon'
 end

@@ -71,12 +71,12 @@ module Mesh
 		attachments.delete model
 	end
 	def scale v
+		# support scalar
+		v = Vector.new(v,v,v) unless v.respond_to? :x
 		@verts.each do |vert|
-			vert[:vector] = [
-				vert[:vector][0] * v.x,
-				vert[:vector][1] * v.y,
-				vert[:vector][2] * v.z
-			]
+			vert[:vector][0] *= v.x
+			vert[:vector][1] *= v.y
+			vert[:vector][2] *= v.z if vert[:vector][2]
 		end
 		remake_dl
 	end
@@ -103,7 +103,7 @@ module Mesh
 				stop   = start + ( normal * 50 )
 				lines << [start.to_a, stop.to_a]
 			end
-			@normal_rendering = Line.new(lines)
+			@normal_rendering = Line.new({ :lines => lines })
 			@normal_rendering.make_dl
 		end
 		@normal_rendering

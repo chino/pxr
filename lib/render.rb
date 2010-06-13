@@ -84,9 +84,13 @@ class Render
 		GL.LoadIdentity()
 		GLU.Ortho2D(0.0,@width,0.0,@height)
 #		GL.Translate(0.0,-@height,0.0)
+		GL.MatrixMode(GL::MODELVIEW)
+		GL.Disable(GL::DEPTH_TEST)
 		@ortho_models.each do |m|
-			m.draw
+			draw_model( :opaque, m )
 		end
+		GL.Enable(GL::DEPTH_TEST)
+		GL.MatrixMode(GL::PROJECTION)
 		GL.PopMatrix
 		GL.MatrixMode(GL::MODELVIEW)
 	end

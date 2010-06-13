@@ -1,11 +1,13 @@
 require "model"
 class Line < Model
 	include Mesh
-	def initialize lines=[]
+	def initialize s={}	
+		@pos = s[:pos] || Vector.new
+		@orientation = Vector.new(0,1,0).quat
 		@render_type = GL::LINES
 		@verts = []
 		@primitives = []
-		lines.each do |start,stop,color,texture|
+		s[:lines].each do |start,stop,color,texture|
 			color ||= [255,255,255,255]
 			@verts << { :vector => start, :rgba => color }
 			@verts << { :vector => stop, :rgba => color }
@@ -17,5 +19,6 @@ class Line < Model
 				]
 			}
 		end
+		scale s[:scale] if s[:scale]
 	end
 end

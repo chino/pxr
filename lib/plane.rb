@@ -2,14 +2,15 @@ require "model"
 class Plane < Model
 	include Mesh
 	attr_accessor :pos, :orientation
-	def initialize s
+	def initialize s={}
 		@render_type = GL::QUADS
 		@pos = s[:pos] || Vector.new()
-		@orientation = Quat.from_vector(s[:normal])
+		normal = s[:normal] || Vector.new(0,0,-1)
+		@orientation = Quat.from_vector( normal )
 		c = s[:color] || [255,255,255,255]
 		@primitives = [{ 
 			:verts => [ 0,1,2,3 ],
-			:normal => s[:normal].to_a,
+			:normal => normal.to_a,
 			:texture => s[:texture],
 		}]
 		x = y = -0.5
