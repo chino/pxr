@@ -1,5 +1,6 @@
 require "binreader"
 require "vector"
+require 'pickup'
 class FsknPic
 	@@names = [
 		'Trojax',
@@ -131,6 +132,7 @@ class FsknPic
 					:rotation_velocity => Vector.new(1,1,1)
 				})
 			})
+			props.delete :pos
 			props.keys.each do |prop|
 				p.instance_variable_set(
 					"@#{prop}".to_sym,
