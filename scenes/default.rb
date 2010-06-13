@@ -227,7 +227,7 @@ end
 
 pic = FsknPic.new("data/models/ship.pic")
 pic.pickups.each do |pickup|
-	$world.bodies << pickup.body
+	$world.add pickup.body
 	$render.models << pickup
 end
 
