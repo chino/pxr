@@ -196,6 +196,27 @@ $render.models << Model.new({ :file => "xcop400.mxa",
 	:body => sphere_body({ :pos => Vector.new(-600.0,-500.0,5000.0) })})
 
 $level_bsp = FsknBsp.new("data/models/ship.bsp")
+rv,node,$in_group = $level_bsp.point_inside_groups?($player.pos)
+$level_bsp_update = Proc.new{
+	if $in_group == -1
+		rv,node,$in_group = $level_bsp.point_inside_groups?($player.pos)
+		if $in_group != -1
+			puts "entered level at group #{$in_group} node #{node}"
+		end
+	else
+		rv,node1 = $level_bsp.point_inside_group?( $player.pos, $in_group )
+		unless rv # left group
+			old_group = $in_group
+			rv,node2,$in_group = $level_bsp.point_inside_groups?($player.pos)
+			if $in_group != -1
+				puts "moved to new level group #{$in_group}"
+			else
+				puts "hit wall at group #{old_group} node #{node1}"
+			end
+		end
+	end
+}
+
 $level = Model.new({ :file => "ship.mxv" })
 $render.models << $level
 
@@ -212,11 +233,11 @@ end
 loop do
 	$inputs.poll
 	$world.update
+	$level_bsp_update.call
 	$update_network.call
 	$render.draw( $player.pos, $player.orientation ) do
 		if $options[:debug]
 			$world.bodies.each{|body| body.render_radius }
-			puts "in level = #{$level_bsp.point_inside_trees?($player.pos)}"
 		end
 	end
 	SDL::WM.setCaption "PXR - FPS: #{$render.fps}", 'icon'

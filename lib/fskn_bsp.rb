@@ -72,24 +72,40 @@ class FsknBsp
 			:color => node.color
 		})
 	end
-	def point_inside_trees? pos
-		@groups.each do |group|
-			return true if point_inside_tree?( pos, group[0] )
+	def point_inside_groups? pos
+		@groups.each_with_index do |group,i|
+			rv,node = point_inside_group?( pos, i )
+			return [rv,node,i] if rv
 		end
-		return false
+		return [false,nil,-1]
+	end
+	def point_inside_group? pos, group
+		point_inside_tree?( pos, @groups[group][0] )
 	end
 	@@epsilon = 0.03125 # wide plane to compensate for math errors
 	def point_inside_tree? pos, node
 		while node
 			d = node.normal.dot( pos ) + node.distance
-			if    d >  @@epsilon; return true  unless node = node.front
-			elsif d < -@@epsilon; return false unless node = node.back
+			if    d >  @@epsilon
+				unless node.front
+					return [true,node]
+				else
+					node = node.front
+				end
+			elsif d < -@@epsilon
+				unless node.back
+					return [false,node]
+				else
+					node = node.back
+				end
 			else # coincide
-				return true unless node.front
-				return true if point_inside_tree?( pos, node.front )
-				return false unless node.back
-				return false unless point_inside_tree?( pos, node.back )
-				return true
+				return [true,node] unless node.front
+				rv,n = point_inside_tree?( pos, node.front )
+				return [true,n] if rv
+				return [false,node] unless node.back
+				rv,n = point_inside_tree?( pos, node.back )
+				return [false,n] unless rv
+				return [true,node]
 			end
 		end
 	end
