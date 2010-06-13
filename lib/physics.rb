@@ -199,7 +199,7 @@ module Physics
 			verts << [[x,  y-r,z  ],c]
 			verts << [[x,  y,  z+r],c]
 			verts << [[x,  y,  z-r],c]
-			points = Point.new(verts)
+			points = Point.new({:points => verts})
 			points.draw
 		end
 	end
