@@ -1,5 +1,21 @@
 require "vector"
 class Quat
+	def self.from_vector direction
+		identity = Vector.new(0,0,-1) # opengl looks down -z
+		axis = identity.cross( direction )
+		angle = Math::acos( identity.dot direction )
+		from_axis( axis, angle )
+	end
+	def self.from_axis vector, angle
+		angle *= 0.5
+		n = vector.normalize
+		sin_angle = Math::sin(angle)
+		x = n.x * sin_angle
+		y = n.y * sin_angle
+		z = n.z * sin_angle
+		w = Math::cos(angle)
+		Quat.new x,y,z,w
+	end
 	attr_accessor :x, :y, :z, :w
 	def initialize x=0,y=0,z=0,w=0
 		@x,@y,@z,@w = x,y,z,w
@@ -58,6 +74,7 @@ class Quat
 			cr*cp*cy + sr*sp*sy
 		).normalize
 		@x,@y,@z,@w = result.to_a
+		self
 	end
 	def rotate *args
 		dup.rotate!(*args)
