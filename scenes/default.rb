@@ -150,6 +150,10 @@ $inputs.on_poll Proc.new{
 # Scene
 ####################################
 
+PLAYER = 2
+BULLET = 4
+PICKUP = 6
+
 def new_bullet pos, orientation
 	vel = orientation.vector( Vector.new(0,0,-100) )
 	m = Model.new({
@@ -160,7 +164,9 @@ def new_bullet pos, orientation
 			:velocity => vel,
 			:drag => 0,
 			:rotation_velocity => Vector.new(10,10,10),
-			:rotation_drag => 0
+			:rotation_drag => 0,
+			:type => BULLET,
+			:mask => PLAYER
 		})
 	})
 	$render.models << m
@@ -180,7 +186,10 @@ $render = Render.new($options)
 $player = sphere_body({
 	:pos => Vector.new(-550.0,-500.0,4600.0),
 	:drag => $move_drag,
-	:rotation_drag => $turn_drag })
+	:rotation_drag => $turn_drag,
+	:type => PLAYER,
+	:mask => BULLET|PLAYER|PICKUP
+})
 $player.rotate 180,0,0
 
 $cross_hair = Line.new({
@@ -190,10 +199,23 @@ $cross_hair = Line.new({
 })
 $render.ortho_models << $cross_hair
 
-$render.models << Model.new({ :file => "nbia400.mxa", 
-	:body => sphere_body({ :pos => Vector.new(-400.0,-500.0,5000.0) })})
-$render.models << Model.new({ :file => "xcop400.mxa",
-	:body => sphere_body({ :pos => Vector.new(-600.0,-500.0,5000.0) })})
+$render.models << Model.new({
+	:file => "nbia400.mxa", 
+	:body => sphere_body({
+		:pos => Vector.new(-400.0,-500.0,5000.0), 
+		:type => PLAYER,
+		:mask => BULLET|PLAYER|PICKUP
+	})
+})
+
+$render.models << Model.new({
+	:file => "xcop400.mxa",
+	:body => sphere_body({
+		:pos => Vector.new(-600.0,-500.0,5000.0),
+		:type => PLAYER,
+		:mask => BULLET|PLAYER|PICKUP
+	})
+})
 
 $level_bsp = FsknBsp.new("data/models/ship.bsp")
 rv,node,$in_group = $level_bsp.point_inside_groups?($player.pos)
@@ -225,11 +247,20 @@ if $options[:debug]
 	$render.models << $level.mesh.normal_rendering
 end
 
-pic = FsknPic.new("data/models/ship.pic")
-pic.pickups.each do |pickup|
-	$world.add pickup.body
-	$render.models << pickup
+pickups = FsknPic.new("data/models/ship.pic").pickups
+pickups.each do |pickup|
+	pickup.body.type = BULLET
+	pickup.body.mask = PLAYER
 end
+
+$picmgr = PickupManager.new({
+	:world => $world,
+	:render => $render,
+	:pickups => pickups,
+	:on_pickup => Proc.new{|pickup,player|
+		puts "player collided with pickup"
+	}
+})
 
 ####################################
 # Main Loop

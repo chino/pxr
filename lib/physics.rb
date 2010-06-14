@@ -114,6 +114,8 @@ module Physics
 				a_has_velocity = a.velocity.length2 > 0
 				# only check each pair once
 				j = i + 1; for j in (i+1..bodies.length-1); b = bodies[j]
+					# check collision masks
+					next if (a.type & b.mask == 0) and (b.type & a.mask == 0)
 					# only check if either sphere moving
 					next unless a_has_velocity or b.velocity.length2 > 0
 					# collect spheres which collide and the time/place it happens
@@ -124,9 +126,11 @@ module Physics
 		end
 	end
 	class Body
-		attr_accessor :pos, :orientation, :drag, :velocity, 
-				:rotation_velocity, :rotation_drag, :bounce, :mass, :cell
+		attr_accessor :pos, :orientation, :drag, :velocity, :type, :mask
+		attr_accessor :rotation_velocity, :rotation_drag, :bounce, :mass
 		def initialize s={}
+			@type = s[:type]
+			@mask = s[:mask]
 			@pos = s[:pos] || Vector.new
 			@orientation = s[:orientation] || Quat.new(0, 0, 0, 1).normalize
 			@velocity = s[:velocity] || Vector.new
@@ -184,10 +188,11 @@ module Physics
 		end
 	end
 	class SphereBody < Body
-		attr_accessor :radius
+		attr_accessor :radius, :on_collision
 		def initialize s={}
 			super(s)
 			@radius = s[:radius] || 50
+			@on_collision = s[:on_collision] || Proc.new{true}
 		end
 		def render_radius
 			c = [255,0,0,0]
@@ -254,7 +259,9 @@ module Physics
 				pairs << pair
 			end
 			pairs.each do |a,b,info|
-				Collision::Response::sphere_sphere a,b,info
+				next unless a.on_collision.call( a, b )
+				next unless a.on_collision.call( b, a )
+				Collision::Response::sphere_sphere( a, b, info )
 			end
 		end
 		def velocities

@@ -3,18 +3,6 @@ Physics
 
 	* level collisions
 
-	* collision masks to define what things a body can interact with each other
-		body.group = SHIP
-		body.collides = SHIP|WALL|BULLET
-		def add_body body
-			@bodies << body
-			@groups[body.type] << body
-		end
-
-	* collision callbacks to support things like 
-		* pickups that do not modify the ship trajectory
-		* sounds
-
 	* proper support for collision with attachments
 
 	* allow objects to have gravity ?
