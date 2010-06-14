@@ -259,6 +259,7 @@ $picmgr = PickupManager.new({
 	:pickups => pickups,
 	:on_pickup => Proc.new{|pickup,player|
 		puts "player collided with pickup"
+		false
 	}
 })
 

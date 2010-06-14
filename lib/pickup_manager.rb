@@ -12,7 +12,7 @@ class PickupManager
 		@world.add pickup.body
 		@render.models << pickup
 		pickup.body.on_collision = Proc.new{|pickup,player|
-			@on_pickup.call pickup, player
+			@on_pickup.call( pickup, player )
 		}
 	end
 end

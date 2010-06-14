@@ -129,6 +129,7 @@ module Physics
 		attr_accessor :pos, :orientation, :drag, :velocity, :type, :mask
 		attr_accessor :rotation_velocity, :rotation_drag, :bounce, :mass
 		def initialize s={}
+			@on_collision = s[:on_collision] || Proc.new{true}
 			@type = s[:type]
 			@mask = s[:mask]
 			@pos = s[:pos] || Vector.new
@@ -192,7 +193,6 @@ module Physics
 		def initialize s={}
 			super(s)
 			@radius = s[:radius] || 50
-			@on_collision = s[:on_collision] || Proc.new{true}
 		end
 		def render_radius
 			c = [255,0,0,0]
@@ -260,7 +260,7 @@ module Physics
 			end
 			pairs.each do |a,b,info|
 				next unless a.on_collision.call( a, b )
-				next unless a.on_collision.call( b, a )
+				next unless b.on_collision.call( b, a )
 				Collision::Response::sphere_sphere( a, b, info )
 			end
 		end
