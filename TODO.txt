@@ -7,25 +7,78 @@ Physics
 
 	* allow objects to have gravity ?
 
-Networking
+	* if a pickup spawns on you since your both not moving you wont pick it up...
 
-	* auto propagation of network registered models
+	* timestamp for each collision update
+		so you know if two objects are already tested against each other
+
+	* ruby-ode - class ?
+
+UI
+
+	* texting between players
+
+	* console
+
+Grphics
+
+	* proper frustum culling
+
+	* shaders
+
+	* irrlicht shield affect
+
+	* water ?
+
+	* wave scenes
+
+		- try using vertex arrays and index buffers?
+		- try to create real looking water?
+		- try rippling along the normal so you can have none flat surfaces ripple?
+		- do normals have to be updated with the ripple?
+		- using normal-mapping to create a ripple affect?
+
+	* real time lighting for descent levels
+
+Network
+
+	* detect if a player drops out of teh game
+
+Game Logic
+
+	* add timeout for balls , make them blow up ?  maybe they can start like growing/shrinking
+		rapidly and then collapse to a point like a black hole and explode !
+		maybe make a shock wave too ?
+
+	* ability to tag graphity on things
+
+	* tesselate models
+
+	* console api which is also used in config ?
+
+Deployment
+
+	* single packed binaries for windows ?
+
+Game Modes
+
+	* first simple kill based game
+
+	* asteriods
+
+	* mario cart
 
 Controls
 
-	* some type of centralized controls
+	* define a ForsakenBike class for movement style...
+
+	* support sdl joystick
 
 Questions
 
 	* does mouse code really need to know w/h ?
 
 	* why mouse grab gives me a few hundred fps more ???
-
-Rendering
-
-	* proper frustum culling
-
-	* bsp culling ?
 
 Research
 
@@ -38,40 +91,3 @@ Research
 	http://www.kitp.ucsb.edu/~paxton/tioga.html  might be of interest ... i think it has a latex wrapper .. idk...
 
 
-Spatial Partitioning
-
-	I also read some other interesting notes in my book.
-	One key point is that I can mix my grid with other type of spatial systems.
-	Such as each grid cell having inside of it an octree, bsp tree, or some other system.
-	These hybrid systems usually offer better mix in the end.
-
-	using a bit mask to define which grid cell*S* a body is in.
-	This way you can easily detect if two bodies are in the same cells 
-	by doing an AND operation on both of their bit masks.
-	This approach would remove the need to find neighbour cells because 
-	items would be inserted in every cell they overlap.
-	At that point it might even be easier to simply test every body 
-	against every other body instead of continuously updating container 
-	arrays ? It's something to think about.
-
-	Also generating a time stamp for each collision sweep can allow us to tag 
-	objects as being already tested within this "timestamp" test.
-
-	Currently if I remember correctly I can still end up testing two spheres 
-	against each other more than once.
-
-
-(09:37:56 AM) meth: and i was thinking if you want the balls to have a timeout... they can blow up !!!
-(09:38:45 AM) meth: maybe they can start like growing/shrinking rapidly and then collapse to a point like a black hole and explode !
-(09:38:46 AM) meth: lol
-(09:38:56 AM) meth: maybe a shock wave ?
-(09:39:03 AM) meth: that would be cool
-
-
-Graphity !!!
-
-
-Tesselate forsaken models
-
-
-Render bsp planes
