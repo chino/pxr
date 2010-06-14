@@ -26,6 +26,9 @@ class Quat
 	def length2
 		dot
 	end
+	def has_velocity?
+		dot > 0.1 # so we don't test super small values
+	end
 	def dot q=self
 		@x * q.x + @y * q.y + @z * q.z + @w * q.w
 	end

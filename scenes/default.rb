@@ -7,7 +7,7 @@ $world = Physics::World.new
 
 def sphere_body s={}
 	body = Physics::SphereBody.new(s)
-	$world.add body
+	$world.bodies << body
 	body
 end
 
@@ -115,7 +115,7 @@ def handle_mouse
 
 	# get accumulated mouse movement
 	v = Vector.new( $inputs.mouse_get )
-	return unless v.length2 > 0
+	return unless v.has_velocity?
 
 	# apply mouse accelleration
 	v += v * $turn_accell
@@ -127,7 +127,7 @@ end
 
 def handle_keyboard
 
-	return unless $movement.length2 > 0
+	return unless $movement.has_velocity?
 
 	# convert movement into world coordinates
 	movement = $player.orientation.vector($movement)
@@ -257,9 +257,10 @@ $picmgr = PickupManager.new({
 	:world => $world,
 	:render => $render,
 	:pickups => pickups,
+	:regen_time => 10, # seconds
 	:on_pickup => Proc.new{|pickup,player|
-		puts "player collided with pickup"
-		false
+		puts "player picked up pickup"
+		true # allow to pickup
 	}
 })
 
@@ -272,6 +273,7 @@ loop do
 	$world.update
 	$level_bsp_update.call
 	$update_network.call
+	$picmgr.pump
 	$render.draw( $player.pos, $player.orientation ) do
 		if $options[:debug]
 			$world.bodies.each{|body| body.render_radius }

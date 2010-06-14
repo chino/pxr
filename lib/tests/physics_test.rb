@@ -6,7 +6,7 @@ $world = Physics::World.new
 
 100.times do |x|
 	y = x * 50.0
-	$world.add Physics::SphereBody.new({ 
+	$world.bodies << Physics::SphereBody.new({ 
 		:pos => Vector.new( y, y, y ),
 		:velocity => Vector.new( x,x,x ),
 		:drag => 0

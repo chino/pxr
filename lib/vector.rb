@@ -57,6 +57,9 @@ class Vector
 	def length2
 		dot
 	end
+	def has_velocity?
+		dot > 0.1 # so we don't test super small values
+	end
 	def cross v2
 		Vector.new(
 			@y*v2.z - @z*v2.y,

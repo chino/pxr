@@ -33,25 +33,25 @@ module Physics
 			end
 			def self.sphere_sphere a, b, info
 
-					# reduce test to only a single moving sphere
-					# b becomes a stationary sphere 
-					# v represents movement of both spheres
-					v = a.velocity - b.velocity
-					vlen = v.length2
+				# reduce test to only a single moving sphere
+				# b becomes a stationary sphere 
+				# v represents movement of both spheres
+				v = a.velocity - b.velocity
+				vlen = v.length2
 
-					# both spheres apparently have same velocity
-					# they must be moving parrallel so cannot collide
-					# TODO - do we need to now detect if they are already touching? 
-					return false if vlen == 0.0
+				# both spheres apparently have same velocity
+				# they must be moving parrallel so cannot collide
+				# TODO - do we need to now detect if they are already touching? 
+				return false if vlen == 0.0
 
-					# reduce test to line segment vs sphere
-					# b's radius will increase by a's
-					# and 'a' becomes a point
-					r = b.radius + a.radius
+				# reduce test to line segment vs sphere
+				# b's radius will increase by a's
+				# and 'a' becomes a point
+				r = b.radius + a.radius
 
-					# test if line segment passes through sphere
-					# line segment representing movement in 'v' from start to finish
-					segment_sphere( a.pos, v/vlen, b.pos, r, vlen, info )
+				# test if line segment passes through sphere
+				# line segment representing movement in 'v' from start to finish
+				segment_sphere( a.pos, v/vlen, b.pos, r, vlen, info )
 
 			end
 		end
@@ -111,13 +111,13 @@ module Physics
 		def self.sphere bodies
 			collisions = []
 			bodies.each_with_index do |a,i|
-				a_has_velocity = a.velocity.length2 > 0
+				a_has_velocity = a.velocity.has_velocity?
 				# only check each pair once
 				j = i + 1; for j in (i+1..bodies.length-1); b = bodies[j]
 					# check collision masks
 					next if (a.type & b.mask == 0) and (b.type & a.mask == 0)
 					# only check if either sphere moving
-					next unless a_has_velocity or b.velocity.length2 > 0
+					next unless a_has_velocity or b.velocity.has_velocity?
 					# collect spheres which collide and the time/place it happens
 					info = {}; collisions << [a,b,info] if Collision::Test::sphere_sphere a,b,info
 				end
@@ -235,9 +235,6 @@ module Physics
 		def initialize
 			@bodies = []
 		end
-		def add body
-			@bodies << body
-		end
 		def update
 			drag
 			collisions
@@ -245,10 +242,10 @@ module Physics
 		end
 		def drag
 			@bodies.each do |body|
-				if body.velocity.length2 > 0
+				if body.velocity.has_velocity?
 					body.velocity -= body.velocity * body.drag
 				end
-				if body.rotation_velocity.length2 > 0
+				if body.rotation_velocity.has_velocity?
 					body.rotation_velocity -= body.rotation_velocity * body.rotation_drag
 				end
 			end
@@ -266,10 +263,10 @@ module Physics
 		end
 		def velocities
 			@bodies.each do |body|
-				if body.velocity.length2 > 0
+				if body.velocity.has_velocity?
 					body.pos += body.velocity
 				end
-				if body.rotation_velocity.length2 > 0
+				if body.rotation_velocity.has_velocity?
 					body.rotate body.rotation_velocity
 				end
 			end
