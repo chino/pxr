@@ -3,6 +3,76 @@ require "quat"
 module Physics
 	module Collision
 		module Test
+			PI2 = sprintf('%.14f',Math::PI * 2).to_f
+			def self.point_in_poly? p, verts
+				# consequtive points between verts should add
+				# up to 360 degrees if we are inside polygon
+				radians = 0
+        verts.length.times do |i|
+					i2 = i < verts.length ? i + 1 : 0 # next or first vert
+					v1 = ( verts[i ] - p ).normalize
+					v2 = ( verts[i2] - p ).normalize
+					begin
+          	radians += Math.acos(v1.dot(v2))
+					rescue
+						puts "acos arg out of range need to figure out what's wrong here"
+						puts verts.inspect
+						next
+					end
+				end
+				PI2 == sprintf('%.14f',radians).to_f # equal to 360*
+			end
+			EPSILON = 0.03125
+			def self.sphere_to_plane body, plane, info=nil
+
+				# velocity towards plane
+				vtp = plane.normal.dot body.velocity
+
+				# we are moving perpendicular to the plane
+				# not much we can do at this point and continuing would cause division by 0
+				return false if vtp == 0.0 
+
+				# radius towards plane
+				radius = plane.normal + body.radius	# size of radius on normal
+				radius *= -1 if vtp < 0			# radius in direction of normal
+			
+				# start and end point of movement on tip of sphere
+				start  = body.pos - radius			# back of sphere before movement
+				stop   = body.pos + body.velocity + radius	# front of sphere after movement
+			
+				# which side of plane was start point ?
+				start_distance = plane.normal.dot(start) + plane.distance
+				start_side = 	if start_distance > EPSILON
+							:front
+						elsif start_distance < EPSILON
+							:back
+						else
+							:coincide
+						end
+			
+				# which side of plane was stop point ?
+				end_distance = plane.normal.dot(stop) + plane.distance
+				end_side =	if end_distance > EPSILON
+							:front
+						elsif end_distance < EPSILON
+							:back
+						else
+							:coincide
+						end
+	
+				# we didn't collide
+				return false if start_side == end_side
+
+				# return collision time and point		
+				unless info.nil?
+					info[:time] = -((plane.normal.dot(start) + plane.distance) / vtp)
+					info[:point] = start + (body.velocity * info[:time])
+				end
+
+				# we collided
+				return true
+
+			end
 			def self.ray_sphere p, d, sp, sr, info=nil
 				m = p - sp
 				b = m.dot(d)
@@ -231,13 +301,14 @@ module Physics
 		end
 	end
 	class World
-		attr_accessor :bodies, :grid
+		attr_accessor :bodies, :grid, :callback
 		def initialize
 			@bodies = []
 		end
 		def update
 			drag
 			collisions
+			@callback.call unless @callback.nil?
 			velocities
 		end
 		def drag
