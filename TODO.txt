@@ -40,6 +40,10 @@ Grphics
 
 	* real time lighting for descent levels
 
+Levels
+
+	* simple node based tunnels (perhaps use nurbs for smooth path)
+
 Network
 
 	* detect if a player drops out of teh game
