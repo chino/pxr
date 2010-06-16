@@ -254,9 +254,11 @@ $level_bsp_update = Proc.new{
 			else
 				$in_group = old_group
 				$render.models << $level_bsp.render_node(node1) if $options[:debug]
+				pos = $player.pos.dup
+				pos.x *= -1
 				$render.models << Line.new({:lines => [[
-					$player.pos.to_a,
-					($player.pos + (node1.normal * 100)).to_a
+					pos.to_a,
+					(pos + (node1.normal * 100)).to_a
 				]]}) if $options[:debug]
 x=0
 while true
