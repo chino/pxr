@@ -217,27 +217,67 @@ $render.models << Model.new({
 	})
 })
 
+if $options[:debug]
+
+def collide_body_with_plane body, normal
+	m = normal.dot( body.velocity ) # ammount of movement towards plane
+	vtp = normal * m                # ammount of velocity towards plane
+	vtp += vtp * body.bounce        # multiply velocity by bounce
+	body.velocity -= vtp            # apply force to the velocity
+end
+
 $level_bsp = FsknBsp.new("data/models/ship.bsp")
-rv,node,$in_group = $level_bsp.point_inside_groups?($player.pos)
+rv,node,$in_group = $level_bsp.point_inside_groups?($player.pos, $player.radius)
 $level_bsp_update = Proc.new{
+	# my position after movement
+	stop = $player.pos + $player.velocity
+	# I'm outside the level
 	if $in_group == -1
-		rv,node,$in_group = $level_bsp.point_inside_groups?($player.pos)
+		# does my movement put me inside the level ?
+		rv,node,$in_group = $level_bsp.point_inside_groups?( stop, $player.radius )
 		if $in_group != -1
-			puts "entered level at group #{$in_group} node #{node}"
+			puts "hit wall at group #{$in_group} node #{node} from outside"
+			# need to walk tree backwards to find proper collision plane
+			#collide_body_with_plane $player, node.normal*-1
+			$render.models << $level_bsp.render_node(node) if $options[:debug]
 		end
+	# I'm inside the level
 	else
-		rv,node1 = $level_bsp.point_inside_group?( $player.pos, $in_group )
+		# does my movement put in outside my last group ?
+		rv,node1 = $level_bsp.point_inside_group?( stop, $in_group, $player.radius )
 		unless rv # left group
+			# am I in a new group or outside level ?
 			old_group = $in_group
-			rv,node2,$in_group = $level_bsp.point_inside_groups?($player.pos)
+			rv,node2,$in_group = $level_bsp.point_inside_groups?($player.pos, $player.radius)
 			if $in_group != -1
 				puts "moved to new level group #{$in_group}"
 			else
-				puts "hit wall at group #{old_group} node #{node1}"
+				$in_group = old_group
+				$render.models << $level_bsp.render_node(node1) if $options[:debug]
+				$render.models << Line.new({:lines => [[
+					$player.pos.to_a,
+					($player.pos + (node1.normal * 100)).to_a
+				]]}) if $options[:debug]
+x=0
+while true
+				puts "hit wall at group #{$in_group} node #{node1} from inside, count=#{x+=1}"
+				collide_body_with_plane $player, node1.normal
+	break unless node1.front
+	stop = $player.pos + $player.velocity
+	rv, node1 = $level_bsp.point_inside_tree?(stop,node1.front,$player.radius)
+	break unless rv
+end
+
 			end
 		end
 	end
 }
+
+$world.callback = Proc.new{
+	$level_bsp_update.call
+}
+
+end
 
 $level = Model.new({ :file => "ship.mxv" })
 $render.models << $level
@@ -249,7 +289,7 @@ end
 
 pickups = FsknPic.new("data/models/ship.pic").pickups
 pickups.each do |pickup|
-	pickup.body.type = BULLET
+	pickup.body.type = PICKUP
 	pickup.body.mask = PLAYER
 end
 
@@ -271,7 +311,6 @@ $picmgr = PickupManager.new({
 loop do
 	$inputs.poll
 	$world.update
-	$level_bsp_update.call
 	$update_network.call
 	$picmgr.pump
 	$render.draw( $player.pos, $player.orientation ) do
