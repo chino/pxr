@@ -166,7 +166,7 @@ def new_bullet pos, orientation
 			:rotation_velocity => Vector.new(10,10,10),
 			:rotation_drag => 0,
 			:type => BULLET,
-			:mask => PLAYER
+			:mask => [PLAYER]
 		})
 	})
 	$render.models << m
@@ -188,7 +188,7 @@ $player = sphere_body({
 	:drag => $move_drag,
 	:rotation_drag => $turn_drag,
 	:type => PLAYER,
-	:mask => BULLET|PLAYER|PICKUP
+	:mask => [BULLET,PLAYER,PICKUP]
 })
 $player.rotate 180,0,0
 
@@ -204,7 +204,7 @@ $render.models << Model.new({
 	:body => sphere_body({
 		:pos => Vector.new(-400.0,-500.0,5000.0), 
 		:type => PLAYER,
-		:mask => BULLET|PLAYER|PICKUP
+		:mask => [BULLET,PLAYER,PICKUP]
 	})
 })
 
@@ -213,7 +213,7 @@ $render.models << Model.new({
 	:body => sphere_body({
 		:pos => Vector.new(-600.0,-500.0,5000.0),
 		:type => PLAYER,
-		:mask => BULLET|PLAYER|PICKUP
+		:mask => [BULLET,PLAYER,PICKUP]
 	})
 })
 
@@ -292,7 +292,7 @@ end
 pickups = FsknPic.new("data/models/ship.pic").pickups
 pickups.each do |pickup|
 	pickup.body.type = PICKUP
-	pickup.body.mask = PLAYER
+	pickup.body.mask = [PLAYER]
 end
 
 $picmgr = PickupManager.new({

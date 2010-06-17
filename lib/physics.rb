@@ -185,7 +185,7 @@ module Physics
 				# only check each pair once
 				j = i + 1; for j in (i+1..bodies.length-1); b = bodies[j]
 					# check collision masks
-					next if (a.type & b.mask == 0) and (b.type & a.mask == 0)
+					next if (not b.mask.include? a.type) and (not a.mask.include? b.type)
 					# only check if either sphere moving
 					next unless a_has_velocity or b.velocity.has_velocity?
 					# collect spheres which collide and the time/place it happens
