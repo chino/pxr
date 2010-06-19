@@ -20,7 +20,7 @@ class FsknBsp
 		[255,0,255,255]
 	]
 	include BinReader
-	attr_accessor :groups
+	attr_accessor :groups, :collide_node, :collide_point
 	def initialize file
 		open( file )
 		magic_num, bsp_ver_num = read_int, read_int
@@ -108,5 +108,102 @@ class FsknBsp
 				return [true,node]
 			end
 		end
+	end
+	def ray_collide body, info={}
+		@groups.length.times do |i|
+			ray_collide_group( start, dir, info, i )
+		end
+	end
+	def ray_collide_group body, group=0
+		root = @groups[group][0]
+		start  = body.pos + 0
+		stop   = body.pos + body.velocity
+		ray_collide_node root, start, stop, body.radius, body.velocity
+	end
+	def ray_collide_node node, start, stop, radius, velocity
+
+		return false unless node && start && stop
+
+		d1 = node.normal.dot( start ) + node.distance - radius
+		d2 = node.normal.dot( stop  ) + node.distance - radius
+
+		d1 = 0.0 if d1 < @@epsilon and d1 > -@@epsilon
+
+		if d2 < @@epsilon and d2 > -@@epsilon 
+			if d1 == 0 
+				if  node.back and node.front 
+					if  ray_collide_node( node.back, start, stop, radius, velocity ) 
+						back_collide_node = @collide_node;
+						back_collide_point = @collide_point;
+						if  ray_collide_node( node.front, start, stop, radius, velocity ) 
+							dv = back_collide_point - start
+							d1 = dv.length
+							dv = @collide_point - start
+							d2 = dv.length
+							if d1 < d2
+								@collide_node = back_collide_node;
+								@collide_point = back_collide_point;
+							end
+						else
+							@collide_node = back_collide_node;
+							@collide_point = back_collide_point;
+						end
+						return true;
+					else
+						return ray_collide_node( node.front, start, stop, radius, velocity );
+					end
+				elsif  node.back 
+					return ray_collide_node( node.back, start, stop, radius, velocity );	
+				elsif  node.front 
+					return ray_collide_node( node.front, start, stop, radius, velocity );
+				else
+					return false
+				end
+				return true
+			end
+			d2 = 0.0
+		end
+
+		if d1 < -radius and d2 < -radius
+			if node = node.back 
+				return ray_collide_node( node, start, stop, radius, velocity )
+			end
+			return true
+		end
+		
+		if d1 >= radius and d2 >= radius
+			if node = node.front
+				return ray_collide_node( node, start, stop, radius, velocity )
+			end
+			return false
+		end
+
+		div = (velocity + node.normal).dot
+		distance2plane = (node.normal.dot( start ) + node.distance - radius) / div
+
+		intersection_point = start - (velocity * distance2plane)
+
+		side = d1 < 0
+		if side
+			near_node = node.back
+			far_node = node.front
+		else
+			near_node = node.front
+			far_node = node.back
+		end
+
+		return true if ( !near_node and side ) or 
+			( near_node and ray_collide_node( 
+				near_node, start, intersection_point, radius, velocity ) )
+
+		@collide_node = node;
+		@collide_point = intersection_point;
+
+		unless far_node 
+			return false if side
+			return true
+		end
+
+		return ray_collide_node( far_node, intersection_point, stop, radius, velocity )
 	end
 end
