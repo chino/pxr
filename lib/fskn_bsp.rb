@@ -111,8 +111,12 @@ class FsknBsp
 	end
 	def ray_collide body, info={}
 		@groups.length.times do |i|
-			ray_collide_group( start, dir, info, i )
+			if ray_collide_group( body, i )
+				info[:group] = i
+				return true
+			end
 		end
+		return false
 	end
 	def ray_collide_group body, group=0
 		root = @groups[group][0]
