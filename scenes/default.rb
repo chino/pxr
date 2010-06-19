@@ -259,21 +259,30 @@ $level_bsp_update = Proc.new{
 
 			# left the level
 			$in_group = old_group
-			if $level_bsp.ray_collide_group( $player, $in_group )
-				p = $level_bsp.collide_point
-				n = $level_bsp.collide_node
-				next unless p and n
-				d = n.distance - $player.radius
-				#puts "collided #{p} #{n} #{n.normal} #{d}"
-				collide_body_with_plane $player, n.normal
-				$render.models << $level_bsp.render_node(node1) if $options[:debug]
-				pos = $player.pos.dup
-				pos.x *= -1
-				$render.models << Line.new({:lines => [[
-					pos.to_a,
-					(pos + (node1.normal * 100)).to_a
-				]]}) if $options[:debug]
+			unless $level_bsp.ray_collide_group( $player, $in_group )
+				puts "point check says I left level but ray check says I didn't collide"
+				next
 			end
+
+			p = $level_bsp.collide_point
+			n = $level_bsp.collide_node
+			unless p and n
+				puts "I collided with level but collide point/node are false"
+				next
+			end
+
+			d = n.distance - $player.radius
+			#puts "collided #{p} #{n} #{n.normal} #{d}"
+			collide_body_with_plane $player, n.normal
+	
+			# debug stuff
+			$render.models << $level_bsp.render_node(node1) if $options[:debug]
+			pos = $player.pos.dup
+			pos.x *= -1
+			$render.models << Line.new({:lines => [[
+				pos.to_a,
+				(pos + (node1.normal * 100)).to_a
+			]]}) if $options[:debug]
 		end
 	end
 }
