@@ -229,62 +229,74 @@ end
 $level_bsp = FsknBsp.new("data/models/ship.bsp")
 rv,node,$in_group = $level_bsp.point_inside_groups?($player.pos, $player.radius)
 $level_bsp_update = Proc.new{
+
 	# my position after movement
 	stop = $player.pos + $player.velocity
-	# I'm outside the level
+
+	# I'm initially outside the level
 	if $in_group == -1
+
 		# does my movement put me inside the level ?
 		rv,node,$in_group = $level_bsp.point_inside_groups?( stop, $player.radius )
+
+		# I'm inside the level now
 		if $in_group != -1
 			puts "hit wall at group #{$in_group} node #{node} from outside"
 			# need to walk tree backwards to find proper collision plane
 			#collide_body_with_plane $player, node.normal*-1
 			$render.models << $level_bsp.render_node(node) if $options[:debug]
 		end
-	# I'm inside the level
-	else
-		# does my movement put in outside my last group ?
-		in_same_group,node1 = $level_bsp.point_inside_group?( stop, $in_group, $player.radius )
-		if not in_same_group
 
-			# am I in a new group or outside level ?
-			old_group = $in_group
-			rv,node2,$in_group = $level_bsp.point_inside_groups?( stop, $player.radius )
-
-			# moved to a new group
-			if $in_group != -1
-				puts "moved to new level group #{$in_group}"
-				next
-			end
-
-			# left the level
-			$in_group = old_group
-			unless $level_bsp.ray_collide_group( $player, $in_group )
-				puts "point check says I left level but ray check says I didn't collide"
-				next
-			end
-
-			p = $level_bsp.collide_point
-			n = $level_bsp.collide_node
-			unless p and n
-				puts "I collided with level but collide point/node are false"
-				next
-			end
-
-			d = n.distance - $player.radius
-			#puts "collided #{p} #{n} #{n.normal} #{d}"
-			collide_body_with_plane $player, n.normal
-	
-			# debug stuff
-			$render.models << $level_bsp.render_node(node1) if $options[:debug]
-			pos = $player.pos.dup
-			pos.x *= -1
-			$render.models << Line.new({:lines => [[
-				pos.to_a,
-				(pos + (node1.normal * 100)).to_a
-			]]}) if $options[:debug]
-		end
+		#
+		next false
 	end
+
+	# am I still in the same group ?
+	in_same_group,node1 = $level_bsp.point_inside_group?( stop, $in_group, $player.radius )
+	next false if in_same_group
+
+	# am I in a new group or outside level ?
+	old_group = $in_group
+	rv,node2,$in_group = $level_bsp.point_inside_groups?( stop, $player.radius )
+
+	# moved to a new group
+	if $in_group != -1
+		puts "moved to new level group #{$in_group}"
+		next false
+	end
+
+	# we hit the wall
+	$in_group = old_group
+
+	# find out where and when we collided
+	unless $level_bsp.ray_collide_group( $player, $in_group )
+		puts "point check says I left level but ray check says I didn't collide" if x == 1
+		next false
+	end
+	p = $level_bsp.collide_point
+	n = $level_bsp.collide_node
+	unless p and n
+		puts "I collided with level but collide point/node are false"
+		next false
+	end
+
+	# do collision to push player back into inside
+	collide_body_with_plane $player, n.normal
+
+=begin
+	# debug stuff
+	d = n.distance - $player.radius
+	puts "collided #{p} #{n} #{n.normal} #{d}"
+	$render.models << $level_bsp.render_node(node1) if $options[:debug]
+	pos = $player.pos.dup
+	pos.x *= -1
+	$render.models << Line.new({:lines => [[
+		pos.to_a,
+		(pos + (node1.normal * 100)).to_a
+	]]}) if $options[:debug]
+=end
+
+	next true
 }
 
 $world.callback = Proc.new{
