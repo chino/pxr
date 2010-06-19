@@ -19,15 +19,15 @@ end
 class Player < Network::Player
 	UPDATE = 0
 	BULLET = 1
-        def post_init
-                puts "new player joined from #{@ip}:#{@port}"
+	def post_init
+		puts "new player joined from #{@ip}:#{@port}"
 		@model = Model.new({
 			:file => "nbia400.mxa",
 			:body => sphere_body({})
 		})
 		$render.models << @model
-        end
-        def receive_data data
+	end
+	def receive_data data
 		type = data.slice!(0..0).unpack('c')[0]
 		case type
 		when UPDATE
@@ -42,7 +42,7 @@ class Player < Network::Player
 		else
 			debug "unknown packet from player #{@id}"
 		end
-        end
+	end
 end
 
 if $options[:peer][:address].nil?
@@ -244,15 +244,28 @@ $level_bsp_update = Proc.new{
 	# I'm inside the level
 	else
 		# does my movement put in outside my last group ?
-		rv,node1 = $level_bsp.point_inside_group?( stop, $in_group, $player.radius )
-		unless rv # left group
+		in_same_group,node1 = $level_bsp.point_inside_group?( stop, $in_group, $player.radius )
+		if not in_same_group
+
 			# am I in a new group or outside level ?
 			old_group = $in_group
-			rv,node2,$in_group = $level_bsp.point_inside_groups?($player.pos, $player.radius)
+			rv,node2,$in_group = $level_bsp.point_inside_groups?( stop, $player.radius )
+
+			# moved to a new group
 			if $in_group != -1
 				puts "moved to new level group #{$in_group}"
-			else
-				$in_group = old_group
+				next
+			end
+
+			# left the level
+			$in_group = old_group
+			if $level_bsp.ray_collide_group( $player, $in_group )
+				p = $level_bsp.collide_point
+				n = $level_bsp.collide_node
+				next unless p and n
+				d = n.distance - $player.radius
+				#puts "collided #{p} #{n} #{n.normal} #{d}"
+				collide_body_with_plane $player, n.normal
 				$render.models << $level_bsp.render_node(node1) if $options[:debug]
 				pos = $player.pos.dup
 				pos.x *= -1
@@ -260,16 +273,6 @@ $level_bsp_update = Proc.new{
 					pos.to_a,
 					(pos + (node1.normal * 100)).to_a
 				]]}) if $options[:debug]
-x=0
-while true
-				puts "hit wall at group #{$in_group} node #{node1} from inside, count=#{x+=1}"
-				collide_body_with_plane $player, node1.normal
-	break unless node1.front
-	stop = $player.pos + $player.velocity
-	rv, node1 = $level_bsp.point_inside_tree?(stop,node1.front,$player.radius)
-	break unless rv
-end
-
 			end
 		end
 	end
