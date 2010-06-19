@@ -178,13 +178,12 @@ class FsknBsp
 			return false
 		end
 
-		div = (velocity + node.normal).dot
+		div = node.normal.dot(velocity)
 		distance2plane = (node.normal.dot( start ) + node.distance - radius) / div
 
 		intersection_point = start - (velocity * distance2plane)
 
-		side = d1 < 0
-		if side
+		if side = (d1 < 0)
 			near_node = node.back
 			far_node = node.front
 		else
