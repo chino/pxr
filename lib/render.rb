@@ -86,9 +86,7 @@ class Render
 #		GL.Translate(0.0,-@height,0.0)
 		GL.MatrixMode(GL::MODELVIEW)
 		GL.Disable(GL::DEPTH_TEST)
-		@ortho_models.each do |m|
-			draw_model( :opaque, m )
-		end
+		draw_models @ortho_models
 		GL.Enable(GL::DEPTH_TEST)
 		GL.MatrixMode(GL::PROJECTION)
 		GL.PopMatrix
