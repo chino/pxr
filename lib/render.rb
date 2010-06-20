@@ -83,7 +83,8 @@ class Render
 		GL.PushMatrix
 		GL.LoadIdentity()
 		GLU.Ortho2D(0.0,@width,0.0,@height)
-#		GL.Translate(0.0,-@height,0.0)
+		GL.Scale(1,-1,1)
+		GL.Translate(0.0,-@height,0.0)
 		GL.MatrixMode(GL::MODELVIEW)
 		GL.Disable(GL::DEPTH_TEST)
 		draw_models @ortho_models
