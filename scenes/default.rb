@@ -197,6 +197,14 @@ $cross_hair = Line.new({
 	:scale => 10,
 	:lines => [ [[-1,0],[1,0]], [[0,-1],[0,1]], ]
 })
+=begin
+pointer = CrossHairCircle.new( 100, $render.surface )
+$cross_hair = Point.new({
+	:pos    => Vector.new($render.width/2,$render.height/2,0),
+	:points => [ [[0,0],nil,pointer,true] ],
+	:size   => pointer.size
+})
+=end
 $render.ortho_models << $cross_hair
 
 $render.models << Model.new({
@@ -231,7 +239,7 @@ rv,node,$in_group = $level_bsp.point_inside_groups?($player.pos, $player.radius)
 $level_bsp_update = Proc.new{
 
 	# my position after movement
-	stop = $player.pos + $player.velocity
+	stop = $player.pos + $player.velocity + 10
 
 	# I'm initially outside the level
 	if $in_group == -1
