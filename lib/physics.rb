@@ -8,12 +8,12 @@ module Physics
 				# consequtive points between verts should add
 				# up to 360 degrees if we are inside polygon
 				radians = 0
-        verts.length.times do |i|
+				verts.length.times do |i|
 					i2 = i < verts.length ? i + 1 : 0 # next or first vert
 					v1 = ( verts[i ] - p ).normalize
 					v2 = ( verts[i2] - p ).normalize
 					begin
-          	radians += Math.acos(v1.dot(v2))
+						radians += Math.acos(v1.dot(v2))
 					rescue
 						puts "acos arg out of range need to figure out what's wrong here"
 						puts verts.inspect
