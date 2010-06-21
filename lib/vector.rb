@@ -35,11 +35,11 @@ class Vector
 		end
 	end
 	def * i
-		Vector.new(
-			@x * i,
-			@y * i,
-			@z * i
-		)
+		if i.respond_to? :x
+			Vector.new( @x * i.x, @y * i.y, @z * i.z )
+		else
+			Vector.new( @x * i, @y * i, @z * i )
+		end
 	end
 	def / d
 		Vector.new(
@@ -47,6 +47,9 @@ class Vector
 			@y / d,
 			@z / d
 		)
+	end
+	def abs
+		Vector.new( @x.abs, @y.abs, @z.abs )
 	end
 	def dot q=self
 		@x * q.x + @y * q.y + @z * q.z
