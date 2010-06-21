@@ -1,6 +1,8 @@
 
 Physics
 
+	* radian based mouse ? or set how much mouse can spin
+
 	* level collisions
 
 	* proper support for collision with attachments
