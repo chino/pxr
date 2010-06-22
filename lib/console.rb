@@ -10,11 +10,14 @@ class Console
 			@font.render @text, x, y, @color
 		end
 	end
+	attr_accessor :typing, :on_message
 	def initialize name, x, y, width, height
 		@lines, @name, @x, @y, @width, @height = 
 			[], name, x, y, width, height
 		@prompt = ""
 		@prompt_pos = 0
+		@typing = false
+		@on_message = Proc.new{}
 	end
 	def parse_command text
 		text.slice! 0
@@ -32,8 +35,13 @@ class Console
 		when 276 # left arrow
 			@prompt_pos -= 1 if @prompt_pos > 0
 		when 13 # enter
-			add_line "#{@name}: #{@prompt}", Color::RED
-			parse_command @prompt.dup if @prompt[0] =~ /\//
+			text = "#{@name}: #{@prompt}"
+			add_line text, Color::RED
+			if @prompt[0] =~ /\//
+				parse_command @prompt.dup
+			else
+				@on_message.call text.dup
+			end
 			@prompt = ""
 			@prompt_pos = 0
 		when 8  # backspace
@@ -57,7 +65,7 @@ class Console
 		GL.RasterPos @x, @y
 		x, y = @x, @y
 		font = Font.new
-		font.render "> #{@prompt}", x, y, Color::RED
+		font.render "> #{@prompt}", x, y, Color::RED if @typing
 		y += font.size
 		@lines.dup.each do |line|
 			#break if y > @height # if we support scrolling

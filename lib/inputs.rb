@@ -1,7 +1,6 @@
 class Input
 	attr_writer :display, :keyboard, :mouse_button
 	def initialize s
-		SDL::Event.enable_unicode
 		mouse_grab
 		@keyboard = Proc.new{}
 		@mouse_button = Proc.new{}

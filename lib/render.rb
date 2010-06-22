@@ -12,6 +12,7 @@ class Render
 		@width = s[:width].to_f
 		@height = s[:height].to_f
 		SDL.init(SDL::INIT_VIDEO)
+		SDL::Event2.enable_unicode
 		SDL.setGLAttr(SDL::GL_DOUBLEBUFFER,1)
 		flags = SDL::OPENGL
 		flags |= SDL::FULLSCREEN if @fullscreen

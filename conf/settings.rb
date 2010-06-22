@@ -1,11 +1,11 @@
 $bindings = {
-	:w => :forward,
-	:s => :back,
-	:e => :up,
-	:d => :down,
-	:f => :left,
-	:g => :right,
-	:"\r" => :type # enter button
+	"w" => :forward,
+	"s" => :back,
+	"e" => :up,
+	"d" => :down,
+	"f" => :left,
+	"g" => :right,
+	"\r" => :type # enter button
 }
 $move_accell = 1.0
 $move_drag   = 0.1

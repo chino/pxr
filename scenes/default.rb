@@ -18,11 +18,15 @@ end
 class Player < Network::Player
 	UPDATE = 0
 	BULLET = 1
+	TEXT   = 2
 	def post_init
 		puts "new player joined from #{@ip}:#{@port}"
 		@model = Model.new({
 			:file => "nbia400.mxa",
-			:body => sphere_body({})
+			:body => sphere_body({
+				:type => PLAYER,
+				:mask => [BULLET,PLAYER,PICKUP]
+			})
 		})
 		$render.models << @model
 	end
@@ -38,6 +42,8 @@ class Player < Network::Player
 			orientation = Quat.new
 			orientation.unserialize! orientation_s, :short
 			new_bullet( pos, orientation )
+		when TEXT
+			$console.add_line data
 		else
 			debug "unknown packet from player #{@id}"
 		end
@@ -86,33 +92,27 @@ $inputs.mouse_button = Proc.new{|button,pressed|
 
 $movement = Vector.new 0,0,0
 
-$typing = false
 $inputs.keyboard = Proc.new{|key,unicode,pressed|
 	begin
-		k = key.chr.downcase.to_sym
+		k = key.chr.downcase
 	rescue
 		k = key
-		next
 	end
-	unless b = $bindings[k]
-		puts "Unknown key binding #{k}"
-	else
+	puts "k=>#{k.inspect}, u=>#{unicode}"
+	if b = $bindings[k]
 		#puts "key #{k} #{pressed ? 'pressed':'released'}, binded to #{b}"
 		case b
-		when :enter    then $typing = true
+		when :type     then $console.typing = !$console.typing if not pressed
 		when :right    then pressed ? $movement.x =  1 : $movement.x = 0 
 		when :left     then pressed ? $movement.x = -1 : $movement.x = 0 
 		when :up       then pressed ? $movement.y =  1 : $movement.y = 0 
 		when :down     then pressed ? $movement.y = -1 : $movement.y = 0 
 		when :forward  then pressed ? $movement.z = -1 : $movement.z = 0 
 		when :back     then pressed ? $movement.z =  1 : $movement.z = 0
-		else puts "unknown key binding #{k}"
+		else puts "unknown key action #{b}"
 		end
 	end
-	puts "k=>#{k.inspect}, u=>#{unicode}"
-	if $typing
-		$console.key_press unicode != 0 ? unicode : sym
-	end
+	$console.key_press(unicode != 0 ? unicode : key) if pressed and $console.typing
 }
 
 def handle_mouse
@@ -347,6 +347,12 @@ $picmgr = PickupManager.new({
 ####################################
 
 $console = Console.new $player_name, 5, 5, 100, 100 # bottom { x, y }, width, height
+$console.on_message = Proc.new{|text|
+	$network.send_data(
+		[Player::TEXT].pack('c') +
+		text
+	)
+}
 $score = Score.new({:height => $render.height})
 $score.set 'test', 1
 
