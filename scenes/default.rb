@@ -29,23 +29,14 @@ class Player < Network::Player
 	NAME   = 3
 	@@players = {}
 	def post_init
-		puts "new connection from from #{@ip}:#{@port}"
+		puts "new connection from #{@ip}:#{@port}"
 		@name = nil
 		send_my_name
 	end
 	def receive_data data
 		type = data.slice!(0..0).unpack('c')[0]
-		return unless @name or type == NAME
+
 		case type
-		when UPDATE
-			@model.body.unserialize! data if @model
-		when BULLET
-			pos_s, orientation_s = data.unpack("a12a8")
-			pos = Vector.new
-			pos.unserialize! pos_s, :full
-			orientation = Quat.new
-			orientation.unserialize! orientation_s, :short
-			new_bullet( pos, orientation )
 		when TEXT
 			$console.add_line data
 		when NAME
@@ -71,18 +62,32 @@ class Player < Network::Player
 				$render.models << @model
 				@@players[@name] = @model
 			end
+		end
+
+		return unless @name or type == NAME
+
+		case type
+		when UPDATE
+			@model.body.unserialize! data if @model
+		when BULLET
+			pos_s, orientation_s = data.unpack("a12a8")
+			pos = Vector.new
+			pos.unserialize! pos_s, :full
+			orientation = Quat.new
+			orientation.unserialize! orientation_s, :short
+			new_bullet( pos, orientation )
 		else
 			debug "unknown packet from player #{@id}"
 		end
 	end
 end
 
+$hosting = false
 if $options[:peer][:address].nil?
 	$hosting = true
 	$network = Network::Server.new($options[:port],Player)
 	send_my_name
 else
-	$hosting = false
 	$network = Network::Client.new(
 		$options[:peer][:address], 
 		$options[:peer][:port], 
