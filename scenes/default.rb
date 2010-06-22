@@ -141,16 +141,23 @@ $inputs.mouse_button = Proc.new{|button,pressed|
 $movement = Vector.new 0,0,0
 
 $inputs.keyboard = Proc.new{|key,unicode,pressed|
+	released = !pressed
 	begin
 		k = key.chr.downcase
 	rescue
 		k = key
 	end
 	#puts "k=>#{k.inspect}, u=>#{unicode}"
-	if b = $bindings[k]
-		#puts "key #{k} #{pressed ? 'pressed':'released'}, binded to #{b}"
+	#puts "key #{k} #{pressed ? 'pressed':'released'}, binded to #{b}"
+	b = $bindings[k]
+	if released and b == :type
+		$console.typing = !$console.typing
+	end
+	if pressed and $console.typing
+		$console.key_press(unicode != 0 ? unicode : key)
+	end
+	if not $console.typing and b
 		case b
-		when :type     then $console.typing = !$console.typing if not pressed
 		when :right    then pressed ? $movement.x =  1 : $movement.x = 0 
 		when :left     then pressed ? $movement.x = -1 : $movement.x = 0 
 		when :up       then pressed ? $movement.y =  1 : $movement.y = 0 
@@ -160,7 +167,6 @@ $inputs.keyboard = Proc.new{|key,unicode,pressed|
 		else puts "unknown key action #{b}"
 		end
 	end
-	$console.key_press(unicode != 0 ? unicode : key) if pressed and $console.typing
 }
 
 def handle_mouse
