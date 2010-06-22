@@ -14,7 +14,7 @@ class Font
 	rescue
 		$stderr.puts "SetFaceSize(#{size}) failed for #{@font}"
 	end
-	def render text, x=0, y=0, color
+	def render text="", x=0, y=0, color=[255,255,255,255]
 		GL.Color4ubv color
 		GL.RasterPos x, y
 		set_size @size
