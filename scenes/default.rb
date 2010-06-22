@@ -27,6 +27,7 @@ class Player < Network::Player
 	BULLET = 1
 	TEXT   = 2
 	NAME   = 3
+	HIT    = 4
 	@@players = {}
 	def post_init
 		puts "new connection from #{@ip}:#{@port}"
@@ -75,7 +76,21 @@ class Player < Network::Player
 			pos.unserialize! pos_s, :full
 			orientation = Quat.new
 			orientation.unserialize! orientation_s, :short
-			new_bullet( pos, orientation )
+			new_bullet( pos, orientation, Proc.new{|bullet,target|
+				next unless target == $player
+				$score.add @name
+				$network.send_data(
+					[Player::HIT].pack('c') + 
+					@name
+				)
+			})
+		when HIT
+			name = data
+			if @@players[name] or name == $options[:name]
+				$score.add name
+			else
+				debug "got hit for non player #{name}"
+			end
 		else
 			debug "unknown packet from player #{@id}"
 		end
@@ -131,7 +146,7 @@ $inputs.keyboard = Proc.new{|key,unicode,pressed|
 	rescue
 		k = key
 	end
-	puts "k=>#{k.inspect}, u=>#{unicode}"
+	#puts "k=>#{k.inspect}, u=>#{unicode}"
 	if b = $bindings[k]
 		#puts "key #{k} #{pressed ? 'pressed':'released'}, binded to #{b}"
 		case b
@@ -191,7 +206,7 @@ PLAYER = 2
 BULLET = 4
 PICKUP = 6
 
-def new_bullet pos, orientation
+def new_bullet pos, orientation, block=nil
 	vel = orientation.vector( Vector.new(0,0,-100) )
 	m = Model.new({
 		:file => "ball1.mx", 
@@ -203,7 +218,12 @@ def new_bullet pos, orientation
 			:rotation_velocity => Vector.new(10,10,10),
 			:rotation_drag => 0,
 			:type => BULLET,
-			:mask => [PLAYER]
+			:mask => [PLAYER],
+			:on_collision => Proc.new{|bullet,target|
+				block.call bullet, target if block
+				# TODO need to destroy bullet
+				next true
+			}
 		})
 	})
 	$render.models << m

@@ -6,6 +6,9 @@ class Score
 		@players = {}
 		@widest_name = 0
 	end
+	def add name
+		@players[name] += 1
+	end
 	def set name, score
 		@widest_name = name.length if name.length > @widest_name 
 		@players[name] = score
