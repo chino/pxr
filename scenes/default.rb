@@ -11,7 +11,6 @@ def sphere_body s={}
 	body
 end
 
-
 ####################################
 # Networking
 ####################################
@@ -72,7 +71,6 @@ $update_network = Proc.new {
 	$network.pump
 }
 
-
 ####################################
 # Inputs
 ####################################
@@ -88,26 +86,32 @@ $inputs.mouse_button = Proc.new{|button,pressed|
 
 $movement = Vector.new 0,0,0
 
-$inputs.keyboard = Proc.new{|key,pressed|
+$typing = false
+$inputs.keyboard = Proc.new{|key,unicode,pressed|
 	begin
 		k = key.chr.downcase.to_sym
 	rescue
+		k = key
 		next
 	end
-	b = $bindings[k]
-	if b.nil?
+	unless b = $bindings[k]
 		puts "Unknown key binding #{k}"
-		next
+	else
+		#puts "key #{k} #{pressed ? 'pressed':'released'}, binded to #{b}"
+		case b
+		when :enter    then $typing = true
+		when :right    then pressed ? $movement.x =  1 : $movement.x = 0 
+		when :left     then pressed ? $movement.x = -1 : $movement.x = 0 
+		when :up       then pressed ? $movement.y =  1 : $movement.y = 0 
+		when :down     then pressed ? $movement.y = -1 : $movement.y = 0 
+		when :forward  then pressed ? $movement.z = -1 : $movement.z = 0 
+		when :back     then pressed ? $movement.z =  1 : $movement.z = 0
+		else puts "unknown key binding #{k}"
+		end
 	end
-	#puts "key #{k} #{pressed ? 'pressed':'released'}, binded to #{b}"
-	case b
-	when :right    then pressed ? $movement.x =  1 : $movement.x = 0 
-	when :left     then pressed ? $movement.x = -1 : $movement.x = 0 
-	when :up       then pressed ? $movement.y =  1 : $movement.y = 0 
-	when :down     then pressed ? $movement.y = -1 : $movement.y = 0 
-	when :forward  then pressed ? $movement.z = -1 : $movement.z = 0 
-	when :back     then pressed ? $movement.z =  1 : $movement.z = 0
-	else puts "unknown key binding #{k}"
+	puts "k=>#{k.inspect}, u=>#{unicode}"
+	if $typing
+		$console.key_press unicode != 0 ? unicode : sym
 	end
 }
 
@@ -337,6 +341,17 @@ $picmgr = PickupManager.new({
 		true # allow to pickup
 	}
 })
+
+####################################
+# UI
+####################################
+
+$console = Console.new $player_name, 5, 5, 100, 100 # bottom { x, y }, width, height
+$score = Score.new({:height => $render.height})
+$score.set 'test', 1
+
+$render.ortho_models << $console
+$render.ortho_models << $score
 
 ####################################
 # Main Loop
