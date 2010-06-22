@@ -71,23 +71,34 @@ class Render
 	end
 	def draw_model mode, model
 		GL.PushMatrix
-		load_matrix( model.pos, model.orientation )
+		if model.respond_to? :pos and model.respond_to? :orientation
+			load_matrix( model.pos, model.orientation )
+		end
 		model.draw( mode )
-		model.attachments.each{|model| draw_model( mode, model ) }
+		if model.respond_to? :attachments
+			model.attachments.each{|model| draw_model( mode, model ) }
+		end
 		GL.PopMatrix
 	end
-	def draw_ortho
+	def set_ortho
 		GL.MatrixMode(GL::MODELVIEW)
 	        GL.LoadIdentity
 		GL.MatrixMode(GL::PROJECTION)
 		GL.PushMatrix
 		GL.LoadIdentity()
 		GLU.Ortho2D(0.0,@width,0.0,@height)
-		GL.Scale(1,-1,1)
-		GL.Translate(0.0,-@height,0.0)
+#		GL.Scale(1,-1,1)
+#		GL.Translate(0.0,-@height,0.0)
 		GL.MatrixMode(GL::MODELVIEW)
+		GL.LoadIdentity
 		GL.Disable(GL::DEPTH_TEST)
+	end
+	def draw_ortho
+		set_ortho
 		draw_models @ortho_models
+		unset_ortho
+	end
+	def unset_ortho
 		GL.Enable(GL::DEPTH_TEST)
 		GL.MatrixMode(GL::PROJECTION)
 		GL.PopMatrix

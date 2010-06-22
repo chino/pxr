@@ -1,6 +1,7 @@
 class Input
 	attr_writer :display, :keyboard, :mouse_button
 	def initialize s
+		SDL::Event.enable_unicode
 		mouse_grab
 		@keyboard = Proc.new{}
 		@mouse_button = Proc.new{}
@@ -46,9 +47,9 @@ class Input
 					end
 				rescue
 				end
-				@keyboard.call event.sym, true
+				@keyboard.call event.sym, event.unicode, true
 			when SDL::Event2::KeyUp
-				@keyboard.call event.sym, false
+				@keyboard.call event.sym, event.unicode, false
 			when SDL::Event2::MouseMotion
 				mouse_set event.x, event.y
 			when SDL::Event2::MouseButtonDown
