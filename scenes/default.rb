@@ -206,6 +206,19 @@ PLAYER = 2
 BULLET = 4
 PICKUP = 6
 
+$bullets = []
+
+def process_bullets
+	#puts "live bullets #{$bullets.length}" if $bullets.length > 0
+	$bullets.dup.each do |bullet|
+		if Time.now - bullet[:time] > 5 # seconds
+			$world.bodies.delete bullet[:model].body
+			$render.models.delete bullet[:model]
+			$bullets.delete bullet
+		end
+	end
+end
+
 def new_bullet pos, orientation, block=nil
 	vel = orientation.vector( Vector.new(0,0,-100) )
 	m = Model.new({
@@ -227,6 +240,7 @@ def new_bullet pos, orientation, block=nil
 		})
 	})
 	$render.models << m
+	$bullets << {:time => Time.now, :model => m}
 	m
 end
 
@@ -417,6 +431,7 @@ $render.ortho_models << $score
 ####################################
 
 loop do
+	process_bullets
 	$inputs.poll
 	$world.update
 	$update_network.call
