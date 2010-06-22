@@ -33,6 +33,9 @@ OptionParser.new do |opts|
 	opts.on("-d", "--debug", "Enable debugging output"){|v|
 		$options[:debug] = true
 	}
+	opts.on("-n", "--name", "Player name"){|v|
+		$options[:name] = v
+	}
 end.parse!
 
 # append load paths

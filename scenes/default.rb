@@ -15,26 +15,30 @@ end
 # Networking
 ####################################
 
+def send_my_name
+	$network.send_data(
+		[Player::NAME].pack('c') + 
+		$options[:name]
+	)
+end
+
 class Player < Network::Player
 	UPDATE = 0
 	BULLET = 1
 	TEXT   = 2
+	NAME   = 3
+	@@players = {}
 	def post_init
-		puts "new player joined from #{@ip}:#{@port}"
-		@model = Model.new({
-			:file => "nbia400.mxa",
-			:body => sphere_body({
-				:type => PLAYER,
-				:mask => [BULLET,PLAYER,PICKUP]
-			})
-		})
-		$render.models << @model
+		puts "new connection from from #{@ip}:#{@port}"
+		@name = nil
+		send_my_name
 	end
 	def receive_data data
 		type = data.slice!(0..0).unpack('c')[0]
+		return unless @name or type == NAME
 		case type
 		when UPDATE
-			@model.body.unserialize! data
+			@model.body.unserialize! data if @model
 		when BULLET
 			pos_s, orientation_s = data.unpack("a12a8")
 			pos = Vector.new
@@ -44,6 +48,29 @@ class Player < Network::Player
 			new_bullet( pos, orientation )
 		when TEXT
 			$console.add_line data
+		when NAME
+			unless @name
+				name = data
+				if @@players[name] or name == $options[:name]
+					$network.send_data(
+						[Player::TEXT].pack('c') +
+						"Sorry #{name} is already in the game"
+					) if $hosting
+					return
+				end
+				@name = name
+				puts "connect #{@ip}:#{@port} has set his name to #{@name}"
+				$score.set @name, 0
+				@model = Model.new({
+					:file => "nbia400.mxa",
+					:body => sphere_body({
+						:type => PLAYER,
+						:mask => [BULLET,PLAYER,PICKUP]
+					})
+				})
+				$render.models << @model
+				@@players[@name] = @model
+			end
 		else
 			debug "unknown packet from player #{@id}"
 		end
@@ -53,6 +80,7 @@ end
 if $options[:peer][:address].nil?
 	$hosting = true
 	$network = Network::Server.new($options[:port],Player)
+	send_my_name
 else
 	$hosting = false
 	$network = Network::Client.new(
@@ -346,7 +374,7 @@ $picmgr = PickupManager.new({
 # UI
 ####################################
 
-$console = Console.new $player_name, 5, 5, 100, 100 # bottom { x, y }, width, height
+$console = Console.new $options[:name], 5, 5, 100, 100 # bottom { x, y }, width, height
 $console.on_message = Proc.new{|text|
 	$network.send_data(
 		[Player::TEXT].pack('c') +
@@ -354,7 +382,7 @@ $console.on_message = Proc.new{|text|
 	)
 }
 $score = Score.new({:height => $render.height})
-$score.set 'test', 1
+$score.set $options[:name], 0
 
 $render.ortho_models << $console
 $render.ortho_models << $score

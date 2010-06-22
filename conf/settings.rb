@@ -26,5 +26,6 @@ $options = {
 	:width => 640.0,
 	:height => 480.0,
 	:fov => 70.0,
-	:fonts => "data/fonts/"
+	:fonts => "data/fonts/",
+	:name => "player"
 }
