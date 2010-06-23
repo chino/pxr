@@ -92,8 +92,3 @@ Research
 
 	http://narray.rubyforge.org/   NArray is an Numerical N-dimensional Array class. Supported element types are 1/2/4-byte Integer, single/double-precision Real/Complex, and Ruby Object. This extension library incorporates fast calculation and easy manipulation of large numerical arrays into the Ruby language. NArray has features similar to NumPy, but NArray has vector and matrix subclasses.
 
-	http://rubyforge.org/projects/ruby-ftgl/   FTGL is a free cross-platform Open Source C++ library that uses Freetype2 to simplify rendering fonts in OpenGL applications. FTGL supports bitmaps, pixmaps, texture maps, outlines, polygon mesh, and extruded polygon rendering modes.
-
-	http://www.kitp.ucsb.edu/~paxton/tioga.html  might be of interest ... i think it has a latex wrapper .. idk...
-
-
