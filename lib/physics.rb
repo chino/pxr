@@ -301,15 +301,25 @@ module Physics
 		end
 	end
 	class World
-		attr_accessor :bodies, :grid, :callback
+		attr_accessor :bodies, :grid, :callback, :interval
 		def initialize
 			@bodies = []
+			@last_run = Time.now
+			@interval = 1.0/40.0
 		end
 		def update
+			return unless check_interval
 			drag
 			collisions
 			@callback.call unless @callback.nil?
 			velocities
+		end
+		def check_interval
+			return true unless @interval
+			t = Time.now 
+			return false unless (t - @last_run).to_f >= @interval
+			@last_run = Time.now
+			return true
 		end
 		def drag
 			@bodies.each do |body|
