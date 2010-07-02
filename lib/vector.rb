@@ -61,7 +61,7 @@ class Vector
 		dot
 	end
 	def has_velocity?
-		dot > 0.1 # so we don't test super small values
+		dot > 0.001 # so we don't test super small values
 	end
 	def cross v2
 		Vector.new(
