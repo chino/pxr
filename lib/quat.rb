@@ -63,14 +63,15 @@ class Quat
 	def to_s
 		to_a.join(',')
 	end
-	@@pi180 = Math::PI / 180
+	# http://gpwiki.org/index.php/OpenGL:Tutorials:Using_Quaternions_to_represent_rotation#Quaternion_from_Euler_angles
+	@@pi360 = Math::PI / 180 / 2
 	def rotate! yaw=0, pitch=0, roll=0
 		a = yaw.respond_to?(:x) ? yaw.to_a : [yaw,pitch,roll]
 		# create 3 quats for pitch, yaw, roll
 		# and multiply those together to form a rotation quat
 		# then apply it to the current quat to update it
- 		sy, sp, sr = a.map { |x| Math.sin(x*@@pi180) }
-		cy, cp, cr = a.map { |x| Math.cos(x*@@pi180) }
+ 		sy, sp, sr = a.map { |x| Math.sin(x*@@pi360) }
+		cy, cp, cr = a.map { |x| Math.cos(x*@@pi360) }
 		result = normalize * Quat.new(
 			cr*sp*cy + sr*cp*sy,
 			cr*cp*sy - sr*sp*cy,

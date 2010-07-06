@@ -435,8 +435,12 @@ $render.ortho_models << $score
 ####################################
 # Main Loop
 ####################################
+# rotation velocity is in degrees...
+$player.rotation_drag = 0
+$player.rotation_velocity = Vector.new 180
 
 loop do
+       gets
 	process_bullets
 	$inputs.poll
 	$world.update
