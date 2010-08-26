@@ -1,10 +1,6 @@
 
 Physics
 
-	* radian based mouse ? or set how much mouse can spin
-
-	* level collisions
-
 	* proper support for collision with attachments
 
 	* allow objects to have gravity ?
@@ -14,15 +10,11 @@ Physics
 	* timestamp for each collision update
 		so you know if two objects are already tested against each other
 
-	* ruby-ode - class ?
-
-UI
-
-	* texting between players
-
-	* console
+	* use ruby bullet bindings
 
 Grphics
+
+	* use a low level renderer for speed
 
 	* proper frustum culling
 
@@ -30,7 +22,7 @@ Grphics
 
 	* irrlicht shield affect
 
-	* water ?
+	* water
 
 	* wave scenes
 
@@ -48,11 +40,14 @@ Levels
 
 Network
 
-	* detect if a player drops out of teh game
+	* detect if a player drops out of the game
+
+	* make an enet binding or use eventmachine?
 
 Game Logic
 
-	* add timeout for balls , make them blow up ?  maybe they can start like growing/shrinking
+	* make balls blow up on timeout?
+		maybe they can start like growing/shrinking
 		rapidly and then collapse to a point like a black hole and explode !
 		maybe make a shock wave too ?
 
