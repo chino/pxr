@@ -25,8 +25,9 @@ class Image
 			i.unbind unless i.nil?
 		end
 	end
-	attr_accessor :image, :colorkey
+	attr_accessor :image, :colorkey, :path
 	def initialize path, colorkey=false
+		@path = path
 		@image = ImageList.new(path)[0]
 		# only forsaken uses the old color key trick
 		# fsknmx will pass true for colorkey always as a hint
