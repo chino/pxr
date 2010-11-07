@@ -1,8 +1,8 @@
 # so things don't break
-$window  = Window.new("Model Viewer", $options[:width], $options[:height], $options[:fullscreen])
+#$window  = Window.new("Model Viewer", $options[:width], $options[:height], $options[:fullscreen])
 
 # data
-$model = Model.new("ship.mxv").model
+$model = Model.new({:file => "ship.mxv"}).mesh
 
 # generate js array of colors and vertices
 $colors = []
@@ -12,15 +12,13 @@ $tcords = []
 $start = 0
 $last = $model.primitives[0][:texture]
 $model.primitives.each_with_index do |primitive,i|
-	primitive[:texture].sub! 'images', 'textures'
 	if $last != primitive[:texture]
 		start = $start*3
 		count = (i*3) - start
-		puts "[#{start},#{count},'#{$last}'],"
+		puts "[#{start},#{count},'#{$last.path.sub 'images', 'textures'}',#{primitive[:transparencies]}],"
 		$start = i
 		$last = primitive[:texture]
 	end
-=begin
 	primitive[:verts].each do |index|
 		$verts << $model.verts[index][:vector].join(',')
 		$tcords << [
@@ -29,16 +27,16 @@ $model.primitives.each_with_index do |primitive,i|
 		].join(',')
 		$colors << $model.verts[index][:rgba].map{|c|c/255.0}.join(',')
 	end
-=end
 end
+
+# last one
 start = $start*3
 count = ($model.primitives.length*3) - start
-puts "[#{start},#{count},#{$last}],"
+puts "[#{start},#{count},'#{$last.path.sub 'images', 'textures'}',#{$model.primitives.last[:transparencies]}],"
 
-=begin
-#puts "var colors = [" 
+puts "var colors = [" 
 puts $colors.join(",\n")
-#puts "];"
+puts "];"
 
 puts "var vertices = ["
 puts $verts.join(",\n")
@@ -51,4 +49,3 @@ puts "];"
 puts "var tcords = ["
 puts $tcords.join(",\n")
 puts "];"
-=end
