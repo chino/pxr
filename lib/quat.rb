@@ -3,7 +3,7 @@ class Quat
 	def self.from_vector direction
 		identity = Vector.new(0,0,-1) # opengl looks down -z
 		axis = identity.cross( direction )
-		angle = Math::acos( identity.dot direction )
+		angle = Math::acos( identity.dot( direction ) )
 		from_axis( axis, angle )
 	end
 	def self.from_axis vector, angle
