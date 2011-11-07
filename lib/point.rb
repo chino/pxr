@@ -1,4 +1,5 @@
 require 'mesh'
+require 'model'
 class Point < Model
 	include Mesh
 	attr_writer :size

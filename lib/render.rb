@@ -1,3 +1,6 @@
+require "rubygems"
+require "sdl"
+require "opengl"
 class Render
 	attr_accessor :models, :ortho_models, :fps, :width, :height, :depth, :fov, :surface
 	def initialize s
@@ -83,7 +86,7 @@ class Render
 	end
 	def set_ortho
 		GL.MatrixMode(GL::MODELVIEW)
-	        GL.LoadIdentity
+		GL.LoadIdentity
 		GL.MatrixMode(GL::PROJECTION)
 		GL.PushMatrix
 		GL.LoadIdentity()

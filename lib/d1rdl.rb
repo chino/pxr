@@ -1,5 +1,4 @@
 require "mesh"
-require "opengl"
 require "model"
 require "vector"
 require "binreader"
