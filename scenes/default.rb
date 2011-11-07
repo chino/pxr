@@ -283,7 +283,6 @@ $cross_hair = Point.new({
 })
 =end
 $render.ortho_models << $cross_hair
-
 $render.models << Model.new({
 	:file => "nbia400.mxa", 
 	:body => sphere_body({
@@ -302,108 +301,160 @@ $render.models << Model.new({
 	})
 })
 
-if $options[:debug]
+# notes
+#		collision_point = center of body at moment of collision hence
+#              wall = collision_point + (node.normal * radius)
 
-def collide_body_with_plane body, normal
-	m = normal.dot( body.velocity ) # ammount of movement towards plane
-	vtp = normal * m                # ammount of velocity towards plane
-	vtp += vtp * body.bounce        # multiply velocity by bounce
-	body.velocity -= vtp            # apply force to the velocity
+# forsaken globals
+$global_scale = 0.25
+$collision_fudge = 10 * $global_scale
+
+def collide_body_with_plane_fskn body, node, collision_point
+
+
+## figure out where you end up if your velocity slides you along wall from collision point
+
+	# from OneGroupPolyCol in collisions.c
+	# enemy collision detection here would detect and respond
+	# background object collision detection as well
+	# but bg colls would not run the following code
+	# the following code code runs if RayCollide hits bsp walls
+	# but again not if bg col happens
+
+	e = collision_point + body.velocity
+	nDOTe =	 e.dot node.normal
+	target_distance = nDOTe + node.distance
+	d = target_distance.abs + $collision_fudge
+	dn = node.normal * d
+	target_pos = e + dn # position after sliding
+
+## appears to correct body start position in case your past the wall still
+## this has to be done probably because we want to move far enough away
+## that we end up hitting the next wall in a corner
+## because RayCollide will always return the first wall it finds we are touching
+## which is dependant on the order of the bsp nodes
+## so if we move lightly away then next loop we hit the next one
+## so we basically jump back and forth between walls
+
+	# from BackgroundCollide in collisions.c
+	begin # protect from sqrt error in .length
+		dist_to_wall = (collision_point - body.pos).length
+	rescue
+		dist_to_wall = 0
+	end
+	# skipping all the group portal detection
+	# further down in BackgroundCollide response
+	dir = body.velocity.normalize
+	velocity_towards_wall = dir.dot node.normal
+	sliding_along_wall = velocity_towards_wall == 0
+	# convert $collision_fudge into percentage of velocity_towards_wall
+	# so that we can fudge the direction properly ?
+	impact_offset = if sliding_along_wall
+										2 * dist_to_wall # wouldn't this always be 0 ?
+									else
+										$collision_fudge / -velocity_towards_wall
+									end
+	if dist_to_wall > impact_offset
+		pos = collision_point - (dir * impact_offset)
+	else
+		pos = body.pos
+	end
+
+## snap to protected-start-position and set velocity to land on desired slide-along-wall position
+
+	# from ProcessShips in ships.c 
+	body.pos = pos
+	body.velocity = target_pos - pos
+
+end
+
+def collide_body_with_plane_my_way_with_fudge body, node, point
+
+collision_fudge = $collision_fudge * 10
+
+	m = node.normal.dot body.velocity # movement towards plane
+#puts "n=#{node.normal}"
+#puts "v=#{body.velocity}"
+#puts "m=#{m}"
+
+if m - collision_fudge > 0
+#	puts "we are already moving away from plane, m=#{m}"
+	return
+#elsif m == 0
+#	puts "we are moving along plane"
+end
+
+	v = node.normal * m    # velocity towards plane
+	v += v * body.bounce   # increase by bounce factor
+	body.velocity -= v     # remove it
+
+	# stop colliding with this plane on next loop
+	# so that we can run 3 times and collide with a corner
+	fudge = node.normal * collision_fudge
+	body.pos += fudge
+
+m = node.normal.dot body.velocity
+#puts "t=#{vtp}"
+#puts "v-t=#{body.velocity}"
+#puts "m=#{m}"
+
+if m + collision_fudge < 0
+#	puts "we are still moving towards plane"
+#	exit
+end
+
+end
+
+def collide_body_with_plane_my_way body, node, point
+
+	m = node.normal.dot body.velocity # movement towards plane
+
+	if m > 0
+#		puts ":: we are already moving away from plane, m=#{m}"
+#		exit
+		return
+	elsif m == 0
+#		puts ":: we are moving along plane"
+		m = -1 # push away
+		#return
+	end
+
+	v = node.normal * m    # velocity towards plane
+	v += v * body.bounce   # increase by bounce factor
+	body.velocity -= v     # remove it
+
+	# check
+	m = node.normal.dot body.velocity
+	if m < 0
+#		puts ":: we are still moving towards plane"
+	end
+
 end
 
 $level_bsp = FsknBsp.new("data/models/ship.bsp")
-rv,node,$in_group = $level_bsp.point_inside_groups?($player.pos, $player.radius)
-$level_bsp_update = Proc.new{
-
-	# my position after movement
-	stop = $player.pos + $player.velocity + 10
-
-	# I'm initially outside the level
-	if $in_group == -1
-
-		# does my movement put me inside the level ?
-		rv,node,$in_group = $level_bsp.point_inside_groups?( stop, $player.radius )
-
-		# I'm inside the level now
-		if $in_group != -1
-			puts "hit wall at group #{$in_group} node #{node} from outside"
-			# need to walk tree backwards to find proper collision plane
-			#collide_body_with_plane $player, node.normal*-1
-			$render.models << $level_bsp.render_node(node) if $options[:debug]
-		end
-
-		#
-		next false
-	end
-
-	# am I still in the same group ?
-	in_same_group,node1 = $level_bsp.point_inside_group?( stop, $in_group, $player.radius )
-	next false if in_same_group
-
-	# am I in a new group or outside level ?
-	old_group = $in_group
-	rv,node2,$in_group = $level_bsp.point_inside_groups?( stop, $player.radius )
-
-	# moved to a new group
-	if $in_group != -1
-		puts "moved to new level group #{$in_group}"
-		next false
-	end
-
-	# we hit the wall
-	$in_group = old_group
-
-	# find out where and when we collided
-	unless $level_bsp.ray_collide_group( $player, $in_group )
-		puts "point check says I left level but ray check says I didn't collide" if x == 1
-		next false
-	end
-	p = $level_bsp.collide_point
-	n = $level_bsp.collide_node
-	unless p and n
-		puts "I collided with level but collide point/node are false"
-		next false
-	end
-
-	# do collision to push player back into inside
-	collide_body_with_plane $player, n.normal
-
-=begin
-	# debug stuff
-	d = n.distance - $player.radius
-	puts "collided #{p} #{n} #{n.normal} #{d}"
-	$render.models << $level_bsp.render_node(node1) if $options[:debug]
-	pos = $player.pos.dup
-	pos.x *= -1
-	$render.models << Line.new({:lines => [[
-		pos.to_a,
-		(pos + (node1.normal * 100)).to_a
-	]]}) if $options[:debug]
-=end
-
-	next true
-}
 
 $world.callback = Proc.new{
-	$level_bsp_update.call
+	$level_bsp.collide( $world.bodies ) do |body,node,point|
+		collide_body_with_plane_my_way body,node,point
+	end
 }
 
-end
-
+# render mesh for level
 $level = Model.new({ :file => "ship.mxv" })
 $render.models << $level
 
+# render x/y/z axis at origin
 if $options[:debug]
 	$render.models << Lines.new({:scale => Vector.new(100000,100000,100000)})
 	$render.models << $level.mesh.normal_rendering
 end
 
+# load pickup positions
 pickups = FsknPic.new("data/models/ship.pic").pickups
 pickups.each do |pickup|
 	pickup.body.type = PICKUP
 	pickup.body.mask = [PLAYER]
 end
-
 $picmgr = PickupManager.new({
 	:world => $world,
 	:render => $render,
@@ -426,11 +477,67 @@ $console.on_message = Proc.new{|text|
 		text
 	)
 }
+
 $score = Score.new({:height => $render.height})
 $score.set $options[:name], 0
 
 $render.ortho_models << $console
 $render.ortho_models << $score
+
+####################################
+# on screen weapon inventory
+####################################
+
+class Inventory
+	def initialize
+		@files   = {
+			:trojax  => "troj.mx",
+			:sussgun => "sus.mx",
+			:titan   => "titan.mx"
+		}
+		@models  = {}
+		@weapons = {}
+	end
+	def set weapon, ammo=-1
+		@weapons[ weapon.to_sym ] = ammo
+	end
+	def draw mode=:both
+		draw_text
+	end
+	def draw_text
+		x = 10
+		@weapons.each do |weapon,ammo|
+#			Font.new.render ammo.to_s, x, 10, Color::GREEN unless ammo == -1
+			x += 110
+		end
+	end
+	def draw_weapons
+		pos = Vector.new -600,-580,-900
+		GL.Clear(GL::DEPTH_BUFFER_BIT)
+		GL.PushMatrix
+		@weapons.each do |weapon,ammo|
+			GL.LoadIdentity
+			model = get_model weapon
+			$render.load_matrix( pos, model.orientation )
+			model.draw 
+			pos.x += 300
+		end
+		GL.PopMatrix
+	end
+	def get_model weapon
+		file = @files[weapon]
+		model = @models[file]
+		return model unless model.nil?
+		body =	Physics::SphereBody.new
+		body.rotate(-90,0,0)
+		@models[file] = Model.new({ :file => file, :body => body })
+	end
+end
+$inventory = Inventory.new
+$inventory.set :trojax,  2000
+$inventory.set :sussgun, 2000
+$inventory.set :titan
+#$render.ortho_models << $inventory
 
 ####################################
 # Main Loop
@@ -439,13 +546,14 @@ $render.ortho_models << $score
 loop do
 	process_bullets
 	$inputs.poll
-	$world.update
 	$update_network.call
+	$world.update
 	$picmgr.pump
 	$render.draw( $player.pos, $player.orientation ) do
 		if $options[:debug]
 			$world.bodies.each{|body| body.render_radius }
 		end
+		#$inventory.draw_weapons
 	end
 	SDL::WM.setCaption "PXR - FPS: #{$render.fps}", 'icon'
 end

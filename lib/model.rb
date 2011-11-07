@@ -1,7 +1,11 @@
 class Model
-	attr_accessor :mesh, :body
+	attr_accessor :mesh, :body, :debug
 	def initialize s
 
+		@pos = s[:pos] unless s[:pos].nil?
+		@orientation = s[:orientation] unless s[:orientation].nil?
+
+		@debug = s[:debug] || false
 		@body = s[:body]
 
 		## init mesh
@@ -15,7 +19,7 @@ class Model
 		@mesh.scale s[:scale] unless s[:scale].nil?
 
 		## figure out radius
-		@body.radius = @mesh.radius unless @body.nil?
+		@body.radius = @mesh.radius unless !@body.respond_to?(:radius) or @body.nil?
 
 	end
 	def pos
@@ -24,15 +28,19 @@ class Model
 			@body.pos
 	end
 	def orientation
-		@body.nil? ? 
-			@orientation ||= Vector.new(0,1,0).quat : 
+		if @body.nil? or not @body.respond_to?(:orientation)
+			@orientation ||= Vector.new(0,1,0).quat 
+		else
 			@body.orientation
+		end
 	end
 	def radius
 		@mesh.radius
 	end
 	def draw *args
+		$debug = true if @debug
 		@mesh.draw *args
+		$debug = false if @debug
 	end
 	def attachments
 		@mesh.attachments
