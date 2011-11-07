@@ -20,6 +20,9 @@ class Vector
 	def to_s
 		to_a.join(',')
 	end
+	def eq p2
+		@x == p2.x and @y == p2.y and @z == p2.z
+	end
 	def + p2
 		if p2.respond_to? :x
 			Vector.new( @x + p2.x, @y + p2.y, @z + p2.z )
@@ -93,5 +96,12 @@ class Vector
 		when :short
 			@x, @y, @z = data.unpack("v3").map { |x| (x-32768)/32767.999 }
 		end
+	end
+	def round 
+		Vector.new(
+			sprintf( "%.3f", @x ).to_f,
+			sprintf( "%.3f", @y ).to_f,
+			sprintf( "%.3f", @z ).to_f
+		)
 	end
 end
