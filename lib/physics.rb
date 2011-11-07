@@ -1,5 +1,6 @@
 require "vector"
 require "quat"
+require "point"
 module Physics
 	module Collision
 		module Test
@@ -73,6 +74,7 @@ module Physics
 				return true
 
 			end
+# continuous collision detection (sphere vs sphere)
 			def self.ray_sphere p, d, sp, sr, info=nil
 				m = p - sp
 				b = m.dot(d)
@@ -87,12 +89,12 @@ module Physics
 				t = -b - Math.sqrt(discr)
 				# if t is negative ray started inside sphere so clamp t
 				t = 0.0 if t < 0.0
-				fa = p + (d * t)
-				fb = sp + (d * t)
+#				fa = p + (d * t)
+#				fb = sp + (d * t)
 				# return values back to user
 				info[:t] = t
-				info[:fa] = fa
-				info[:fb] = fb
+#				info[:fa] = fa
+#				info[:fb] = fb
 				return true
 			end
 			def self.segment_sphere p, d, sp, sr, l, info
@@ -111,8 +113,11 @@ module Physics
 
 				# both spheres apparently have same velocity
 				# they must be moving parrallel so cannot collide
-				# TODO - do we need to now detect if they are already touching? 
-				return false if vlen == 0.0
+				if vlen == 0.0
+					#puts "falling back to sphere overlap test"
+					# lets find out if they are overlapping
+					return sphere a, b, info
+				end
 
 				# reduce test to line segment vs sphere
 				# b's radius will increase by a's
@@ -124,6 +129,69 @@ module Physics
 				segment_sphere( a.pos, v/vlen, b.pos, r, vlen, info )
 
 			end
+# cotinuous collision detection (aabb vs aabb)
+			def self.axis_aabb_min_max s, v, min, max
+				# test if we are within volume already
+				if s >= min and s <= max
+					#puts "we are already inside"
+					# return the closest side as the intersection point
+					return (s-min).abs < (s-max).abs ? min : max
+				end
+				# if there is no movement then 
+				if v == 0
+					#puts "there is no movement and we are not inside to begin with"
+					return nil
+				end
+				# which side can we possibly collide with ?
+				d = v > 0 ? min : max
+				# do we cross that side after movement ?
+				if (s < d) != ((s+v) < d)
+					# that is the point we intersect the volume
+					return d
+				else
+					# no intersection
+					return nil
+				end
+			end
+			def self.segment_aabb_min_max s, v, c, r, info
+				return false if (
+					(x = axis_aabb_min_max s.x, v.x, c.x - r, c.x + r).nil? or
+					(y = axis_aabb_min_max s.y, v.y, c.y - r, c.y + r).nil? or
+					(z = axis_aabb_min_max s.z, v.z, c.z - r, c.z + r).nil?
+				)
+				info[:point] = Vector.new(x,y,z)
+				#puts "intersection at: " + info[:point].to_a.join(',')
+				true
+			end
+			def self.aabb_aabb a, b, info=nil
+				# reduce problem to a single moving volume vs a line segment
+				v = a.velocity - b.velocity
+				vlen = v.length2
+				# objects are moving parrallel
+				if vlen == 0.0
+					puts "falling back to sphere overlap test"
+					return sphere a, b, info
+				end
+				r = b.radius + a.radius
+				# test if line segment passes through aabb
+				# line segment representing movement in 'v' from start to finish
+				# TODO - convert info[:point] back to position for a and b
+				segment_aabb_min_max( a.pos, v, b.pos, r, info )
+			end		
+# non continuous collision detection
+# tests for overlapping volumes before movement
+			def self.sphere a, b, info=nil
+				d = a.radius + b.radius
+				(a.pos - b.pos).length2 <= d**2
+			end
+			def self.aabb a, b, info=nil
+				d = a.radius + b.radius
+				not (
+					(a.pos.x - b.pos.x).abs > d or
+					(a.pos.y - b.pos.y).abs > d or
+					(a.pos.z - b.pos.z).abs > d
+				)
+			end
 		end
 		module Response
 			def self.sphere_sphere a, b, info
@@ -133,8 +201,8 @@ module Physics
 				#b.velocity = info[:fb] - b.pos
 
 				# update sphere positions to the location where they collide
-				a.pos = info[:fa]
-				b.pos = info[:fb]
+				a.pos = info[:fa] unless info[:fa].nil?
+				b.pos = info[:fb] unless info[:fb].nil?
 
 				# http://en.wikipedia.org/wiki/Inelastic_collision
 				# http://en.wikipedia.org/wiki/Elastic_collision
@@ -167,32 +235,14 @@ module Physics
 
 				# separate the objects				
 
-				a.pos += (vn * a.radius) # move them apart by their radius
-				b.pos -= (vn * b.radius)
+#				a.pos += (vn * a.radius) # move them apart by their radius
+#				b.pos -= (vn * b.radius)
 
 			end
 			def self.stop_bodies a, b
 				a.velocity = Vector.new
 				b.velocity = Vector.new
 			end
-		end
-	end
-	module BroadPhase
-		def self.sphere bodies
-			collisions = []
-			bodies.each_with_index do |a,i|
-				a_has_velocity = a.velocity.has_velocity?
-				# only check each pair once
-				j = i + 1; for j in (i+1..bodies.length-1); b = bodies[j]
-					# check collision masks
-					next if (not b.mask.include? a.type) and (not a.mask.include? b.type)
-					# only check if either sphere moving
-					next unless a_has_velocity or b.velocity.has_velocity?
-					# collect spheres which collide and the time/place it happens
-					info = {}; collisions << [a,b,info] if Collision::Test::sphere_sphere a,b,info
-				end
-			end
-			collisions
 		end
 	end
 	class Body
@@ -225,7 +275,7 @@ module Physics
 		def orbit pos, mx,my,mz, rx,ry,rz
 			@pos = pos
 			rotate rx,ry,rz
-			move Vector.new mx,my,mz
+			move Vector.new(mx,my,mz)
 		end
 		def serialize repr=:short
 			# Convert to string suitable for network transmission
@@ -301,17 +351,22 @@ module Physics
 		end
 	end
 	class World
-		attr_accessor :bodies, :grid, :callback, :interval
+		attr_accessor :bodies, :grid, :callback, :interval, :broadphase_test, :response
 		def initialize
 			@bodies = []
 			@last_run = Time.now
 			@interval = 1.0/40.0
+			@broadphase_test = Proc.new{|*args| Collision::Test::aabb_aabb *args }
+			@response = Proc.new{|*args| Collision::Response::sphere_sphere *args }
 		end
 		def update
 			return unless check_interval
 			drag
+			# test if velocities would cause collision
+			# and resolve them 
 			collisions
 			@callback.call unless @callback.nil?
+			# finally apply velocities
 			velocities
 		end
 		def check_interval
@@ -331,15 +386,33 @@ module Physics
 				end
 			end
 		end
+		def broadphase bodies
+			pairs = []
+			bodies.each_with_index do |a,i|
+				a_has_velocity = a.velocity.has_velocity?
+				# only check each pair once
+				j = i + 1; for j in (i+1..bodies.length-1); b = bodies[j]
+					#puts "testing body #{i} against #{j}"
+					# check collision masks
+					next if (not b.mask.include? a.type) and (not a.mask.include? b.type)
+					# only check if either sphere moving
+					next unless a_has_velocity or b.velocity.has_velocity?
+					# collect spheres which collide and the time/place it happens
+					info = {}; pairs << [a,b,info] if @broadphase_test.call a,b,info
+				end
+			end
+			pairs
+		end
 		def collisions
 			pairs = []
-			BroadPhase.sphere( @bodies ).each do |pair|
+			broadphase( @bodies ).each do |pair|
 				pairs << pair
 			end
+			#puts "found #{pairs.length} collisions"
 			pairs.each do |a,b,info|
 				next unless a.on_collision.call( a, b )
 				next unless b.on_collision.call( b, a )
-				Collision::Response::sphere_sphere( a, b, info )
+				@response.call( a, b, info )
 			end
 		end
 		def velocities
