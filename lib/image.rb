@@ -12,7 +12,7 @@ class Image
 				@@images[image] = false
 				return nil
 			end
-			debug "Image found: #{image}"
+			#debug "Image found: #{image}"
 			@@images[image] = Image.new image, *args
 			@@images[image]
 		end
