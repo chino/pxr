@@ -18,7 +18,14 @@ class Quat
 	end
 	attr_accessor :x, :y, :z, :w
 	def initialize x=0,y=0,z=0,w=0
-		@x,@y,@z,@w = x,y,z,w
+		if x.respond_to? :each # array given
+			@x = x[0]||0
+			@y = x[1]||0
+			@z = x[2]||0
+			@w = x[3]||0
+		else
+			@x,@y,@z,@w = x,y,z,w
+		end
 	end
 	def length
 		Math.sqrt dot
