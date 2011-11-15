@@ -1,2 +1,2 @@
-bzr push --no-strict bzr+ssh://fly.thruhere.net:2222/projects/pxr/ &&
-ssh  fly.thruhere.net -l daquino -p 2222 <<< "cd ~/www/projects/pxr/; bzr up"
+bzr push --no-strict bzr+ssh://aquinod@fly.thruhere.net:2222/home/aquinod/projects/pxr/ &&
+ssh aquinod@fly.thruhere.net -p 2222 <<< "bzr up projects/pxr"
