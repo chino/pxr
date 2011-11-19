@@ -17,7 +17,7 @@ class Quat
 		Quat.new x,y,z,w
 	end
 	attr_accessor :x, :y, :z, :w
-	def initialize x=0,y=0,z=0,w=0
+	def initialize x=0,y=0,z=0,w=1
 		if x.respond_to? :each # array given
 			@x = x[0]||0
 			@y = x[1]||0
@@ -72,13 +72,17 @@ class Quat
 	end
 	# http://gpwiki.org/index.php/OpenGL:Tutorials:Using_Quaternions_to_represent_rotation#Quaternion_from_Euler_angles
 	@@pi360 = Math::PI / 180 / 2
-	def rotate! yaw=0, pitch=0, roll=0
-		a = yaw.respond_to?(:x) ? yaw.to_a : [yaw,pitch,roll]
+#	def rotate! yaw=0, pitch=0, roll=0
+#		a = yaw.respond_to?(:x) ? yaw.to_a : [yaw,pitch,roll]
+	def rotate! pitch=0, yaw=0, roll=0
+		a = pitch.respond_to?(:x) ? pitch.to_a : [pitch,yaw,roll]
 		# create 3 quats for pitch, yaw, roll
 		# and multiply those together to form a rotation quat
 		# then apply it to the current quat to update it
- 		sy, sp, sr = a.map { |x| Math.sin(x*@@pi360) }
-		cy, cp, cr = a.map { |x| Math.cos(x*@@pi360) }
+#		sy, sp, sr = a.map { |x| Math.sin(x*@@pi360) }
+#		cy, cp, cr = a.map { |x| Math.cos(x*@@pi360) }
+		sp, sy, sr = a.map { |x| Math.sin(x*@@pi360) }
+		cp, cy, cr = a.map { |x| Math.cos(x*@@pi360) }
 		result = normalize * Quat.new(
 			cr*sp*cy + sr*cp*sy,
 			cr*cp*sy - sr*sp*cy,
