@@ -3,7 +3,7 @@ class Line < Model
 	include Mesh
 	def initialize s={}	
 		@pos = s[:pos] || Vector.new
-		@orientation = Vector.new(0,1,0).quat
+		@orientation = Quat.new
 		@render_type = GL::LINES
 		@verts = []
 		@primitives = []
