@@ -13,6 +13,7 @@ module Mesh
 		draw_trans
 		GL.EndList
 		@dl_trans = dl_trans
+		self
 	end
 	def free_dl
 		GL.DeleteLists(@dl_opaque, 1) unless @dl_opaque.nil?
@@ -112,5 +113,41 @@ module Mesh
 			@normal_rendering.make_dl
 		end
 		@normal_rendering
+	end
+	# returns count of expanded verts
+	def number_of_verts
+		@number_of_verts ||= begin
+			size = 0
+			@primitives.each do |primitive|
+				primitive[:verts].each do |index|
+					vert = @verts[index]
+					size += vert[:vector].length
+				end
+			end
+			size
+		end
+	end
+	# returns an array of expanded verts
+	def to_verts_array a=[]
+		@primitives.each do |p|
+			p[:verts].each do |index|
+				a += @verts[index][:vector]
+			end
+		end
+		a
+	end
+	# returns the verts list only as an array
+	def to_indexed_verts_array a=[]
+		@verts.each do |v|
+			a += v[:vector]
+		end
+		a
+	end
+	# returns the index list only as an array
+	def to_index_array a=[]
+		@primitives.each do |p|
+			a += p[:verts]
+		end
+		a
 	end
 end
