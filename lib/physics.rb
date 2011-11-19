@@ -353,14 +353,26 @@ module Physics
 	class World
 		attr_accessor :bodies, :grid, :callback, :interval, :broadphase_test, :response
 		def initialize
+			@gravity = Vector.new(0,0,0)
 			@bodies = []
 			@last_run = Time.now
 			@interval = 1.0/40.0
 			@broadphase_test = Proc.new{|*args| Collision::Test::aabb_aabb *args }
 			@response = Proc.new{|*args| Collision::Response::sphere_sphere *args }
 		end
+		def add body
+			@bodies << body
+		end
+		def remove body
+			@bodies.delete body
+		end
+		def gravity x=nil, y=nil, z=nil
+			return @gravity if x.nil?
+			@gravity = Vector.new(x,y,z)
+		end
 		def update
 			return unless check_interval
+			apply_gravity
 			drag
 			# test if velocities would cause collision
 			# and resolve them 
@@ -368,6 +380,12 @@ module Physics
 			@callback.call unless @callback.nil?
 			# finally apply velocities
 			velocities
+		end
+		def apply_gravity
+			return unless @gravity.has_velocity?
+			@bodies.each do |body|
+				body.velocity += @gravity
+			end
 		end
 		def check_interval
 			return true unless @interval

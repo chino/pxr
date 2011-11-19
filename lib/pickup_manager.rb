@@ -12,12 +12,12 @@ class PickupManager
 		end
 	end
 	def add pickup
-		@world.bodies << pickup.body
+		@world.add pickup.body
 		@render.models << pickup
 		pickup.body.on_collision = Proc.new{|pickup,player|
 			pickup = find_pickup_by_body( pickup )
 			if @on_pickup.call( pickup, player )
-				@world.bodies.delete pickup.body
+				@world.remove pickup.body
 				@render.models.delete pickup
 				@regen << {
 					:pickup => pickup,

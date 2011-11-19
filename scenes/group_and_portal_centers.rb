@@ -7,7 +7,7 @@ $world = Physics::World.new
 
 def sphere_body s={}
 	body = Physics::SphereBody.new(s)
-	$world.bodies << body
+	$world.bodies.add body
 	body
 end
 
@@ -218,7 +218,7 @@ def process_bullets
 	#puts "live bullets #{$bullets.length}" if $bullets.length > 0
 	$bullets.dup.each do |bullet|
 		if Time.now - bullet[:time] > 5 # seconds
-			$world.bodies.delete bullet[:model].body
+			$world.remove bullet[:model].body
 			$render.models.delete bullet[:model]
 			$bullets.delete bullet
 		end

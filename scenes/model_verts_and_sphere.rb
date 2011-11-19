@@ -27,7 +27,7 @@ $updates << Proc.new{
 
 def sphere_body s
 	body = Physics::SphereBody.new(s)
-	$world.bodies << body
+	$world.bodies.add body
 	body
 end
 
