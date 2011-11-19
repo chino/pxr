@@ -1,0 +1,134 @@
+require 'ffi'
+require "vector"
+class Quat < FFI::Struct
+	def self.from_vector direction
+		identity = Vector.new(0,0,-1) # opengl looks down -z
+		axis = identity.cross( direction )
+		angle = Math::acos( identity.dot( direction ) )
+		from_axis( axis, angle )
+	end
+	def self.from_axis vector, angle
+		angle *= 0.5
+		n = vector.normalize
+		sin_angle = Math::sin(angle)
+		x = n.x * sin_angle
+		y = n.y * sin_angle
+		z = n.z * sin_angle
+		w = Math::cos(angle)
+		Quat.new x,y,z,w
+	end
+  layout :x, :float, 
+		:y, :float, 
+		:z, :float, 
+		:w, :float
+  def x; self[:x]; end
+  def y; self[:y]; end
+  def z; self[:z]; end
+  def w; self[:w]; end
+	def initialize _x=0,_y=0,_z=0,_w=0
+		if _x.respond_to? :each # array given
+			self[:x] = _x[0]||0
+			self[:y] = _x[1]||0
+			self[:z] = _x[2]||0
+			self[:w] = _x[3]||0
+		else
+			self[:x],self[:y],self[:z],self[:w] = _x,_y,_z,_w
+		end
+	end
+	def length
+		Math.sqrt dot
+	end
+	def length2
+		dot
+	end
+	def has_velocity?
+		dot > 0.001 # so we don't test super small values
+	end
+	def dot q=self
+		self[:x] * q.x + self[:y] * q.y + self[:z] * q.z + self[:w] * q.w
+	end
+	def normalize
+		l = length
+		return Quat.new unless l > 0
+		Quat.new( self[:x] / l, self[:y] / l, self[:z] / l, self[:w] / l )
+	end
+# todo - this probably only needs the dot product to avoid the sqrt
+	def normalized?
+		not length > 1.00001
+	end
+	def conjugate
+		Quat.new( -self[:x], -self[:y], -self[:z], self[:w] )
+	end
+	def conjugate!
+		self[:x] = -self[:x]
+		self[:y] = -self[:y]
+		self[:z] = -self[:z]
+	end
+	def * q
+		Quat.new(
+			self[:w] * q.x + self[:x] * q.w + self[:y] * q.z - self[:z] * q.y,
+			self[:w] * q.y + self[:y] * q.w + self[:z] * q.x - self[:x] * q.z,
+			self[:w] * q.z + self[:z] * q.w + self[:x] * q.y - self[:y] * q.x,
+			self[:w] * q.w - self[:x] * q.x - self[:y] * q.y - self[:z] * q.z
+		)
+	end
+	def to_a
+		[self[:x],self[:y],self[:z],self[:w]]
+	end
+	def to_s
+		to_a.join(',')
+	end
+	# http://gpwiki.org/index.php/OpenGL:Tutorials:Using_Quaternions_to_represent_rotation#Quaternion_from_Euler_angles
+	@@pi360 = Math::PI / 180 / 2
+	def rotate! yaw=0, pitch=0, roll=0
+		a = yaw.respond_to?(:x) ? yaw.to_a : [yaw,pitch,roll]
+		# create 3 quats for pitch, yaw, roll
+		# and multiply those together to form a rotation quat
+		# then apply it to the current quat to update it
+ 		sy, sp, sr = a.map { |x| Math.sin(x*@@pi360) }
+		cy, cp, cr = a.map { |x| Math.cos(x*@@pi360) }
+		result = normalize * Quat.new(
+			cr*sp*cy + sr*cp*sy,
+			cr*cp*sy - sr*sp*cy,
+			sr*cp*cy - cr*sp*sy,
+			cr*cp*cy + sr*sp*sy
+		).normalize
+		self[:x],self[:y],self[:z],self[:w] = result.to_a
+		self
+	end
+	def rotate *args
+		dup.rotate!(*args)
+	end
+	@@directions = {
+		:up => Vector.new(0,1,0),
+		:down => Vector.new(0,-1,0),
+		:forward => Vector.new(0,0,-1),
+		:back => Vector.new(0,0,1),
+		:right => Vector.new(1,0,0),
+		:left => Vector.new(-1,0,0)
+	}
+	def vector direction
+		d = (@@directions[direction] || direction).quat
+		q = normalize * d * conjugate
+		Vector.new( q.x, q.y, q.z )
+	end
+	def serialize repr=:full
+		case repr
+		when :full
+			# Exact representation, 16 bytes: x,y,z,w as floats.
+			[ self[:x], self[:y], self[:z], self[:w] ].pack "e4"
+		when :short
+			# Short representation, 8 bytes: x,y,z,w as shorts (16 bits each).
+			# Components must be between -1.0 and 1.0 (inclusive).
+			([ self[:x], self[:y], self[:z], self[:w] ].map { |x| (x*32767.999).to_i + 32768 }).pack "v4"
+		end
+	end
+	def unserialize! data, repr=:full
+		case repr
+		when :full
+			self[:x], self[:y], self[:z], self[:w] = data.unpack "e4"
+		when :short
+			self[:x], self[:y], self[:z], self[:w] = data.unpack("v4").map { |x| (x-32768)/32767.999 }
+		end
+	end
+end

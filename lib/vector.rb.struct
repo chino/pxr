@@ -1,0 +1,111 @@
+require 'ffi'
+class Vector < FFI::Struct
+	layout :x, :float, :y, :float, :z, :float
+	def x; self[:x]; end
+	def y; self[:y]; end
+	def z; self[:z]; end
+	def initialize _x=0,_y=0,_z=0
+		if _x.respond_to? :each # array given
+			self[:x] = _x[0]||0
+			self[:y] = _x[1]||0
+			self[:z] = _x[2]||0
+		else
+			self[:x]=_x
+			self[:y]=_y
+			self[:z]=_z
+		end
+	end
+	def quat
+		Quat.new self[:x], self[:y], self[:z], 0
+	end
+	def to_a
+		[self[:x],self[:y],self[:z]]
+	end
+	def to_s
+		to_a.join(',')
+	end
+	def eq p2
+		self[:x] == p2.x and self[:y] == p2.y and self[:z] == p2.z
+	end
+	def + p2
+		if p2.respond_to? :x
+			Vector.new( self[:x] + p2.x, self[:y] + p2.y, self[:z] + p2.z )
+		else
+			Vector.new( self[:x] + p2, self[:y] + p2, self[:z] + p2 )
+		end
+	end
+	def - p2
+		if p2.respond_to? :x
+			Vector.new( self[:x] - p2.x, self[:y] - p2.y, self[:z] - p2.z )
+		else
+			Vector.new( self[:x] - p2, self[:y] - p2, self[:z] - p2  )
+		end
+	end
+	def * i
+		if i.respond_to? :x
+			Vector.new( self[:x] * i.x, self[:y] * i.y, self[:z] * i.z )
+		else
+			Vector.new( self[:x] * i, self[:y] * i, self[:z] * i )
+		end
+	end
+	def / d
+		Vector.new(
+			self[:x] / d,
+			self[:y] / d,
+			self[:z] / d
+		)
+	end
+	def abs
+		Vector.new( self[:x].abs, self[:y].abs, self[:z].abs )
+	end
+	def dot q=self
+		self[:x] * q.x + self[:y] * q.y + self[:z] * q.z
+	end
+	def length
+		Math.sqrt self[:x] * self[:x] + self[:y] * self[:y] + self[:z] * self[:z]
+	end
+	def length2
+		dot
+	end
+	def has_velocity?
+		dot > 0.001 # so we don't test super small values
+	end
+	def cross v2
+		Vector.new(
+			self[:y]*v2.z - self[:z]*v2.y,
+			self[:z]*v2.x - self[:x]*v2.z,
+			self[:x]*v2.y - self[:y]*v2.x
+		)
+	end
+	def normalize
+		l = length
+		return Vector.new unless l > 0
+		Vector.new( self[:x] / l, self[:y] / l, self[:z] / l )
+	end
+	def serialize repr=:full
+		case repr
+		when :full
+			# Exact representation, 12 bytes: x,y,z as floats.
+			[ self[:x], self[:y], self[:z] ].pack "e3"
+		when :short
+			# Short representation, 6 bytes: x,y,z as shorts (16 bits each).
+			# Components must be between -1.0 and 1.0 (inclusive).
+			([ self[:x], self[:y], self[:z] ].map { |x| (x*32767.999).to_i + 32768 }).pack "v3"
+		end
+	end
+	def unserialize! data, repr=:full
+		case repr
+		when :full
+			self[:x], self[:y], self[:z] = data.unpack "e3"
+		when :short
+			self[:x], self[:y], self[:z] = data.unpack("v3").map { |x| (x-32768)/32767.999 }
+		end
+	end
+	def round 
+		Vector.new(
+			sprintf( "%.3f", self[:x] ).to_f,
+			sprintf( "%.3f", self[:y] ).to_f,
+			sprintf( "%.3f", self[:z] ).to_f
+		)
+	end
+end

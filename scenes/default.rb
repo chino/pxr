@@ -3,11 +3,12 @@
 # Physics
 ####################################
 
-$world = Physics::World.new
+$world = PhysicsBullet::World.new
+#$world = Physics::World.new
 
 def sphere_body s={}
 	body = Physics::SphereBody.new(s)
-	$world.bodies << body
+	$world.add body
 	body
 end
 
@@ -172,13 +173,20 @@ $inputs.keyboard = Proc.new{|key,unicode,pressed|
 def handle_mouse
 
 	# get accumulated mouse movement
-	v = Vector.new( $inputs.mouse_get )
-	return unless v.has_velocity?
+	x, y = $inputs.mouse_get
+
+	# up/down (y) on mouse means rotate on x
+	# left/right (x) on mouse means rotate on y
+	# so here we flip the x, y inputs for that reason
+	v = Vector.new( y, x )
+
+	# ignore insignificant values
+	#return unless v.has_velocity?
 
 	# apply mouse accelleration
 	v += v * $turn_accell
 
-	# apply movement to velocity
+	# apply movement to rotation velocity
 	$player.rotation_velocity -= v
 
 end
@@ -218,7 +226,7 @@ def process_bullets
 	#puts "live bullets #{$bullets.length}" if $bullets.length > 0
 	$bullets.dup.each do |bullet|
 		if Time.now - bullet[:time] > 5 # seconds
-			$world.bodies.delete bullet[:model].body
+			$world.remove bullet[:model].body
 			$render.models.delete bullet[:model]
 			$bullets.delete bullet
 		end
@@ -226,7 +234,7 @@ def process_bullets
 end
 
 def new_bullet pos, orientation, block=nil
-	vel = orientation.vector( Vector.new(0,0,-100) )
+	vel = orientation.vector( Vector.new(0,0,-100000) )
 	m = Model.new({
 		:file => "ball1.mx", 
 		:scale => Vector.new(0.5,0.5,0.5),
@@ -262,12 +270,13 @@ $render = Render.new($options)
 
 $player = sphere_body({
 	:pos => Vector.new(-550.0,-500.0,4600.0),
+	:orientation => Quat.new.rotate!(0,180,0),
 	:drag => $move_drag,
 	:rotation_drag => $turn_drag,
+	:rotation_velocity => Vector.new(0,0,0),
 	:type => PLAYER,
 	:mask => [BULLET,PLAYER,PICKUP]
 })
-$player.rotate 180,0,0
 
 $cross_hair = Line.new({
 	:pos   => Vector.new($render.width/2,$render.height/2,0),
@@ -431,17 +440,19 @@ def collide_body_with_plane_my_way body, node, point
 
 end
 
+=begin
 $level_bsp = FsknBsp.new("data/models/ship.bsp")
-
 $world.callback = Proc.new{
 	$level_bsp.collide( $world.bodies ) do |body,node,point|
 		collide_body_with_plane_my_way body,node,point
 	end
 }
+=end
 
-# render mesh for level
+# load the level
 $level = Model.new({ :file => "ship.mxv" })
 $render.models << $level
+$world.add $level # .mesh will be used to create a btBvhTriangleMeshShape
 
 # render x/y/z axis at origin
 if $options[:debug]
@@ -528,8 +539,7 @@ class Inventory
 		file = @files[weapon]
 		model = @models[file]
 		return model unless model.nil?
-		body =	Physics::SphereBody.new
-		body.rotate(-90,0,0)
+		body =	Physics::SphereBody.new({:orientation => Quat.new.rotate(-90,0,0)})
 		@models[file] = Model.new({ :file => file, :body => body })
 	end
 end
@@ -543,6 +553,8 @@ $inventory.set :titan
 # Main Loop
 ####################################
 
+PhysicsBullet::physics_debug_draw # create dl's
+
 loop do
 	process_bullets
 	$inputs.poll
@@ -551,6 +563,7 @@ loop do
 	$picmgr.pump
 	$render.draw( $player.pos, $player.orientation ) do
 		if $options[:debug]
+			$world.draw_lines
 			$world.bodies.each{|body| body.render_radius }
 		end
 		#$inventory.draw_weapons
