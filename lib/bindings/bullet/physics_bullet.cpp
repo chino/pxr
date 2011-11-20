@@ -34,7 +34,7 @@ void physics_init( void (*line_callback)(float*) )
 
 	// enable debugging
 	debugDrawer.set_line_callback(line_callback);
-	debugDrawer.setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+	debugDrawer.setDebugMode(btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawAabb);
 	dynamicsWorld->setDebugDrawer(&debugDrawer);
 
 	// cleanup later
