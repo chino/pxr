@@ -269,7 +269,8 @@ end
 $render = Render.new($options)
 
 $player = sphere_body({
-	:pos => Vector.new(-550.0,-500.0,4600.0),
+#	:pos => Vector.new(-550.0,-500.0,4600.0),
+	:pos => Vector.new(0,0,0),
 	:orientation => Quat.new.rotate!(0,180,0),
 	:drag => $move_drag,
 	:rotation_drag => $turn_drag,
@@ -441,6 +442,17 @@ def collide_body_with_plane_my_way body, node, point
 end
 
 =begin
+# render a single triangle
+$render.models << Triangle.new({
+	:verts => [
+		{:vector => [-100,0,0], :rgba => [255,0,0,0], :transparencies => false},
+		{:vector => [0,100,0], :rgba => [0,255,0,0], :transparencies => false},
+		{:vector => [100,0,0], :rgba => [0,0,255,0], :transparencies => false}
+	]
+})
+=end
+
+=begin
 $level_bsp = FsknBsp.new("data/models/ship.bsp")
 $world.callback = Proc.new{
 	$level_bsp.collide( $world.bodies ) do |body,node,point|
@@ -452,7 +464,32 @@ $world.callback = Proc.new{
 # load the level
 $level = Model.new({ :file => "ship.mxv" })
 $render.models << $level
-$world.add $level # .mesh will be used to create a btBvhTriangleMeshShape
+$world.add $level
+
+=begin
+# was trying to load each triangle individually
+# but to much rendering overhead right now 
+$level.mesh.primitives.each do |p|
+
+	$render.models << Triangle.new({
+		:verts => [
+			$level.mesh.verts[ p[:verts][0] ],
+			$level.mesh.verts[ p[:verts][1] ],
+			$level.mesh.verts[ p[:verts][2] ]
+		],
+		:texture => nil, #p[:texture],
+		:body => sphere_body({
+			:mass => 1,
+			:drag => 0.085,
+			:rotation_drag => 0.085,
+			:radius => p[:radius],
+			:pos => Vector.new( -p[:pos][0], p[:pos][1], p[:pos][2] ),
+			:orientation => Quat.new
+		})
+	})
+
+end
+=end
 
 # render x/y/z axis at origin
 if $options[:debug]
@@ -553,7 +590,9 @@ $inventory.set :titan
 # Main Loop
 ####################################
 
-PhysicsBullet::physics_debug_draw # create dl's
+# request all the lines from bullet so 
+# we can create display lists for them 
+PhysicsBullet::physics_debug_draw if $options[:debug]
 
 loop do
 	process_bullets
