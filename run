@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 require 'rubygems'
-require "opengl"
 require "sdl"
 require 'optparse'
 require 'pp'
