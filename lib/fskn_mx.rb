@@ -54,9 +54,14 @@ class FsknMx
 						normal = [ read_float, read_float, read_float ]
 						verts = [ @verts[v[0]], @verts[v[1]], @verts[v[2]] ]
 						pos = Geometry::Triangle.centroid(
-							Vector.new(verts[0][:vector]),
-							Vector.new(verts[1][:vector]), 
-							Vector.new(verts[2][:vector])
+							Vector.new(verts[0][:vector])*Vector.new(-1,1,-1),
+							Vector.new(verts[1][:vector])*Vector.new(-1,1,-1), 
+							Vector.new(verts[2][:vector])*Vector.new(-1,1,-1)
+						)
+						normal = Geometry::Triangle.normal(
+							Vector.new(verts[0][:vector])*Vector.new(-1,1,-1),
+							Vector.new(verts[1][:vector])*Vector.new(-1,1,-1), 
+							Vector.new(verts[2][:vector])*Vector.new(-1,1,-1)
 						)
 						radius = Mesh.compute_radius( pos, verts )
 						@primitives << {
