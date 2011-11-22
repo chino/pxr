@@ -1,0 +1,6 @@
+The ruby-ftgl bindings are released under the
+same license as Ruby.
+
+See licenses/ftgl and licenses/freetype2 for the
+licenses governing the libraries themselves.
+

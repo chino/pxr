@@ -1,0 +1,18 @@
+To compile the ruby-ftgl extension:
+
+  ruby setup.rb config
+  ruby setup.rb setup
+
+
+Optionally to test the result, if you have the OpenGL GLUT library
+ruby bindings installed on your system:
+
+  cd tests
+  ruby ftgl_test.rb  # a window should open, with fonts drawn
+
+
+To install:
+
+  ruby setup.rb install
+
+
