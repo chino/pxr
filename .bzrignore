@@ -1,3 +1,4 @@
 profile.txt
 conf/local.rb
 *.rbc
+.config
