@@ -58,7 +58,7 @@ if $options[:profile]
 		result = RubyProf.stop
 		printer = RubyProf::FlatPrinter.new(result)
 		file = File.new PROFILE, 'w'
-		printer.print(file, 0)
+		printer.print(file)
 		file.close
 		puts "profile saved to #{PROFILE}"
 	}
