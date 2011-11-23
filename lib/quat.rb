@@ -1,5 +1,6 @@
 require "vector"
 class Quat
+	def self.directions; @@directions; end
 	def self.from_vector direction
 		identity = Vector.new(0,0,-1) # opengl looks down -z
 		axis = identity.cross( direction )
