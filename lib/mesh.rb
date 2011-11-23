@@ -8,6 +8,7 @@ module Mesh
 		GL.EndList
 		@dl_opaque = dl_opaque
 		# trans
+		return self unless @transparencies
 		dl_trans = GL.GenLists(1)
 		GL.NewList(dl_trans, GL::COMPILE)
 		draw_trans
@@ -27,7 +28,7 @@ module Mesh
 	end
 	def draw mode=:both # :opaque, :trans
 		draw_opaque if mode==:both or mode==:opaque
-		draw_trans if mode==:both or mode==:trans
+		draw_trans if @transparencies and (mode==:both or mode==:trans)
 	end
 	def draw_trans
 		if @dl_trans then

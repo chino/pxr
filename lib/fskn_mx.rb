@@ -7,6 +7,7 @@ class FsknMx
 	include BinReader
 	attr_reader :textures
 	def initialize file
+		@transparencies = false
 		@render_type = GL::POLYGON
 		@level = File.basename file
 		open file
@@ -28,6 +29,7 @@ class FsknMx
 				exec_size = read_short
 				exec_type = read_short
 				has_transparencies = exec_type & 0x001 == 1
+				@transparencies = true if has_transparencies
 				read_short.times {|v|
 					vert = [ read_float, read_float, read_float ]
 					reserved = read_int
