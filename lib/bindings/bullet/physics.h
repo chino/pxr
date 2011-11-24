@@ -4,6 +4,7 @@
 
 extern "C" {
 
+void physics_debug( btRigidBody * b );
 void physics_init( void (*line_callback)(float*) );
 void physics_debug_draw( void );
 void physics_cleanup( void );

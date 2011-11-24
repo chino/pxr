@@ -11,6 +11,14 @@ btSequentialImpulseConstraintSolver* solver;
 btDiscreteDynamicsWorld* dynamicsWorld;
 DebugDrawer debugDrawer;
 
+void physics_debug( btRigidBody * b )
+{
+	printf("activation state: %d\n",b->getActivationState());
+	//printf("linear sleeping: %f\n",b->getAngularSleepingThreshold());
+	//printf("angular sleeping: %f\n",b->getAngularSleepingThreshold());
+	puts("---\n");
+}
+
 void physics_gravity( float x, float y, float z )
 {
 	dynamicsWorld->setGravity(btVector3(x,y,z));
@@ -213,6 +221,7 @@ void physics_body_apply_torque(
 	float x, float y, float z
 )
 {
+	b->activate();
 	b->applyTorque(btVector3(x,y,z));
 }
 
@@ -221,6 +230,7 @@ void physics_body_apply_relative_torque(
 	float x, float y, float z
 )
 {
+	b->activate();
 	btQuaternion q = b->getOrientation();
 	btQuaternion q2 = q.normalize() * btQuaternion(x,y,z,0) * q.inverse();
 	b->applyTorque( btVector3(q2.getX(),q2.getY(),q2.getZ()) );
@@ -231,6 +241,7 @@ void physics_body_apply_central_force(
 	float x, float y, float z
 )
 {
+	b->activate();
 	b->applyCentralForce(btVector3(x,y,z));
 }
 
@@ -239,6 +250,7 @@ void physics_body_apply_relative_central_force(
 	float x, float y, float z
 )
 {
+	b->activate();
 	btVector3 relativeForce = btVector3(x,y,z);
 	btMatrix3x3& boxRot = b->getWorldTransform().getBasis();
 	btVector3 correctedForce = boxRot * relativeForce;

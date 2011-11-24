@@ -17,6 +17,8 @@ module PhysicsBullet
 
 	bind :physics_debug_draw
 
+	bind :physics_debug, [ :pointer ] # body
+
 	bind :physics_init, [:debug_line_callback]
 
 	bind :physics_cleanup
