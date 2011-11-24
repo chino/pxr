@@ -361,7 +361,7 @@ module Physics
 			@response = Proc.new{|*args| Collision::Response::sphere_sphere *args }
 		end
 		def add body
-			@bodies << body
+			@bodies << body unless body.respond_to? :mesh
 		end
 		def remove body
 			@bodies.delete body

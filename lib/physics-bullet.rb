@@ -231,7 +231,7 @@ module PhysicsBullet
 		def set_friction friction
 			PhysicsBullet::physics_set_friction(
 				@pointer, friction
-			)
+			) if @pointer
 		end
 	end
 
