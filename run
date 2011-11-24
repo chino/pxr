@@ -56,7 +56,7 @@ if $options[:profile]
 	RubyProf.start
 	at_exit {
 		result = RubyProf.stop
-		printer = RubyProf::FlatPrinter.new(result)
+		printer = RubyProf::GraphPrinter.new(result)
 		file = File.new PROFILE, 'w'
 		printer.print(file)
 		file.close
