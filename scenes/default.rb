@@ -234,11 +234,12 @@ def process_bullets
 end
 
 def new_bullet pos, orientation, block=nil
-	vel = orientation.vector( Vector.new(0,0,-100000) )
+	vel = orientation.vector( Vector.new(0,0,-10000) )
 	m = Model.new({
 		:file => "ball1.mx", 
 		:scale => Vector.new(0.5,0.5,0.5),
 		:body => sphere_body({
+			:mass => 0.05,
 			:pos => pos,
 			:velocity => vel,
 			:drag => 0,
@@ -269,8 +270,8 @@ end
 $render = Render.new($options)
 
 $player = sphere_body({
-#	:pos => Vector.new(-550.0,-500.0,4600.0),
-	:pos => Vector.new(0,0,0),
+	:pos => Vector.new(-550.0,-500.0,4600.0),
+#	:pos => Vector.new(0,0,0),
 	:orientation => Quat.new.rotate!(0,180,0),
 	:drag => $move_drag,
 	:rotation_drag => $turn_drag,
@@ -278,6 +279,31 @@ $player = sphere_body({
 	:type => PLAYER,
 	:mask => [BULLET,PLAYER,PICKUP]
 })
+
+=begin
+# render player on ball
+$player_mesh = Model.new({
+	:file => "ball1.mx", 
+	:body => $player
+})
+$render.models << $player_mesh
+=end
+
+=begin
+# create a bunch of spheres in bridge entrace
+# some will actually escape the walls
+100.times do |i|
+	$render.models << Model.new({
+		:file => "ball1.mx", 
+		:scale => Vector.new(0.5,0.5,0.5),
+		:body => sphere_body({
+			:pos => Vector.new(-550.0,-500.0,4600.0),
+			:drag => 0,
+			:rotation_drag => 0
+		})
+	})
+end
+=end
 
 $cross_hair = Line.new({
 	:pos   => Vector.new($render.width/2,$render.height/2,0),
@@ -463,8 +489,9 @@ $world.callback = Proc.new{
 
 # load the level
 $level = Model.new({ :file => "ship.mxv" })
+$world.add $level # must do first to get @pointer
+$level.mesh.set_friction 0
 $render.models << $level
-$world.add $level
 
 =begin
 # was trying to load each triangle individually
@@ -594,13 +621,28 @@ $inventory.set :titan
 # we can create display lists for them 
 PhysicsBullet::physics_debug_draw if $options[:debug]
 
+=begin
+# this lets you profile after load times
+require 'ruby-prof'
+RubyProf.start
+  at_exit {
+    result = RubyProf.stop
+    printer = RubyProf::GraphPrinter.new(result)
+    file = File.new PROFILE, 'w'
+    printer.print(file)
+    file.close
+    puts "profile saved to #{PROFILE}"
+  }
+=end
+
 loop do
 	process_bullets
 	$inputs.poll
 	$update_network.call
 	$world.update
 	$picmgr.pump
-	$render.draw( $player.pos, $player.orientation ) do
+#	$render.draw( Vector.new(0,0,300), Quat.from_vector($player.pos.normalize) ) do
+	$render.draw( $player.pos, $player.orientation, $level ) do
 		if $options[:debug]
 			$world.draw_lines
 			$world.bodies.each{|body| body.render_radius }

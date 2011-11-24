@@ -9,9 +9,9 @@ CXXFLAGS+= -I./linux/usr/local/include -I.
 LIBS+= -lBulletSoftBody -lBulletDynamics
 LIBS+= -lBulletCollision -lLinearMath
 
-SDL_CONFIG=sdl-config
-CXXFLAGS+= `$(SDL_CONFIG) --cflags`
-LIBS+= `$(SDL_CONFIG) --libs`
+#SDL_CONFIG=sdl-config
+#CXXFLAGS+= `$(SDL_CONFIG) --cflags`
+#LIBS+= `$(SDL_CONFIG) --libs`
 
 INCLUDE=$(wildcard *.h)
 SRC=$(wildcard *.cpp)

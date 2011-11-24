@@ -9,7 +9,7 @@ class Font
 		set_size @size
 	end
 	def set_size size
-		@font.SetFaceSize(24)
+		@font.SetFaceSize size
 		@size = size
 	rescue
 		$stderr.puts "SetFaceSize(#{size}) failed for #{@font}"
@@ -19,5 +19,7 @@ class Font
 		GL.RasterPos x, y
 		set_size @size
 		@font.Render text
+	rescue
+		$stderr.puts "Front#render failed #{$!}"
 	end
 end

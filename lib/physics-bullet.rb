@@ -1,4 +1,5 @@
 require "physics.rb"
+require "mesh"
 require "rubygems"
 require "ffi"
 module PhysicsBullet
@@ -21,7 +22,8 @@ module PhysicsBullet
 	bind :physics_cleanup
 
 	bind :physics_step, [
-			:float # interval in seconds
+			:float, # interval in seconds
+			:int # steps
 		]
 
 	bind :physics_gravity, [
@@ -29,6 +31,11 @@ module PhysicsBullet
 		]
 
 	bind :physics_remove_body, [ :pointer ]
+
+	bind :physics_set_friction, [
+			:pointer, # body
+			:float # friction
+		]
 
 	bind :physics_create_sphere, [
 			:float, :float, :float, :float, # mass, radius, linear and angular drag
@@ -72,6 +79,12 @@ module PhysicsBullet
 			  :float, :float, :float, # vector
 		]
 
+	bind :physics_perform_ray_cast_on_bvh, [
+				:pointer, # body
+				:float, :float, :float, # from
+				:float, :float, :float # to
+		], :bool
+
 	bind :physics_create_static_bvh_tri_mesh, [
 				:int, # number of triangles
 				:pointer, # (int) indexes list
@@ -81,22 +94,12 @@ module PhysicsBullet
 				:int # 3 * 4
 		], :pointer
 
-	class Physics::Body
-		attr_accessor :pointer
-	end
-
-	class TriangleMesh
-		attr_accessor :mesh
-		def initialize mesh
-			@mesh = mesh
-		end
-	end
-
 	require 'line'
 
 	class World
 		attr_accessor :bodies, :interval
 		def initialize
+			@interval = 1.0/60.0
 			@no_gc = []
 			@bodies = []
 			@lines = []
@@ -140,7 +143,7 @@ module PhysicsBullet
 								mesh.to_indexed_verts_array.
 									map{|f| (i+=1) % 3 == 0 ? -f : f }) # flip x axis
 
-				@no_gc << PhysicsBullet::physics_create_static_bvh_tri_mesh(
+				@no_gc << mesh.pointer = PhysicsBullet::physics_create_static_bvh_tri_mesh(
 					mesh.primitives.length,
 					indexes,
 					3*4, # 3 * sizeof(int)
@@ -161,18 +164,26 @@ module PhysicsBullet
 				push_velocity_to_bullet body 
 				push_rotation_velocity_to_bullet body 
 			end
+
 			true
 		end
 		def remove body
 			@bodies.delete body
 			PhysicsBullet::physics_remove_body body.pointer
 		end
-		def update
+		def time_passed
 			n = Time.now.to_f
-			@time = n - (@last ||= n - (1.0/60.0))
+			@last ||= n - @interval
+			@time = n - @last
 			@last = n
+			@time
+		end
+		def update
+			steps = time_passed / @interval + 1
+			puts "time passed #{(@time*1000).to_i} "+
+						"missed steps #{steps.to_i}"
 			push_updates_to_bullet
-			PhysicsBullet::physics_step @time
+			PhysicsBullet::physics_step @interval, steps
 			get_updates_from_bullet
 		end
 		def push_updates_to_bullet
@@ -215,4 +226,25 @@ module PhysicsBullet
 		end
 	end
 
+	module CollisionProperties
+		attr_accessor :pointer
+		def set_friction friction
+			PhysicsBullet::physics_set_friction(
+				@pointer, friction
+			)
+		end
+	end
+
+end
+class Physics::Body
+	include PhysicsBullet::CollisionProperties
+end
+module Mesh
+	include PhysicsBullet::CollisionProperties
+	def ray_cast from, to
+		PhysicsBullet::physics_perform_ray_cast_on_bvh(
+			@pointer,
+			*(from.to_a + to.to_a)
+		)
+	end
 end

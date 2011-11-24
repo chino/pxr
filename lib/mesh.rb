@@ -152,3 +152,4 @@ module Mesh
 		a
 	end
 end
+require "physics-bullet.rb" # to make sure Mesh is updated

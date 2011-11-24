@@ -44,10 +44,31 @@ class Render
 		GL.PolygonMode(GL::FRONT, GL::LINE)
 		GL.PolygonMode(GL::BACK, GL::LINE)
 	end
-	def draw pos, orientation, &block
+	def draw pos, orientation, bvh=nil, &block
 		GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT)
 		look_at( pos, orientation )
-		draw_models( clip_behind( pos, orientation ) )
+#
+# TODO - this needs to be way better
+#        clipping behind is good but not enough
+#
+# 1. clip by fustrum
+# 2. clip by portal ?
+		models = clip_behind( pos, orientation )
+# clip by occlusion using bvh of level
+# doesn't work nice since centers do not see 
+# each other but edges of the sphere / mesh do
+# also touching any wall causes the ray test
+# to fail right away (weird as center is not 
+# touching)..  also objects seem to flicker
+=begin
+		models = models.select do |model|
+			next true if model == bvh
+			hit = bvh.mesh.ray_cast pos, model.pos
+			puts "I can see #{pos}" if not hit
+			not hit
+		end if bvh
+=end
+		draw_models( models )
 		block.call if block_given?
 		draw_ortho if @ortho_models.length > 0
 		GL.Flush
@@ -74,15 +95,18 @@ class Render
 		unset_trans
 	end
 	def draw_model mode, model
-		GL.PushMatrix
-		if model.respond_to? :pos and model.respond_to? :orientation
+		mv = (model.respond_to? :pos and
+				 model.respond_to? :orientation)
+		if mv
+			GL.PushMatrix
 			load_matrix( model.pos, model.orientation )
 		end
 		model.draw( mode )
 		if model.respond_to? :attachments
-			model.attachments.each{|model| draw_model( mode, model ) }
+			model.attachments.each{|model|
+				draw_model( mode, model ) }
 		end
-		GL.PopMatrix
+		GL.PopMatrix if mv
 	end
 	def set_ortho
 		GL.MatrixMode(GL::MODELVIEW)
@@ -119,6 +143,14 @@ class Render
 			up.x,up.y,up.z
 		)		
 	end
+##
+# TODO - can we use another method here?
+#        this seems to be big slow down 
+#        orientation.vector does to much
+#        math shit in ruby
+#
+#        Maybe tri ffi-inliner or use ffi call
+##
 	def load_matrix pos, orientation
 		up = orientation.vector :up
 		forward = orientation.vector :forward
