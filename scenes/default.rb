@@ -132,11 +132,16 @@ $update_network = Proc.new {
 
 $inputs = Input.new($options)
 
+def generate_bullet_from body
+	pos = body.pos + body.orientation.vector( Vector.new(0,0,-$bullets_radius) ) #-body.radius*3) )
+	new_bullet( pos, body.orientation )
+	send_bullet( pos, body.orientation )
+end
+
+$mouse_button_pressed = false
 $inputs.mouse_button = Proc.new{|button,pressed|
-	next unless pressed
-	pos = $player.pos + $player.orientation.vector( Vector.new(0,0,-$player.radius*3) )
-	new_bullet( pos, $player.orientation )
-	send_bullet( pos, $player.orientation )
+	$mouse_button_pressed = pressed
+	# process_bullets will fire the bullet at an interval
 }
 
 $movement = Vector.new 0,0,0
@@ -216,16 +221,27 @@ $inputs.on_poll Proc.new{
 # Scene
 ####################################
 
+$render = Render.new($options)
+
 PLAYER = 2
 BULLET = 4
 PICKUP = 6
 
 $bullets = []
+$bullets_mass = 0.05
+$bullets_speed = 15000
+$bullets_per_second = 2
+$bullets_fire_period = 1 / $bullets_per_second
+$bullets_timeout = 10
+$bullets_scale = Vector.new(0.5,0.5,0.5)
+$bullets_radius = Model.new({
+		:file => "ball1.mx",
+		:scale => $bullets_scale
+}).radius
 
-def process_bullets
-	#puts "live bullets #{$bullets.length}" if $bullets.length > 0
+def expire_bullets
 	$bullets.dup.each do |bullet|
-		if Time.now - bullet[:time] > 5 # seconds
+		if Time.now - bullet[:time] > $bullets_timeout
 			$world.remove bullet[:model].body
 			$render.models.delete bullet[:model]
 			$bullets.delete bullet
@@ -233,15 +249,32 @@ def process_bullets
 	end
 end
 
+def check_new_bullet_trigger
+	return unless $mouse_button_pressed
+	now = Time.now
+	$last_bullet_fired ||= (now - $bullets_fire_period)
+	t = now - $last_bullet_fired
+	if t >= $bullets_fire_period
+		generate_bullet_from $player
+		$last_bullet_fired = now
+	end
+end
+
+def process_bullets
+	#puts "live bullets #{$bullets.length}" if $bullets.length > 0
+	expire_bullets
+	check_new_bullet_trigger
+end
+
 def new_bullet pos, orientation, block=nil
-	vel = orientation.vector( Vector.new(0,0,-10000) )
+	vel = orientation.vector( Vector.new(0,0,-$bullets_speed) )
 	m = Model.new({
 		:file => "ball1.mx", 
-		:scale => Vector.new(0.5,0.5,0.5),
+		:scale => $bullets_scale,
 		:body => sphere_body({
-			:mass => 0.05,
+			:mass => $bullets_mass,
 			:pos => pos,
-			:velocity => vel,
+			:velocity => vel, # TODO - this should be a velocity not a force inside physics
 			:drag => 0,
 			:rotation_velocity => Vector.new(10,10,10),
 			:rotation_drag => 0,
@@ -266,8 +299,6 @@ def send_bullet pos, orientation
 		orientation.serialize(:short)
 	)
 end
-
-$render = Render.new($options)
 
 $player = sphere_body({
 	:pos => Vector.new(-550.0,-500.0,4600.0),
@@ -636,8 +667,8 @@ RubyProf.start
 =end
 
 loop do
-	process_bullets
 	$inputs.poll
+	process_bullets
 	$update_network.call
 	$world.update
 	$picmgr.pump
