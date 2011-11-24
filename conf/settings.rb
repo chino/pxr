@@ -7,10 +7,12 @@ $bindings = {
 	"g" => :right,
 	"\r" => :type # enter button
 }
-$move_accell = 3000.0
-$move_drag   = 0.8
-$turn_accell = 2000.0
-$turn_drag   = 0.813
+$accell = 2000.0
+$move_accell = $accell
+$turn_accell = $accell
+$drag = 0.899999999
+$turn_drag   = $drag
+$move_drag   = $drag
 $loaders = {}
 $models = "data/models"
 $options = {

@@ -307,6 +307,7 @@ $player = sphere_body({
 	:drag => $move_drag,
 	:rotation_drag => $turn_drag,
 	:rotation_velocity => Vector.new(0,0,0),
+	:radius => Model.new({:file=>"xcop400.mxa"}).radius,
 	:type => PLAYER,
 	:mask => [BULLET,PLAYER,PICKUP]
 })
@@ -666,8 +667,18 @@ RubyProf.start
   }
 =end
 
+def inputs_poll
+	now = Time.now.to_f
+	$last_input_poll ||= (now - $world.interval)
+	t = now - $world.interval
+	if t >= $world.interval
+		$inputs.poll
+		$last_input_poll = now
+	end
+end
+
 loop do
-	$inputs.poll
+	inputs_poll
 	process_bullets
 	$update_network.call
 	$world.update
