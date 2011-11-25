@@ -95,7 +95,7 @@ $game.mouse_button = Proc.new{|button,pressed|
 			:pos => pos,
 			:velocity => vel,
 			:drag => 0,
-			:rotation_velocity => Vector.new(10,10,10),
+			:angular_velocity => Vector.new(10,10,10),
 			:rotation_drag => 0
 		})
 	)
@@ -111,7 +111,7 @@ $updates << Proc.new{
 	inputs += inputs * $turn_accell
 
 	# apply movement to velocity
-	$camera.rotation_velocity += inputs
+	$camera.angular_velocity += inputs
 
 }
 

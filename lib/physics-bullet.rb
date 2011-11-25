@@ -179,7 +179,7 @@ module PhysicsBullet
 						body.pos.to_a + 
 						body.orientation.to_a +
 						body.velocity.to_a +
-						body.rotation_velocity.to_a
+						body.angular_velocity.to_a
 					)
 				)
 			end
@@ -245,7 +245,7 @@ class Physics::Body
 		)
 	end
 	def set_angular_velocity v
-		@rotation_velocity = v
+		@angular_velocity = v
 		PhysicsBullet::physics_body_set_relative_angular_velocity(
 			@pointer,
 			*v.to_a

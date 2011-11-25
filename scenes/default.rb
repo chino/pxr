@@ -276,7 +276,7 @@ def new_bullet pos, orientation, block=nil
 			:pos => pos,
 			:velocity => vel, # TODO - this should be a velocity not a force inside physics
 			:drag => 0,
-			:rotation_velocity => Vector.new(10,10,10),
+			:angular_velocity => Vector.new(10,10,10),
 			:rotation_drag => 0,
 			:type => BULLET,
 			:mask => [PLAYER],
@@ -306,7 +306,7 @@ $player = sphere_body({
 	:orientation => Quat.new.rotate!(0,180,0),
 	:drag => $move_drag,
 	:rotation_drag => $turn_drag,
-	:rotation_velocity => Vector.new(0,0,0),
+	:angular_velocity => Vector.new(0,0,0),
 	:radius => Model.new({:file=>"xcop400.mxa"}).radius,
 	:type => PLAYER,
 	:mask => [BULLET,PLAYER,PICKUP]

@@ -129,7 +129,7 @@ class FsknPic
 				:body => Physics::SphereBody.new({
 					:pos => props[:pos],
 					:rotation_drag => 0,
-					:rotation_velocity => Vector.new(1,1,1)
+					:angular_velocity => Vector.new(1,1,1)
 				})
 			})
 			props.delete :pos

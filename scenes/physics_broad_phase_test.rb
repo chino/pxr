@@ -32,7 +32,7 @@ if $render
 #  	:pos => Vector.new(-550.0,-500.0,4600.0),  #Vector.new(0,0,0),
   	:pos => Vector.new(0,100,0),
 	  :drag => 0,
-#		:rotation_velocity => Vector.new(10,0,0),
+#		:angular_velocity => Vector.new(10,0,0),
   	:rotation_drag => 0,
 	  :type => 1,
   	:mask => [1]
@@ -64,7 +64,7 @@ def generate_bodies
 #			:velocity => Vector.new(0.0011,0.0011,0.0011),
 			:velocity => Vector.new(r-r,r-r,r-r),
 			:drag => 0,
-			:rotation_velocity => Vector.new(0,0,0),
+			:angular_velocity => Vector.new(0,0,0),
 			:rotation_drag => 0,
 			:type => 1,
 			:mask => [1]

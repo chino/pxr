@@ -247,7 +247,7 @@ module Physics
 	end
 	class Body
 		attr_accessor :pos, :orientation, :drag, :velocity, :type, :mask
-		attr_accessor :rotation_velocity, :rotation_drag, :bounce, :mass
+		attr_accessor :angular_velocity, :rotation_drag, :bounce, :mass
 		def initialize s={}
 			@on_collision = s[:on_collision] || Proc.new{true}
 			@type = s[:type]
@@ -256,7 +256,7 @@ module Physics
 			@orientation = s[:orientation] || Quat.new(0, 0, 0, 1).normalize
 			@velocity = s[:velocity] || Vector.new
 			@drag = s[:drag] || 0.1
-			@rotation_velocity = s[:rotation_velocity] || Vector.new
+			@angular_velocity = s[:angular_velocity] || Vector.new
 			@rotation_drag = s[:rotation_drag] || 0.5
 			@bounce = s[:bounce] || 0.5
 			@mass = s[:mass] || 1
@@ -284,28 +284,28 @@ module Physics
 				@pos.serialize(:full) + # 12
 				@velocity.serialize(:full) + # 12
 				@orientation.serialize(:full) + # 16
-				@rotation_velocity.serialize(:full) # 16
+				@angular_velocity.serialize(:full) # 16
 				# 56
 			when :short
 				@pos.serialize(:full) + # 12
 				@velocity.serialize(:full) + # 12
 				@orientation.serialize(:short) + # 8 
-				@rotation_velocity.serialize(:full) # 16
+				@angular_velocity.serialize(:full) # 16
 				# 48
 			end
 		end
 		def unserialize! str, repr=:short
 			case repr
 			when :full
-				pos_s, velocity_s, orient_s, rotation_velocity_s = str.unpack "a12a12a16a16"
+				pos_s, velocity_s, orient_s, angular_velocity_s = str.unpack "a12a12a16a16"
 				@orientation.unserialize! orient_s, :full
 			when :short
-				pos_s, velocity_s, orient_s, rotation_velocity_s = str.unpack "a12a12a8a16"
+				pos_s, velocity_s, orient_s, angular_velocity_s = str.unpack "a12a12a8a16"
 				@orientation.unserialize! orient_s, :short
 			end
 			@pos.unserialize! pos_s, :full
 			@velocity.unserialize! velocity_s, :full
-			@rotation_velocity.unserialize! rotation_velocity_s, :full
+			@angular_velocity.unserialize! angular_velocity_s, :full
 		end
 	end
 	class SphereBody < Body
@@ -399,8 +399,8 @@ module Physics
 				if body.velocity.has_velocity?
 					body.velocity -= body.velocity * body.drag
 				end
-				if body.rotation_velocity.has_velocity?
-					body.rotation_velocity -= body.rotation_velocity * body.rotation_drag
+				if body.angular_velocity.has_velocity?
+					body.angular_velocity -= body.angular_velocity * body.rotation_drag
 				end
 			end
 		end
@@ -438,8 +438,8 @@ module Physics
 				if body.velocity.has_velocity?
 					body.pos += body.velocity
 				end
-				if body.rotation_velocity.has_velocity?
-					body.rotate body.rotation_velocity
+				if body.angular_velocity.has_velocity?
+					body.rotate body.angular_velocity
 				end
 			end
 		end

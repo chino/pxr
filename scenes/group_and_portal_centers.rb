@@ -179,7 +179,7 @@ def handle_mouse
 	v += v * $turn_accell
 
 	# apply movement to velocity
-	$player.rotation_velocity -= v
+	$player.angular_velocity -= v
 
 end
 
@@ -234,7 +234,7 @@ def new_bullet pos, orientation, block=nil
 			:pos => pos,
 			:velocity => vel,
 			:drag => 0,
-			:rotation_velocity => Vector.new(10,10,10),
+			:angular_velocity => Vector.new(10,10,10),
 			:rotation_drag => 0,
 			:type => BULLET,
 			:mask => [PLAYER],
