@@ -1,6 +1,7 @@
 require "model"
 class Line < Model
 	include Mesh
+	attr_accessor :orientation
 	def initialize s={}	
 		@pos = s[:pos] || Vector.new
 		@orientation = Quat.new

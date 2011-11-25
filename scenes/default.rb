@@ -175,15 +175,46 @@ $inputs.keyboard = Proc.new{|key,unicode,pressed|
 	end
 }
 
+$bank = 0
+$bank_accell = 0.01
+$bank_decell = 0.03
+$bank_max = 30.0
+
+def bank orientation
+
+	# current
+	$bank -= $bank_accell * $bank_max * $x
+
+	# max per frame
+  max = $bank_accell * $bank_max * $framelag
+	if $bank > max; $bank = max
+	elsif $bank < -max; $bank = -max
+	end
+
+	# decell
+	$bank *= (1.0-$bank_decell)**$framelag
+
+	# rotation on z
+	rot = Quat.new.rotate(0,0,$bank)
+
+	# TODO - doesn't come out nice with the current cross hair
+	#$cross_hair.orientation = Quat.new * rot
+
+	# apply bank to camera orietation
+	orientation * rot
+
+end
+
+$x = 0
 def handle_mouse
 
 	# get accumulated mouse movement
-	x, y = $inputs.mouse_get
+	$x, y = $inputs.mouse_get
 
 	# up/down (y) on mouse means rotate on x
 	# left/right (x) on mouse means rotate on y
 	# so here we flip the x, y inputs for that reason
-	v = Vector.new( y, x )
+	v = Vector.new( y, $x )
 
 	# ignore insignificant values
 	#return unless v.has_velocity?
@@ -229,8 +260,8 @@ PICKUP = 6
 
 $bullets = []
 $bullets_mass = 0.05
-$bullets_speed = 15000
-$bullets_per_second = 2
+$bullets_speed = 5000
+$bullets_per_second = 1
 $bullets_fire_period = 1 / $bullets_per_second
 $bullets_timeout = 10
 $bullets_scale = Vector.new(0.5,0.5,0.5)
@@ -670,21 +701,27 @@ RubyProf.start
 def inputs_poll
 	now = Time.now.to_f
 	$last_input_poll ||= (now - $world.interval)
-	t = now - $world.interval
-	if t >= $world.interval
+	$input_poll_time = now - $last_input_poll
+	if $input_poll_time >= $world.interval
 		$inputs.poll
 		$last_input_poll = now
 	end
 end
 
+def calculate_framelag
+	now = Time.now.to_f
+	$framelag = now - ($last_framelag||=now)
+end
+
 loop do
+	calculate_framelag
 	inputs_poll
 	process_bullets
 	$update_network.call
 	$world.update
 	$picmgr.pump
 #	$render.draw( Vector.new(0,0,300), Quat.from_vector($player.pos.normalize) ) do
-	$render.draw( $player.pos, $player.orientation, $level ) do
+	$render.draw( $player.pos, bank( $player.orientation ), $level ) do
 		if $options[:debug]
 			$world.draw_lines
 			$world.bodies.each{|body| body.render_radius }
