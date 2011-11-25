@@ -14,6 +14,10 @@ module PhysicsBullet
 	end
 
 	callback :debug_line_callback, [:pointer], :void
+	callback :motion_state_callback, [
+				:float, :float, :float,					# vector
+				:float, :float, :float, :float	# orientation
+		], :void
 
 	bind :physics_debug_draw
 
@@ -44,7 +48,8 @@ module PhysicsBullet
 		  :float, :float, :float, # vector
 		  :float, :float, :float, :float, # quat
 		  :float, :float, :float, # linear velocity (world space)
-		  :float, :float, :float # angular velocity (local space)
+		  :float, :float, :float, # angular velocity (local space)
+		  :motion_state_callback
 		],
 		:pointer # body
 
@@ -170,6 +175,12 @@ module PhysicsBullet
 
 			elsif body.respond_to? :radius
 				@bodies << body
+				body.motion_state_callback =
+					Proc.new{ |px,py,pz,qx,qy,qz,qw|
+						#puts "motion state called with #{px}, #{py}, #{pz}"
+						body.pos = Vector.new(px,py,pz)
+						body.orientation = Quat.new(qx,qy,qz,qw)
+					}
 				body.pointer = PhysicsBullet::physics_create_sphere(
 					body.mass,
 					body.radius, 
@@ -179,7 +190,8 @@ module PhysicsBullet
 						body.pos.to_a + 
 						body.orientation.to_a +
 						body.linear_velocity.to_a +
-						body.angular_velocity.to_a
+						body.angular_velocity.to_a +
+						[body.motion_state_callback]
 					)
 				)
 			end
@@ -192,7 +204,7 @@ module PhysicsBullet
 		end
 		def update
 			step
-			get_updates_from_bullet
+			#get_updates_from_bullet
 		end
 		def time_passed
 			n = Time.now.to_f
@@ -207,9 +219,8 @@ module PhysicsBullet
 			puts "time passed #{(@time*1000).to_i} "+
 						"missed steps #{steps.to_i}"
 		end
-		# we could use motion states to only update bodies that have changed
-		# probably best solution is to somehow pass a proc to bullet to callback
-		# http://www.bulletphysics.org/mediawiki-1.5.8/index.php?title=MotionStates
+# we now use motion state callbacks for updates
+=begin
 		def get_updates_from_bullet
 			v = FFI::MemoryPointer.new :float, 3
 			q = FFI::MemoryPointer.new :float, 4
@@ -217,9 +228,9 @@ module PhysicsBullet
 				PhysicsBullet::physics_body_transform( body.pointer, v, q )
 				body.pos = Vector.new( v.get_array_of_float(0,3) )
 				body.orientation = Quat.new( q.get_array_of_float(0,4) )
-				# TODO - pull up other factors like velocities ?
 			end
 		end
+=end
 	end
 
 	module CollisionProperties
@@ -233,6 +244,7 @@ module PhysicsBullet
 
 end
 class Physics::Body
+	attr_accessor :motion_state_callback
 	include PhysicsBullet::CollisionProperties
 # velocities right now are only directly applied on
 # creation of new bodies in $world.add 

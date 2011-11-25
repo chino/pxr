@@ -33,6 +33,11 @@ void physics_set_friction(
 	float friction
 );
 
+typedef void (*motion_state_callback)(
+	float x, float y, float z,
+	float qx, float qy, float qz, float qw
+);
+
 btRigidBody* physics_create_sphere(
   float mass,
   float radius,
@@ -40,7 +45,8 @@ btRigidBody* physics_create_sphere(
   float vx, float vy, float vz, // position
   float qx, float qy, float qz, float qw, // orientation
   float lx, float ly, float lz, // lin velocity (world)
-  float ax, float ay, float az  // ang velocity (local)
+  float ax, float ay, float az,  // ang velocity (local)
+	motion_state_callback
 );
 
 btRigidBody* physics_create_plane(

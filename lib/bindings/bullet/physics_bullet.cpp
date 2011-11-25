@@ -71,18 +71,49 @@ void physics_set_friction(
 	body->setFriction( friction );
 }
 
+typedef void (*motion_state_callback)(
+	float x, float y, float z,
+	float qx, float qy, float qz, float qw
+);
+
+class MyMotionState : public btMotionState {
+public:
+    MyMotionState( const btTransform &initialpos, motion_state_callback _callback ){
+        mPos1 = initialpos;
+				callback = _callback;
+    }
+    virtual ~MyMotionState() {}
+    virtual void getWorldTransform(btTransform &worldTrans) const { worldTrans = mPos1; }
+    virtual void setWorldTransform(const btTransform &worldTrans) {
+				if(!callback)return;
+        btQuaternion rot = worldTrans.getRotation();
+        btVector3 pos = worldTrans.getOrigin();
+				callback(
+  	     pos.x(), pos.y(), pos.z(),
+ 	       rot.x(), rot.y(), rot.z(), rot.w()
+				);
+    }
+protected:
+    btTransform mPos1;
+		motion_state_callback callback;
+};
+
 btRigidBody* physics_create_body(
 	btCollisionShape * shape,
 	float mass, float lin_drag, float ang_drag,
 	float vx, float vy, float vz,
-	float qx, float qy, float qz, float qw
+	float qx, float qy, float qz, float qw,
+	motion_state_callback _callback
 )
 {
-	btDefaultMotionState* motionState =
-		new btDefaultMotionState(
+	MyMotionState* motionState =
+		new MyMotionState(
 			btTransform(
 				btQuaternion(qx,qy,qz,qw),
-				btVector3(vx,vy,vz)));
+				btVector3(vx,vy,vz)
+			),
+			_callback
+		);
 	btVector3 Inertia(0,0,0);
 	shape->calculateLocalInertia(mass,Inertia);
 	btRigidBody::btRigidBodyConstructionInfo
@@ -102,15 +133,16 @@ btRigidBody* physics_create_sphere(
 	float vx, float vy, float vz, // position
 	float qx, float qy, float qz, float qw, // orientation
   float lx, float ly, float lz, // lin velocity (world)
-  float ax, float ay, float az  // ang velocity (local)
+  float ax, float ay, float az,  // ang velocity (local)
+	motion_state_callback _callback
 )
 {
 	btRigidBody * b = physics_create_body(
-		//new btCapsuleShape( radius, 20.0f ),
 		new btSphereShape( radius ),
 		mass, lin_drag, ang_drag,
 		vx,  vy,  vz,
-		qx,  qy,  qz,  qw
+		qx,  qy,  qz,  qw,
+		_callback
 	);
 	physics_body_set_linear_velocity(
 		b, lx, ly, lz
@@ -136,7 +168,8 @@ btRigidBody* physics_create_plane(
 		),
 		mass, 0.0f, 0.0f,
 		vx,  vy,  vz,
-		qx,  qy,  qz,  qw
+		qx,  qy,  qz,  qw,
+		NULL
 	);
 }
 
@@ -189,7 +222,8 @@ btRigidBody* physics_create_static_bvh_tri_mesh(
 		),
 		0,0,0,
 		0,0,0,
-		0,0,0,1
+		0,0,0,1,
+		NULL
 	);
 }
 
