@@ -9,8 +9,8 @@ $bindings = {
 }
 $move_accell = 6000.0
 $turn_accell = 3000.0
-$turn_drag   = 0.899999999999
-$move_drag   = 0.99888
+$angular_damping   = 0.899999999999
+$linear_damping   = 0.99888
 $loaders = {}
 $models = "data/models"
 $options = {

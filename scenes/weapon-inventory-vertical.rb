@@ -194,7 +194,7 @@ def handle_keyboard
 	movement += movement * $move_accell
 
 	# apply movement to velocity
-	$player.velocity += movement
+	$player.linear_velocity += movement
 
 end
 
@@ -232,10 +232,10 @@ def new_bullet pos, orientation, block=nil
 		:scale => Vector.new(0.5,0.5,0.5),
 		:body => sphere_body({
 			:pos => pos,
-			:velocity => vel,
-			:drag => 0,
+			:linear_velocity => vel,
+			:linear_damping => 0,
 			:angular_velocity => Vector.new(10,10,10),
-			:rotation_drag => 0,
+			:angular_damping => 0,
 			:type => BULLET,
 			:mask => [PLAYER],
 			:on_collision => Proc.new{|bullet,target|
@@ -262,8 +262,8 @@ $render = Render.new($options)
 
 $player = sphere_body({
 	:pos => Vector.new(-550.0,-500.0,4600.0),
-	:drag => $move_drag,
-	:rotation_drag => $turn_drag,
+	:linear_damping => $linear_damping,
+	:angular_damping => $angular_damping,
 	:type => PLAYER,
 	:mask => [BULLET,PLAYER,PICKUP]
 })
@@ -304,10 +304,10 @@ $render.models << Model.new({
 if $options[:debug]
 
 def collide_body_with_plane body, normal
-	m = normal.dot( body.velocity ) # ammount of movement towards plane
+	m = normal.dot( body.linear_velocity ) # ammount of movement towards plane
 	vtp = normal * m                # ammount of velocity towards plane
 	vtp += vtp * body.bounce        # multiply velocity by bounce
-	body.velocity -= vtp            # apply force to the velocity
+	body.linear_velocity -= vtp            # apply force to the velocity
 end
 
 $level_bsp = FsknBsp.new("data/models/ship.bsp")
@@ -315,7 +315,7 @@ rv,node,$in_group = $level_bsp.point_inside_groups?($player.pos, $player.radius)
 $level_bsp_update = Proc.new{
 
 	# my position after movement
-	stop = $player.pos + $player.velocity + 10
+	stop = $player.pos + $player.linear_velocity + 10
 
 	# I'm initially outside the level
 	if $in_group == -1

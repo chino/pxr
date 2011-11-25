@@ -274,10 +274,10 @@ def new_bullet pos, orientation, block=nil
 		:body => sphere_body({
 			:mass => $bullets_mass,
 			:pos => pos,
-			:velocity => vel, # TODO - this should be a velocity not a force inside physics
-			:drag => 0,
+			:linear_velocity => vel, # TODO - this should be a velocity not a force inside physics
+			:linear_damping => 0,
 			:angular_velocity => Vector.new(10,10,10),
-			:rotation_drag => 0,
+			:angular_damping => 0,
 			:type => BULLET,
 			:mask => [PLAYER],
 			:on_collision => Proc.new{|bullet,target|
@@ -304,8 +304,8 @@ $player = sphere_body({
 	:pos => Vector.new(-550.0,-500.0,4600.0),
 #	:pos => Vector.new(0,0,0),
 	:orientation => Quat.new.rotate!(0,180,0),
-	:drag => $move_drag,
-	:rotation_drag => $turn_drag,
+	:linear_damping => $linear_damping,
+	:angular_damping => $angular_damping,
 	:angular_velocity => Vector.new(0,0,0),
 	:radius => Model.new({:file=>"xcop400.mxa"}).radius,
 	:type => PLAYER,
@@ -330,8 +330,8 @@ $render.models << $player_mesh
 		:scale => Vector.new(0.5,0.5,0.5),
 		:body => sphere_body({
 			:pos => Vector.new(-550.0,-500.0,4600.0),
-			:drag => 0,
-			:rotation_drag => 0
+			:linear_damping => 0,
+			:angular_damping => 0
 		})
 	})
 end
@@ -389,7 +389,7 @@ def collide_body_with_plane_fskn body, node, collision_point
 	# the following code code runs if RayCollide hits bsp walls
 	# but again not if bg col happens
 
-	e = collision_point + body.velocity
+	e = collision_point + body.linear_velocity
 	nDOTe =	 e.dot node.normal
 	target_distance = nDOTe + node.distance
 	d = target_distance.abs + $collision_fudge
@@ -412,7 +412,7 @@ def collide_body_with_plane_fskn body, node, collision_point
 	end
 	# skipping all the group portal detection
 	# further down in BackgroundCollide response
-	dir = body.velocity.normalize
+	dir = body.linear_velocity.normalize
 	velocity_towards_wall = dir.dot node.normal
 	sliding_along_wall = velocity_towards_wall == 0
 	# convert $collision_fudge into percentage of velocity_towards_wall
@@ -432,7 +432,7 @@ def collide_body_with_plane_fskn body, node, collision_point
 
 	# from ProcessShips in ships.c 
 	body.pos = pos
-	body.velocity = target_pos - pos
+	body.linear_velocity = target_pos - pos
 
 end
 
@@ -440,9 +440,9 @@ def collide_body_with_plane_my_way_with_fudge body, node, point
 
 collision_fudge = $collision_fudge * 10
 
-	m = node.normal.dot body.velocity # movement towards plane
+	m = node.normal.dot body.linear_velocity # movement towards plane
 #puts "n=#{node.normal}"
-#puts "v=#{body.velocity}"
+#puts "v=#{body.linear_velocity}"
 #puts "m=#{m}"
 
 if m - collision_fudge > 0
@@ -454,16 +454,16 @@ end
 
 	v = node.normal * m    # velocity towards plane
 	v += v * body.bounce   # increase by bounce factor
-	body.velocity -= v     # remove it
+	body.linear_velocity -= v     # remove it
 
 	# stop colliding with this plane on next loop
 	# so that we can run 3 times and collide with a corner
 	fudge = node.normal * collision_fudge
 	body.pos += fudge
 
-m = node.normal.dot body.velocity
+m = node.normal.dot body.linear_velocity
 #puts "t=#{vtp}"
-#puts "v-t=#{body.velocity}"
+#puts "v-t=#{body.linear_velocity}"
 #puts "m=#{m}"
 
 if m + collision_fudge < 0
@@ -475,7 +475,7 @@ end
 
 def collide_body_with_plane_my_way body, node, point
 
-	m = node.normal.dot body.velocity # movement towards plane
+	m = node.normal.dot body.linear_velocity # movement towards plane
 
 	if m > 0
 #		puts ":: we are already moving away from plane, m=#{m}"
@@ -489,10 +489,10 @@ def collide_body_with_plane_my_way body, node, point
 
 	v = node.normal * m    # velocity towards plane
 	v += v * body.bounce   # increase by bounce factor
-	body.velocity -= v     # remove it
+	body.linear_velocity -= v     # remove it
 
 	# check
-	m = node.normal.dot body.velocity
+	m = node.normal.dot body.linear_velocity
 	if m < 0
 #		puts ":: we are still moving towards plane"
 	end
@@ -539,8 +539,8 @@ $level.mesh.primitives.each do |p|
 		:texture => nil, #p[:texture],
 		:body => sphere_body({
 			:mass => 1,
-			:drag => 0.085,
-			:rotation_drag => 0.085,
+			:linear_damping => 0.085,
+			:angular_damping => 0.085,
 			:radius => p[:radius],
 			:pos => Vector.new( -p[:pos][0], p[:pos][1], p[:pos][2] ),
 			:orientation => Quat.new

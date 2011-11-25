@@ -126,9 +126,9 @@ class FsknBsp
 		@collide_point = nil
 		root = @groups[group][0]
 		start  = body.pos + 0
-		stop   = body.pos + body.velocity
+		stop   = body.pos + body.linear_velocity
 #		puts "=============== start ============="
-		rv = ray_collide_node root, start, stop, body.radius, body.velocity
+		rv = ray_collide_node root, start, stop, body.radius, body.linear_velocity
 #		puts "=============== end   ============="
 		rv
 	end
@@ -270,8 +270,8 @@ class FsknBsp
 	def ray_collide_group2 body, group=0, &block
 		root = @groups[group][0]
 		start  = body.pos + 0
-		stop   = body.pos + body.velocity
-		ray_collide_node2 root, start, stop, body.radius, body.velocity, &block
+		stop   = body.pos + body.linear_velocity
+		ray_collide_node2 root, start, stop, body.radius, body.linear_velocity, &block
 	end
 
 	def ray_collide_node2 node, start, stop, radius, velocity, &block
@@ -321,9 +321,9 @@ class FsknBsp
 	def collide bodies
 		[bodies].flatten.each do |body|
 			
-			next unless body.velocity.has_velocity?
+			next unless body.linear_velocity.has_velocity?
 		
-			stop = body.pos + body.velocity
+			stop = body.pos + body.linear_velocity
 		
 			old_group = @location[body]
 			rv,node2,@location[body] = point_inside_groups?( stop, body.radius )
@@ -383,9 +383,9 @@ class FsknBsp
 					exit
 					#puts ":: going to test for collision against front node"
 					_start = body.pos + 0
-					_stop  = body.pos + body.velocity
+					_stop  = body.pos + body.linear_velocity
 					if !@last_node.nil? and 
-									ray_collide_node @last_node.back, _start, _stop, body.radius, body.velocity
+									ray_collide_node @last_node.back, _start, _stop, body.radius, body.linear_velocity
 						puts ":: collision found!"
 						unless @collide_point and @collide_node
 							puts ":: I collided with level but collide point and/or node is/are false"
@@ -427,7 +427,7 @@ class FsknBsp
 			end
 
 			# do one last point check to validate response
-			stop = body.pos + body.velocity
+			stop = body.pos + body.linear_velocity
 			_in_same_group,_node1 = point_inside_group?( stop, @location[body], body.radius )
 			unless _in_same_group
 #				puts "failed to contain #{body} in group #{@location[body]} (point check)" 

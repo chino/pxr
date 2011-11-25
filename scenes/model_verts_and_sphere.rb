@@ -69,7 +69,7 @@ end
 
 $camera = sphere_body({ 
 	:pos => Vector.new(0,0,500),
-	:drag => $move_drag
+	:linear_damping => $linear_damping
 })
 $camera.rotate 0,180,180
 
@@ -93,10 +93,10 @@ $game.mouse_button = Proc.new{|button,pressed|
 		"ball1.mx",
 		sphere_body({
 			:pos => pos,
-			:velocity => vel,
-			:drag => 0,
+			:linear_velocity => vel,
+			:linear_damping => 0,
 			:angular_velocity => Vector.new(10,10,10),
-			:rotation_drag => 0
+			:angular_damping => 0
 		})
 	)
 }
@@ -150,7 +150,7 @@ $updates << Proc.new{
 	movement += movement * $move_accell
 
 	# apply movement to velocity
-	$camera.velocity += movement
+	$camera.linear_velocity += movement
 }
 
 ####################################

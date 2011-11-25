@@ -128,7 +128,7 @@ class FsknPic
 				:file => props[:file],
 				:body => Physics::SphereBody.new({
 					:pos => props[:pos],
-					:rotation_drag => 0,
+					:angular_damping => 0,
 					:angular_velocity => Vector.new(1,1,1)
 				})
 			})

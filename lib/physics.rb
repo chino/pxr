@@ -27,7 +27,7 @@ module Physics
 			def self.sphere_to_plane body, plane, info=nil
 
 				# velocity towards plane
-				vtp = plane.normal.dot body.velocity
+				vtp = plane.normal.dot body.linear_velocity
 
 				# we are moving perpendicular to the plane
 				# not much we can do at this point and continuing would cause division by 0
@@ -39,7 +39,7 @@ module Physics
 			
 				# start and end point of movement on tip of sphere
 				start  = body.pos - radius			# back of sphere before movement
-				stop   = body.pos + body.velocity + radius	# front of sphere after movement
+				stop   = body.pos + body.linear_velocity + radius	# front of sphere after movement
 			
 				# which side of plane was start point ?
 				start_distance = plane.normal.dot(start) + plane.distance
@@ -67,7 +67,7 @@ module Physics
 				# return collision time and point		
 				unless info.nil?
 					info[:time] = -((plane.normal.dot(start) + plane.distance) / vtp)
-					info[:point] = start + (body.velocity * info[:time])
+					info[:point] = start + (body.linear_velocity * info[:time])
 				end
 
 				# we collided
@@ -108,7 +108,7 @@ module Physics
 				# reduce test to only a single moving sphere
 				# b becomes a stationary sphere 
 				# v represents movement of both spheres
-				v = a.velocity - b.velocity
+				v = a.linear_velocity - b.linear_velocity
 				vlen = v.length2
 
 				# both spheres apparently have same velocity
@@ -165,7 +165,7 @@ module Physics
 			end
 			def self.aabb_aabb a, b, info=nil
 				# reduce problem to a single moving volume vs a line segment
-				v = a.velocity - b.velocity
+				v = a.linear_velocity - b.linear_velocity
 				vlen = v.length2
 				# objects are moving parrallel
 				if vlen == 0.0
@@ -196,9 +196,9 @@ module Physics
 		module Response
 			def self.sphere_sphere a, b, info
 
-				# since drag is only applied per frame we don't need to update velocity
-				#a.velocity = info[:fa] - a.pos
-				#b.velocity = info[:fb] - b.pos
+				# since damping is only applied per frame we don't need to update velocity
+				#a.linear_velocity = info[:fa] - a.pos
+				#b.linear_velocity = info[:fb] - b.pos
 
 				# update sphere positions to the location where they collide
 				a.pos = info[:fa] unless info[:fa].nil?
@@ -209,10 +209,10 @@ module Physics
 
 				v = a.pos - b.pos # vector between spheres
 				vn = v.normalize
-				u1 = vn * vn.dot(a.velocity) # collision component of velocity
-				u2 = vn * vn.dot(b.velocity)
-				a.velocity -= u1 # remove collision component
-				b.velocity -= u2
+				u1 = vn * vn.dot(a.linear_velocity) # collision component of velocity
+				u2 = vn * vn.dot(b.linear_velocity)
+				a.linear_velocity -= u1 # remove collision component
+				b.linear_velocity -= u2
 				vi = u1 * a.mass + u2 * b.mass # vi states if collision is elastic or inelastic
 				vea = u1 * (a.mass - b.mass) + u2 * 2 * b.mass # velocity for elastic collision for object a
 				veb = u2 * (b.mass - a.mass) + u1 * 2 * a.mass # velocity for elastic collision for object b
@@ -223,13 +223,13 @@ module Physics
 				fvb = veb * bounce + vi * (1 - bounce) # for values between 0 and 1, pick a point in the middle
 				fva /= (a.mass + b.mass) # final velocity of a
 				fvb /= (a.mass + b.mass) # final velocity of b
-				a.velocity += fva
-				b.velocity += fvb
+				a.linear_velocity += fva
+				b.linear_velocity += fvb
 
 				# detect if objects are stuck inside one another after movement
 				
-				afp = a.pos + a.velocity # pos after movement
-				bfp = b.pos + b.velocity
+				afp = a.pos + a.linear_velocity # pos after movement
+				bfp = b.pos + b.linear_velocity
 				radius = a.radius + b.radius # collision distance
 				return unless (afp - bfp).length2 <= radius**2 # penetration
 
@@ -240,24 +240,24 @@ module Physics
 
 			end
 			def self.stop_bodies a, b
-				a.velocity = Vector.new
-				b.velocity = Vector.new
+				a.linear_velocity = Vector.new
+				b.linear_velocity = Vector.new
 			end
 		end
 	end
 	class Body
-		attr_accessor :pos, :orientation, :drag, :velocity, :type, :mask
-		attr_accessor :angular_velocity, :rotation_drag, :bounce, :mass
+		attr_accessor :pos, :orientation, :linear_damping, :linear_velocity, :type, :mask
+		attr_accessor :angular_velocity, :angular_damping, :bounce, :mass
 		def initialize s={}
 			@on_collision = s[:on_collision] || Proc.new{true}
 			@type = s[:type]
 			@mask = s[:mask]
 			@pos = s[:pos] || Vector.new
 			@orientation = s[:orientation] || Quat.new(0, 0, 0, 1).normalize
-			@velocity = s[:velocity] || Vector.new
-			@drag = s[:drag] || 0.1
+			@linear_velocity = s[:linear_velocity] || Vector.new
+			@linear_damping = s[:linear_damping] || 0.1
 			@angular_velocity = s[:angular_velocity] || Vector.new
-			@rotation_drag = s[:rotation_drag] || 0.5
+			@angular_damping = s[:angular_damping] || 0.5
 			@bounce = s[:bounce] || 0.5
 			@mass = s[:mass] || 1
 			throw "error: mass cannot be zero..." if @mass == 0
@@ -282,13 +282,13 @@ module Physics
 			case repr
 			when :full
 				@pos.serialize(:full) + # 12
-				@velocity.serialize(:full) + # 12
+				@linear_velocity.serialize(:full) + # 12
 				@orientation.serialize(:full) + # 16
 				@angular_velocity.serialize(:full) # 16
 				# 56
 			when :short
 				@pos.serialize(:full) + # 12
-				@velocity.serialize(:full) + # 12
+				@linear_velocity.serialize(:full) + # 12
 				@orientation.serialize(:short) + # 8 
 				@angular_velocity.serialize(:full) # 16
 				# 48
@@ -304,7 +304,7 @@ module Physics
 				@orientation.unserialize! orient_s, :short
 			end
 			@pos.unserialize! pos_s, :full
-			@velocity.unserialize! velocity_s, :full
+			@linear_velocity.unserialize! velocity_s, :full
 			@angular_velocity.unserialize! angular_velocity_s, :full
 		end
 	end
@@ -373,7 +373,7 @@ module Physics
 		def update
 			return unless check_interval
 			apply_gravity
-			drag
+			apply_damping
 			# test if velocities would cause collision
 			# and resolve them 
 			collisions
@@ -384,7 +384,7 @@ module Physics
 		def apply_gravity
 			return unless @gravity.has_velocity?
 			@bodies.each do |body|
-				body.velocity += @gravity
+				body.linear_velocity += @gravity
 			end
 		end
 		def check_interval
@@ -394,27 +394,27 @@ module Physics
 			@last_run = Time.now
 			return true
 		end
-		def drag
+		def apply_damping
 			@bodies.each do |body|
-				if body.velocity.has_velocity?
-					body.velocity -= body.velocity * body.drag
+				if body.linear_velocity.has_velocity?
+					body.linear_velocity -= body.linear_velocity * body.linear_damping
 				end
 				if body.angular_velocity.has_velocity?
-					body.angular_velocity -= body.angular_velocity * body.rotation_drag
+					body.angular_velocity -= body.angular_velocity * body.angular_damping
 				end
 			end
 		end
 		def broadphase bodies
 			pairs = []
 			bodies.each_with_index do |a,i|
-				a_has_velocity = a.velocity.has_velocity?
+				a_has_velocity = a.linear_velocity.has_velocity?
 				# only check each pair once
 				j = i + 1; for j in (i+1..bodies.length-1); b = bodies[j]
 					#puts "testing body #{i} against #{j}"
 					# check collision masks
 					next if (not b.mask.include? a.type) and (not a.mask.include? b.type)
 					# only check if either sphere moving
-					next unless a_has_velocity or b.velocity.has_velocity?
+					next unless a_has_velocity or b.linear_velocity.has_velocity?
 					# collect spheres which collide and the time/place it happens
 					info = {}; pairs << [a,b,info] if @broadphase_test.call a,b,info
 				end
@@ -435,8 +435,8 @@ module Physics
 		end
 		def velocities
 			@bodies.each do |body|
-				if body.velocity.has_velocity?
-					body.pos += body.velocity
+				if body.linear_velocity.has_velocity?
+					body.pos += body.linear_velocity
 				end
 				if body.angular_velocity.has_velocity?
 					body.rotate body.angular_velocity

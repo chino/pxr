@@ -40,7 +40,7 @@ module PhysicsBullet
 		]
 
 	bind :physics_create_sphere, [
-			:float, :float, :float, :float, # mass, radius, linear and angular drag
+			:float, :float, :float, :float, # mass, radius, linear and angular damping
 		  :float, :float, :float, # vector
 		  :float, :float, :float, :float, # quat
 		  :float, :float, :float, # linear velocity (world space)
@@ -173,12 +173,12 @@ module PhysicsBullet
 				body.pointer = PhysicsBullet::physics_create_sphere(
 					body.mass,
 					body.radius, 
-					body.drag,
-					body.rotation_drag,
+					body.linear_damping,
+					body.angular_damping,
 					*(
 						body.pos.to_a + 
 						body.orientation.to_a +
-						body.velocity.to_a +
+						body.linear_velocity.to_a +
 						body.angular_velocity.to_a
 					)
 				)
@@ -238,7 +238,7 @@ class Physics::Body
 # creation of new bodies in $world.add 
 =begin
 	def set_velocity v
-		@velocity = v
+		@linear_velocity = v
 		PhysicsBullet::physics_body_set_velocity(
 			@pointer,
 			*v.to_a

@@ -8,8 +8,8 @@ $world = Physics::World.new
 	y = x * 50.0
 	$world.bodies << Physics::SphereBody.new({ 
 		:pos => Vector.new( y, y, y ),
-		:velocity => Vector.new( x,x,x ),
-		:drag => 0
+		:linear_velocity => Vector.new( x,x,x ),
+		:linear_damping => 0
 	})
 end
 

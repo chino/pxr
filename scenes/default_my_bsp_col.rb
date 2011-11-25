@@ -194,7 +194,7 @@ def handle_keyboard
 	movement += movement * $move_accell
 
 	# apply movement to velocity
-	$player.velocity += movement
+	$player.linear_velocity += movement
 
 end
 
@@ -232,10 +232,10 @@ def new_bullet pos, orientation, block=nil
 		:scale => Vector.new(0.5,0.5,0.5),
 		:body => sphere_body({
 			:pos => pos,
-			:velocity => vel,
-			:drag => 0,
+			:linear_velocity => vel,
+			:linear_damping => 0,
 			:angular_velocity => Vector.new(10,10,10),
-			:rotation_drag => 0,
+			:angular_damping => 0,
 			:type => BULLET,
 			:mask => [PLAYER],
 			:on_collision => Proc.new{|bullet,target|
@@ -262,8 +262,8 @@ $render = Render.new($options)
 
 $player = sphere_body({
 	:pos => Vector.new(-550.0,-500.0,4600.0),
-	:drag => $move_drag,
-	:rotation_drag => $turn_drag,
+	:linear_damping => $linear_damping,
+	:angular_damping => $angular_damping,
 	:type => PLAYER,
 	:mask => [BULLET,PLAYER,PICKUP]
 })
@@ -311,7 +311,7 @@ $level_bsp_group = {}
 $level_bsp_handle_body = Proc.new{ |body|
 
 	# my position after movement
-	stop = body.pos + body.velocity
+	stop = body.pos + body.linear_velocity
 
 	# set initial group of the body
 	if $level_bsp_group[body].nil? or $level_bsp_group[body] == -1
@@ -343,7 +343,7 @@ $level_bsp_handle_body = Proc.new{ |body|
 		#		point = center of body at moment of collision hence
 	  #    wall = point + (node.normal * radius)
 
-		m = node.normal.dot body.velocity # body's movement towards the plane
+		m = node.normal.dot body.linear_velocity # body's movement towards the plane
 
 		if m > 0
 			puts "we are already moving away from node #{node}"
@@ -354,9 +354,9 @@ $level_bsp_handle_body = Proc.new{ |body|
 
 		v = node.normal * m     # velocity towards plane
 		#v += v * body.bounce   # apply bounciness
-		body.velocity -= v      # apply force to the velocity
+		body.linear_velocity -= v      # apply force to the velocity
 
-		m = node.normal.dot body.velocity
+		m = node.normal.dot body.linear_velocity
 		if m < 0
 			puts "we are still moving towards node #{node}"
 			exit
@@ -365,7 +365,7 @@ $level_bsp_handle_body = Proc.new{ |body|
 	end
 
 	# validate collision response worked
-	stop = body.pos + body.velocity
+	stop = body.pos + body.linear_velocity
 	in_same_group,_node1 = $level_bsp.point_inside_group?( stop, $level_bsp_group[body], body.radius )
 	puts "collision response failed #{Time.now}" unless in_same_group
 }

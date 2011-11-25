@@ -31,9 +31,9 @@ if $render
 	$player = Physics::SphereBody.new({
 #  	:pos => Vector.new(-550.0,-500.0,4600.0),  #Vector.new(0,0,0),
   	:pos => Vector.new(0,100,0),
-	  :drag => 0,
+	  :linear_damping => 0,
 #		:angular_velocity => Vector.new(10,0,0),
-  	:rotation_drag => 0,
+  	:angular_damping => 0,
 	  :type => 1,
   	:mask => [1]
 	})
@@ -59,13 +59,13 @@ def generate_bodies
 		$world.bodies.add Physics::SphereBody.new({
 			:pos => pos,
 			:radius => $radius,
-#			:velocity => Vector.new(rand*100,0,0),
-#			:velocity => Vector.new(1,1,1),
-#			:velocity => Vector.new(0.0011,0.0011,0.0011),
-			:velocity => Vector.new(r-r,r-r,r-r),
-			:drag => 0,
+#			:linear_velocity => Vector.new(rand*100,0,0),
+#			:linear_velocity => Vector.new(1,1,1),
+#			:linear_velocity => Vector.new(0.0011,0.0011,0.0011),
+			:linear_velocity => Vector.new(r-r,r-r,r-r),
+			:linear_damping => 0,
 			:angular_velocity => Vector.new(0,0,0),
-			:rotation_drag => 0,
+			:angular_damping => 0,
 			:type => 1,
 			:mask => [1]
 		})

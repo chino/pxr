@@ -194,7 +194,7 @@ def handle_keyboard
 	movement += movement * $move_accell
 
 	# apply movement to velocity
-	$player.velocity += movement
+	$player.linear_velocity += movement
 
 end
 
@@ -232,10 +232,10 @@ def new_bullet pos, orientation, block=nil
 		:scale => Vector.new(0.5,0.5,0.5),
 		:body => sphere_body({
 			:pos => pos,
-			:velocity => vel,
-			:drag => 0,
+			:linear_velocity => vel,
+			:linear_damping => 0,
 			:angular_velocity => Vector.new(10,10,10),
-			:rotation_drag => 0,
+			:angular_damping => 0,
 			:type => BULLET,
 			:mask => [PLAYER],
 			:on_collision => Proc.new{|bullet,target|
@@ -262,8 +262,8 @@ $render = Render.new($options)
 
 $player = sphere_body({
 	:pos => Vector.new(-550.0,-500.0,4600.0),
-	:drag => $move_drag,
-	:rotation_drag => $turn_drag,
+	:linear_damping => $linear_damping,
+	:angular_damping => $angular_damping,
 	:type => PLAYER,
 	:mask => [BULLET,PLAYER,PICKUP]
 })
