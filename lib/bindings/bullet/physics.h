@@ -38,7 +38,9 @@ btRigidBody* physics_create_sphere(
   float radius,
 	float lin_drag, float ang_drag,
   float vx, float vy, float vz, // position
-  float qx, float qy, float qz, float qw // orientation
+  float qx, float qy, float qz, float qw, // orientation
+  float lx, float ly, float lz, // lin velocity (world)
+  float ax, float ay, float az  // ang velocity (local)
 );
 
 btRigidBody* physics_create_plane(
@@ -61,6 +63,16 @@ void physics_body_apply_torque(
 );
 
 void physics_body_apply_relative_torque(
+	btRigidBody * b,
+	float x, float y, float z
+);
+
+void physics_body_set_relative_angular_velocity(
+	btRigidBody * b,
+	float x, float y, float z
+);
+
+void physics_body_set_linear_velocity(
 	btRigidBody * b,
 	float x, float y, float z
 );

@@ -99,17 +99,26 @@ btRigidBody* physics_create_sphere(
 	float mass,
 	float radius,
 	float lin_drag, float ang_drag,
-	float vx, float vy, float vz,
-	float qx, float qy, float qz, float qw
+	float vx, float vy, float vz, // position
+	float qx, float qy, float qz, float qw, // orientation
+  float lx, float ly, float lz, // lin velocity (world)
+  float ax, float ay, float az  // ang velocity (local)
 )
 {
-	return physics_create_body(
+	btRigidBody * b = physics_create_body(
 		//new btCapsuleShape( radius, 20.0f ),
 		new btSphereShape( radius ),
 		mass, lin_drag, ang_drag,
 		vx,  vy,  vz,
 		qx,  qy,  qz,  qw
 	);
+	physics_body_set_linear_velocity(
+		b, lx, ly, lz
+	);
+	physics_body_set_relative_angular_velocity(
+		b, ax, ay, az
+	);
+	return b;
 }
 
 btRigidBody* physics_create_plane(
@@ -255,4 +264,24 @@ void physics_body_apply_relative_central_force(
 	btMatrix3x3& boxRot = b->getWorldTransform().getBasis();
 	btVector3 correctedForce = boxRot * relativeForce;
 	b->applyCentralForce(correctedForce);
+}
+
+void physics_body_set_relative_angular_velocity(
+	btRigidBody * b,
+	float x, float y, float z
+)
+{
+	b->activate();
+	btQuaternion q = b->getOrientation();
+	btQuaternion q2 = q.normalize() * btQuaternion(x,y,z,0) * q.inverse();
+	b->setAngularVelocity( btVector3(q2.getX(),q2.getY(),q2.getZ()) );
+}
+
+void physics_body_set_linear_velocity(
+	btRigidBody * b,
+	float x, float y, float z
+)
+{
+	b->activate();
+	b->setLinearVelocity( btVector3(x,y,z) );
 }

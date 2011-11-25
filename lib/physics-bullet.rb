@@ -42,7 +42,9 @@ module PhysicsBullet
 	bind :physics_create_sphere, [
 			:float, :float, :float, :float, # mass, radius, linear and angular drag
 		  :float, :float, :float, # vector
-		  :float, :float, :float, :float # quat
+		  :float, :float, :float, :float, # quat
+		  :float, :float, :float, # linear velocity (world space)
+		  :float, :float, :float # angular velocity (local space)
 		],
 		:pointer # body
 
@@ -70,6 +72,18 @@ module PhysicsBullet
 				:pointer, # body
 			  :float, :float, :float, # vector
 		]
+
+=begin
+	bind :physics_body_set_relative_angular_velocity, [
+				:pointer, # body
+			  :float, :float, :float, # vector
+		]
+
+	bind :physics_body_set_velocity, [
+				:pointer, # body
+			  :float, :float, :float, # vector
+		]
+=end
 
 	bind :physics_body_apply_central_force, [
 				:pointer, # body
@@ -161,10 +175,13 @@ module PhysicsBullet
 					body.radius, 
 					body.drag,
 					body.rotation_drag,
-					*(body.pos.to_a + body.orientation.to_a)
+					*(
+						body.pos.to_a + 
+						body.orientation.to_a +
+						body.velocity.to_a +
+						body.rotation_velocity.to_a
+					)
 				)
-				push_velocity_to_bullet body 
-				push_rotation_velocity_to_bullet body 
 			end
 
 			true
@@ -173,6 +190,10 @@ module PhysicsBullet
 			@bodies.delete body
 			PhysicsBullet::physics_remove_body body.pointer
 		end
+		def update
+			step
+			get_updates_from_bullet
+		end
 		def time_passed
 			n = Time.now.to_f
 			@last ||= n - @interval
@@ -180,39 +201,11 @@ module PhysicsBullet
 			@last = n
 			@time
 		end
-		def update
+		def step
 			steps = time_passed / @interval + 1
+			PhysicsBullet::physics_step @interval, steps
 			puts "time passed #{(@time*1000).to_i} "+
 						"missed steps #{steps.to_i}"
-			push_updates_to_bullet
-			PhysicsBullet::physics_step @interval, steps
-			get_updates_from_bullet
-		end
-		def push_updates_to_bullet
-			@bodies.each do |body|
-				push_velocity_to_bullet body
-				push_rotation_velocity_to_bullet body
-			end
-		end
-		# body.{pos,orientation,velocity} (world space)
-		def push_velocity_to_bullet body
-			return unless body.velocity.has_velocity?
-			PhysicsBullet::physics_body_apply_central_force(
-				body.pointer,
-				body.velocity.x, body.velocity.y, body.velocity.z
-			)
-			body.velocity = Vector.new
-		end
-		# body.rotation_velocity (local space)
-		# 	for easy rotation of pickups, bullets, camera
-		def push_rotation_velocity_to_bullet body
-			return unless body.rotation_velocity.has_velocity?
-			rv = body.rotation_velocity
-			PhysicsBullet::physics_body_apply_relative_torque(
-				body.pointer,
-				rv.x, rv.y, rv.z
-			)
-			body.rotation_velocity = Vector.new
 		end
 		# we could use motion states to only update bodies that have changed
 		# probably best solution is to somehow pass a proc to bullet to callback
@@ -224,6 +217,7 @@ module PhysicsBullet
 				PhysicsBullet::physics_body_transform( body.pointer, v, q )
 				body.pos = Vector.new( v.get_array_of_float(0,3) )
 				body.orientation = Quat.new( q.get_array_of_float(0,4) )
+				# TODO - pull up other factors like velocities ?
 			end
 		end
 	end
@@ -240,6 +234,36 @@ module PhysicsBullet
 end
 class Physics::Body
 	include PhysicsBullet::CollisionProperties
+# velocities right now are only directly applied on
+# creation of new bodies in $world.add 
+=begin
+	def set_velocity v
+		@velocity = v
+		PhysicsBullet::physics_body_set_velocity(
+			@pointer,
+			*v.to_a
+		)
+	end
+	def set_angular_velocity v
+		@rotation_velocity = v
+		PhysicsBullet::physics_body_set_relative_angular_velocity(
+			@pointer,
+			*v.to_a
+		)
+	end
+=end
+	def apply_central_force vector
+		PhysicsBullet::physics_body_apply_central_force(
+			@pointer,
+			*vector.to_a
+		)
+	end
+	def apply_relative_torque vector
+		PhysicsBullet::physics_body_apply_relative_torque(
+			@pointer,
+			*vector.to_a
+		)
+	end
 end
 module Mesh
 	include PhysicsBullet::CollisionProperties

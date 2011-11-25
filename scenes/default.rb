@@ -189,10 +189,10 @@ def handle_mouse
 	#return unless v.has_velocity?
 
 	# apply mouse accelleration
-	v += v * $turn_accell
+	v += v * $turn_accell * -1
 
 	# apply movement to rotation velocity
-	$player.rotation_velocity -= v
+	$player.apply_relative_torque v
 
 end
 
@@ -207,7 +207,7 @@ def handle_keyboard
 	movement += movement * $move_accell
 
 	# apply movement to velocity
-	$player.velocity += movement
+	$player.apply_central_force movement
 
 end
 
