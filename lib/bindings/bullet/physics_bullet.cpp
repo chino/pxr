@@ -232,9 +232,9 @@ void physics_draw( void )
 	dynamicsWorld->debugDrawWorld();
 }
 
-void physics_step( float step, int steps )
+void physics_step( float time_passed, int max_steps, float step_interval )
 {
-	dynamicsWorld->stepSimulation( step, steps );
+	dynamicsWorld->stepSimulation( time_passed, max_steps, step_interval );
 }
 
 void physics_debug_draw( void )

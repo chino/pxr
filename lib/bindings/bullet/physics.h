@@ -93,7 +93,7 @@ void physics_body_apply_relative_central_force(
 	float x, float y, float z
 );
 
-void physics_step( float step, int steps );
+void physics_step( float time_passed, int max_steps, float step_interval );
 
 } 
 #endif

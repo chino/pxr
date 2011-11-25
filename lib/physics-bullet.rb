@@ -28,8 +28,9 @@ module PhysicsBullet
 	bind :physics_cleanup
 
 	bind :physics_step, [
-			:float, # interval in seconds
-			:int # steps
+			:float, # time passed (since last physics tick)
+			:int, # max steps allowed to perform (should equal time_passed / interval)
+			:float # interval of each step (bullet by default uses 1/60)
 		]
 
 	bind :physics_gravity, [
@@ -206,18 +207,17 @@ module PhysicsBullet
 			step
 			#get_updates_from_bullet
 		end
-		def time_passed
-			n = Time.now.to_f
-			@last ||= n - @interval
-			@time = n - @last
-			@last = n
-			@time
-		end
-		def step
-			steps = time_passed / @interval + 1
-			PhysicsBullet::physics_step @interval, steps
-			puts "time passed #{(@time*1000).to_i} "+
-						"missed steps #{steps.to_i}"
+		def step time_passed=nil # user supplied if game was paused etc..
+			# figure out the time passed
+			now = Time.now.to_f
+			time_passed = now - (@last_step_time||=now) unless time_passed
+			@last_step_time = now
+			# number of sub steps to perform at interval to catch up in time
+			steps = (time_passed / @interval) + 1 # for rounding
+			PhysicsBullet::physics_step time_passed, steps, @interval
+			puts "time passed #{time_passed}s "+
+						"missed steps #{steps.to_i} "+
+						"at interval #{@interval}"
 		end
 # we now use motion state callbacks for updates
 =begin

@@ -7,8 +7,8 @@ $bindings = {
 	"g" => :right,
 	"\r" => :type # enter button
 }
-$move_accell = 6000.0
-$turn_accell = 3000.0
+$move_accell = 9000.0
+$turn_accell = 1000.0
 $angular_damping   = 0.899999999999
 $linear_damping   = 0.99888
 $loaders = {}
