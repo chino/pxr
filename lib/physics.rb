@@ -251,7 +251,7 @@ module Physics
 		def initialize s={}
 			@on_collision = s[:on_collision] || Proc.new{true}
 			@type = s[:type]||1
-			@mask = s[:mask]||65535 # everything (max short)
+			@mask = s[:mask]||[65535] # everything (max short)
 			@pos = s[:pos] || Vector.new
 			@orientation = s[:orientation] || Quat.new(0, 0, 0, 1).normalize
 			@linear_velocity = s[:linear_velocity] || Vector.new
@@ -308,13 +308,23 @@ module Physics
 			@angular_velocity.unserialize! angular_velocity_s, :full
 		end
 	end
+	class BoxBody < Body
+		attr_accessor :half_extents
+		def initialize s={}
+			super(s)
+			@half_extents = s[:half_extents]||Vector.new(0.5,0.5,0.5)
+		end
+	end
 	class SphereBody < Body
 		attr_accessor :radius, :on_collision
 		def initialize s={}
 			super(s)
 			@radius = s[:radius] || 50
 		end
-		def render_radius
+		def render_radius use_dl=false
+			if use_dl and @points
+				return @points.draw
+			end
 			c = [255,0,0,0]
 			x,y,z = @pos.to_a
 			r = @radius
@@ -325,14 +335,16 @@ module Physics
 			verts << [[x,  y-r,z  ],c]
 			verts << [[x,  y,  z+r],c]
 			verts << [[x,  y,  z-r],c]
-			points = Point.new({:points => verts})
-			points.draw
+			@points = Point.new({:points => verts})
+			@points.make_dl if use_dl
+			@points.draw
 		end
 	end
 	class PlaneBody < Body
 		attr_accessor :normal
 		def initialize s={}
 			super(s)
+			@distance = s[:distance]
 			@normal = if not s[:normal].nil?
 					s[:normal]
 				elsif not @orientation.nil?

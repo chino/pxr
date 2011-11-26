@@ -50,6 +50,18 @@ module PhysicsBullet
 			:short # collision mask
 		]
 
+	bind :physics_create_box, [
+			:float, # mass
+			:float, :float, :float, # size x, y, z (half extents)
+			:float, :float, # damping linear and angular
+		  :float, :float, :float, # vector
+		  :float, :float, :float, :float, # quat
+		  :float, :float, :float, # linear velocity (world space)
+		  :float, :float, :float, # angular velocity (local space)
+		  :motion_state_callback
+		],
+		:pointer # body
+
 	bind :physics_create_sphere, [
 			:float, :float, :float, :float, # mass, radius, linear and angular damping
 		  :float, :float, :float, # vector
@@ -158,8 +170,8 @@ module PhysicsBullet
 			PhysicsBullet::physics_gravity x, y, z
 			@gravity = Vector.new(x,y,z)
 		end
-		def add body, group=nil, mask=nil
-			if body.respond_to? :mesh
+		def add body, shape=:sphere, group=nil, mask=nil
+			if shape == :bvh_tri_mesh
 				mesh = body.mesh
 
 				@no_gc << indexes = FFI::MemoryPointer.new( :int, mesh.primitives.length*3 ).
@@ -182,7 +194,7 @@ module PhysicsBullet
 
 				PhysicsBullet::physics_world_add_body( mesh.pointer, group, mask.reduce{|a,b|a|b} )
 
-			elsif body.respond_to? :radius
+			elsif shape == :sphere
 				@bodies << body
 				body.motion_state_callback =
 					Proc.new{ |px,py,pz,qx,qy,qz,qw|
@@ -208,6 +220,35 @@ module PhysicsBullet
 					group || body.type,
 					(mask  || body.mask).reduce{|a,b|a|b} # bitwise OR elements
 				)
+
+			elsif shape == :box
+				@bodies << body
+				body.motion_state_callback =
+					Proc.new{ |px,py,pz,qx,qy,qz,qw|
+						#puts "motion state called with #{px}, #{py}, #{pz}"
+						body.pos = Vector.new(px,py,pz)
+						body.orientation = Quat.new(qx,qy,qz,qw)
+					}
+				body.pointer = PhysicsBullet::physics_create_box(
+					body.mass,
+					body.half_extents.x, body.half_extents.y, body.half_extents.z,
+					body.linear_damping,
+					body.angular_damping,
+					*(
+						body.pos.to_a + 
+						body.orientation.to_a +
+						body.linear_velocity.to_a +
+						body.angular_velocity.to_a +
+						[body.motion_state_callback]
+					)
+				)
+				PhysicsBullet::physics_world_add_body(
+					body.pointer,
+					group || body.type,
+					(mask  || body.mask).reduce{|a,b|a|b} # bitwise OR elements
+				)
+			else
+				throw "unsupported shape given #{shape}"
 			end
 
 			true

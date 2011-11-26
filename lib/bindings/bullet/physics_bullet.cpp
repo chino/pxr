@@ -134,6 +134,33 @@ btRigidBody* physics_create_body(
 	return rigidBody;
 }
 
+btRigidBody* physics_create_box(
+	float mass,
+	float sx, float sy, float sz, // size of box (half extents)
+	float lin_drag, float ang_drag,
+	float vx, float vy, float vz, // position
+	float qx, float qy, float qz, float qw, // orientation
+  float lx, float ly, float lz, // lin velocity (world)
+  float ax, float ay, float az,  // ang velocity (local)
+	motion_state_callback _callback
+)
+{
+	btRigidBody * b = physics_create_body(
+		new btBoxShape( btVector3(sx,sy,sz) ),
+		mass, lin_drag, ang_drag,
+		vx,  vy,  vz,
+		qx,  qy,  qz,  qw,
+		_callback
+	);
+	physics_body_set_linear_velocity(
+		b, lx, ly, lz
+	);
+	physics_body_set_relative_angular_velocity(
+		b, ax, ay, az
+	);
+	return b;
+}
+
 btRigidBody* physics_create_sphere(
 	float mass,
 	float radius,

@@ -8,7 +8,7 @@ $world = PhysicsBullet::World.new
 
 def sphere_body s={}
 	body = Physics::SphereBody.new(s)
-	$world.add body
+	$world.add body, :sphere
 	body
 end
 
@@ -54,7 +54,7 @@ class Player < Network::Player
 	HIT    = 1
 	TEXT   = 2
 	NAME   = 3
-	#BULLET = 4 # should match global BULLET
+	BULLET = 4 # should match global BULLET
 	@@players = {}
 	def post_init
 		puts "new connection from #{@ip}:#{@port}"
@@ -384,11 +384,36 @@ $render.models << $player_mesh
 		:body => sphere_body({
 			:pos => Vector.new(-550.0,-500.0,4600.0),
 			:linear_damping => 0,
-			:angular_damping => 0
+			:angular_damping => 0,
+			:radius => $bullets_radius * 2
 		})
 	})
 end
 =end
+
+# create a brick wall
+puts "creating boxes"
+$start_spot = Vector.new(-100.0,-700.0,5700.0)
+$box_half_size = 30
+$rows = 5; $cols = 10; $depth = 1
+$rows.times do |r|
+	$cols.times do |c|
+		$depth.times do |d|
+			body = Physics::BoxBody.new({
+				:pos => $start_spot + Vector.new(
+					-c*$box_half_size*2,
+					r*$box_half_size*2-$box_half_size, # because of center position
+					d*$box_half_size*2
+				),
+				:half_extents => Vector.new(1,1,1) * $box_half_size,
+			})
+			$render.models << Box.new({ :body => body })
+			$world.add body, :box
+		end
+	end
+end
+#$world.gravity 0,-400,0
+puts "done creating boxes"
 
 $cross_hair = Line.new({
 	:pos   => Vector.new($render.width/2,$render.height/2,0),
@@ -574,7 +599,7 @@ $world.callback = Proc.new{
 
 # load the level
 $level = Model.new({ :file => "ship.mxv" })
-$world.add $level, LEVEL, $level_collides_with # must do first to get @pointer
+$world.add $level, :bvh_tri_mesh, LEVEL, $level_collides_with # must do first to get @pointer
 $level.mesh.set_friction 0
 $render.models << $level
 

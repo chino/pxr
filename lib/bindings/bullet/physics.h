@@ -44,6 +44,17 @@ typedef void (*motion_state_callback)(
 	float qx, float qy, float qz, float qw
 );
 
+btRigidBody* physics_create_box(
+	float mass,
+	float sx, float sy, float sz, // size of box (half extents)
+	float lin_drag, float ang_drag,
+	float vx, float vy, float vz, // position
+	float qx, float qy, float qz, float qw, // orientation
+  float lx, float ly, float lz, // lin velocity (world)
+  float ax, float ay, float az,  // ang velocity (local)
+	motion_state_callback _callback
+);
+
 btRigidBody* physics_create_sphere(
   float mass,
   float radius,
