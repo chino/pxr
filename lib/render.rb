@@ -47,13 +47,11 @@ class Render
 	def draw pos, orientation, bvh=nil, &block
 		GL.Clear(GL::COLOR_BUFFER_BIT | GL::DEPTH_BUFFER_BIT)
 		look_at( pos, orientation )
-#
-# TODO - this needs to be way better
-#        clipping behind is good but not enough
-#
-# 1. clip by fustrum
-# 2. clip by portal ?
-		models = clip_behind( pos, orientation )
+		# old way wasn't good enough
+			#models = clip_behind_camera pos, orientation
+		# clip by fustrum planes
+			models = clip_fustrum @models
+		#puts "rendering #{models.length} models"
 # clip by occlusion using bvh of level
 # doesn't work nice since centers do not see 
 # each other but edges of the sphere / mesh do
@@ -75,18 +73,83 @@ class Render
 		SDL.GLSwapBuffers
 		update_fps
 	end
-	def clip_behind pos, orientation
+	def clip_behind_camera pos, orientation
 		plane = Physics::PlaneBody.new({
 			:pos => pos,
 			:orientation => orientation 
 		})
-		@models.select do |model|
+		clip_behind( plane, @models )
+	end
+	def clip_behind plane, models
+		models.select do |model|
 			next true if model.radius.nil?
 			# edge of sphere towards me
 			# accounts for being inside of large objects
 			pos = model.pos + (plane.normal * model.radius)
 			plane.side( pos ) != :back
 		end
+	end
+	def extract_plane mat, side
+
+		row = {
+			:left   =>  1,
+			:right  => -1,
+			:bottom =>  2,
+			:top    => -2,
+			:near   =>  3,
+			:far    => -3
+		}[side]
+
+		scale = (row < 0) ? -1 : 1;
+		row = row.abs - 1;
+	
+		plane = [
+			# normal
+			mat[3] + scale * mat[row],
+			mat[7] + scale * mat[row + 4],
+			mat[11] + scale * mat[row + 8],
+			# distance
+			mat[15] + scale * mat[row + 12]
+		]
+	
+		length = Vector.new(plane).length
+
+		plane = plane.map{|x|x/=length}
+
+		Physics::PlaneBody.new({
+			:normal => Vector.new(plane),
+			:distance => plane[3]
+		})
+
+	end
+	def clip_fustrum models
+
+		start = Time.now if $options[:debug]
+
+		mv = GL.GetFloatv GL::MODELVIEW_MATRIX
+		pm = GL.GetFloatv GL::PROJECTION_MATRIX
+	
+		GL.PushMatrix
+		GL.LoadMatrixf pm
+		GL.MultMatrixf mv
+		m = GL.GetFloatv(GL::MODELVIEW_MATRIX).flatten
+		GL.PopMatrix
+
+		[:near, :far, :left, :right, :top, :bottom].each do |side|
+			models = clip_behind( extract_plane(m, side), models )
+			if models.empty?
+				puts "no more models left to check after #{side} side"
+				break
+			end
+		end
+
+		if $options[:debug]
+			t = Time.now - start
+			puts "took #{t}s to clip objects outside of frustrum"
+		end
+
+		models
+
 	end
 	def draw_models models
 		models.each{|model| draw_model( :opaque, model ) }
