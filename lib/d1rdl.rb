@@ -2,7 +2,7 @@ require "mesh"
 require "model"
 require "vector"
 require "binreader"
-class D1rdl < Model
+class D1rdl
 	include Mesh
 	include BinReader
 	def read_ushort
@@ -26,7 +26,6 @@ class D1rdl < Model
 		read_sint / 65536.0
 	end
 	def initialize file
-		super
 		@render_type = GL::POLYGON
 		@level = File.basename file
 		open file
