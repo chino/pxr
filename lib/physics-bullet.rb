@@ -230,7 +230,7 @@ module PhysicsBullet
 			PhysicsBullet::physics_step time_passed, steps, @interval
 			puts "time passed #{time_passed}s "+
 						"missed steps #{steps.to_i} "+
-						"at interval #{@interval}"
+						"at #{@interval}" if $options[:debug]
 		end
 # we now use motion state callbacks for updates
 =begin
