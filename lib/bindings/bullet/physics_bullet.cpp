@@ -71,6 +71,15 @@ void physics_set_friction(
 	body->setFriction( friction );
 }
 
+void physics_world_add_body(
+	btRigidBody * body,
+	short group,
+	short mask
+)
+{
+	dynamicsWorld->addRigidBody(body, group, mask);
+}
+
 typedef void (*motion_state_callback)(
 	float x, float y, float z,
 	float qx, float qy, float qz, float qw
@@ -122,7 +131,6 @@ btRigidBody* physics_create_body(
 	btRigidBody* rigidBody = 
 		new btRigidBody(RigidBodyCI);
 	rigidBody->setDamping(lin_drag,ang_drag);
-	dynamicsWorld->addRigidBody(rigidBody);
 	return rigidBody;
 }
 

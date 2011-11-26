@@ -12,6 +12,32 @@ def sphere_body s={}
 	body
 end
 
+# :type set to UNKNOWN by default
+# :mask set to EVERYTHING by default
+NOTHING = 0
+UNKNOWN = 1
+LEVEL   = 2
+BULLET  = 4 # should match BULLET in network packet?
+PLAYER  = 8
+PICKUP  = 16
+# = 32
+# = 64
+# = 128
+# = 256
+# = 512
+# = 1024
+# = 2048
+# = 4096
+# = 8192
+# = 16384
+# = 32768
+EVERYTHING = 65535 # max short
+
+$pickup_collides_with = [UNKNOWN,LEVEL,PLAYER,PICKUP]
+$bullet_collides_with = $pickup_collides_with
+$player_collides_with = $pickup_collides_with + [BULLET]
+$level_collides_with = [EVERYTHING]
+
 ####################################
 # Networking
 ####################################
@@ -25,10 +51,10 @@ end
 
 class Player < Network::Player
 	UPDATE = 0
-	BULLET = 1
+	HIT    = 1
 	TEXT   = 2
 	NAME   = 3
-	HIT    = 4
+	#BULLET = 4 # should match global BULLET
 	@@players = {}
 	def post_init
 		puts "new connection from #{@ip}:#{@port}"
@@ -58,7 +84,7 @@ class Player < Network::Player
 					:file => "nbia400.mxa",
 					:body => sphere_body({
 						:type => PLAYER,
-						:mask => [BULLET,PLAYER,PICKUP]
+						:mask => $player_collides_with
 					})
 				})
 				$render.models << @model
@@ -254,10 +280,6 @@ $inputs.on_poll Proc.new{
 
 $render = Render.new($options)
 
-PLAYER = 2
-BULLET = 4
-PICKUP = 6
-
 $bullets = []
 $bullets_mass = 0.05
 $bullets_speed = 5000
@@ -310,7 +332,7 @@ def new_bullet pos, orientation, block=nil
 			:angular_velocity => Vector.new(10,10,10),
 			:angular_damping => 0,
 			:type => BULLET,
-			:mask => [PLAYER],
+			:mask => $bullet_collides_with,
 			:on_collision => Proc.new{|bullet,target|
 				block.call bullet, target if block
 				# TODO need to destroy bullet
@@ -340,7 +362,7 @@ $player = sphere_body({
 	:angular_velocity => Vector.new(0,0,0),
 	:radius => Model.new({:file=>"xcop400.mxa"}).radius,
 	:type => PLAYER,
-	:mask => [BULLET,PLAYER,PICKUP]
+	:mask => $player_collides_with
 })
 
 =begin
@@ -387,7 +409,7 @@ $render.models << Model.new({
 	:body => sphere_body({
 		:pos => Vector.new(-400.0,-500.0,5000.0), 
 		:type => PLAYER,
-		:mask => [BULLET,PLAYER,PICKUP]
+		:mask => $player_collides_with
 	})
 })
 
@@ -396,7 +418,7 @@ $render.models << Model.new({
 	:body => sphere_body({
 		:pos => Vector.new(-600.0,-500.0,5000.0),
 		:type => PLAYER,
-		:mask => [BULLET,PLAYER,PICKUP]
+		:mask => $player_collides_with
 	})
 })
 
@@ -552,7 +574,7 @@ $world.callback = Proc.new{
 
 # load the level
 $level = Model.new({ :file => "ship.mxv" })
-$world.add $level # must do first to get @pointer
+$world.add $level, LEVEL, $level_collides_with # must do first to get @pointer
 $level.mesh.set_friction 0
 $render.models << $level
 
@@ -591,7 +613,7 @@ end
 pickups = FsknPic.new("data/models/ship.pic").pickups
 pickups.each do |pickup|
 	pickup.body.type = PICKUP
-	pickup.body.mask = [PLAYER]
+	pickup.body.mask = $pickup_collides_with
 end
 $picmgr = PickupManager.new({
 	:world => $world,

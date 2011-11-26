@@ -44,6 +44,12 @@ module PhysicsBullet
 			:float # friction
 		]
 
+	bind :physics_world_add_body, [
+			:pointer, # body
+			:short, # collision group
+			:short # collision mask
+		]
+
 	bind :physics_create_sphere, [
 			:float, :float, :float, :float, # mass, radius, linear and angular damping
 		  :float, :float, :float, # vector
@@ -152,7 +158,7 @@ module PhysicsBullet
 			PhysicsBullet::physics_gravity x, y, z
 			@gravity = Vector.new(x,y,z)
 		end
-		def add body
+		def add body, group=nil, mask=nil
 			if body.respond_to? :mesh
 				mesh = body.mesh
 
@@ -174,6 +180,8 @@ module PhysicsBullet
 					3*4 # 3 * sizeof(float)
 				)
 
+				PhysicsBullet::physics_world_add_body( mesh.pointer, group, mask.reduce{|a,b|a|b} )
+
 			elsif body.respond_to? :radius
 				@bodies << body
 				body.motion_state_callback =
@@ -194,6 +202,11 @@ module PhysicsBullet
 						body.angular_velocity.to_a +
 						[body.motion_state_callback]
 					)
+				)
+				PhysicsBullet::physics_world_add_body(
+					body.pointer,
+					group || body.type,
+					(mask  || body.mask).reduce{|a,b|a|b} # bitwise OR elements
 				)
 			end
 

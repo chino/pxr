@@ -33,6 +33,12 @@ void physics_set_friction(
 	float friction
 );
 
+void physics_world_add_body(
+	btRigidBody * body,
+	short group,
+	short mask
+);
+
 typedef void (*motion_state_callback)(
 	float x, float y, float z,
 	float qx, float qy, float qz, float qw

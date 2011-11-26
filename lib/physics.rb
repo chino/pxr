@@ -250,8 +250,8 @@ module Physics
 		attr_accessor :angular_velocity, :angular_damping, :bounce, :mass
 		def initialize s={}
 			@on_collision = s[:on_collision] || Proc.new{true}
-			@type = s[:type]
-			@mask = s[:mask]
+			@type = s[:type]||1
+			@mask = s[:mask]||65535 # everything (max short)
 			@pos = s[:pos] || Vector.new
 			@orientation = s[:orientation] || Quat.new(0, 0, 0, 1).normalize
 			@linear_velocity = s[:linear_velocity] || Vector.new
