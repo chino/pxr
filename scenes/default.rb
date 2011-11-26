@@ -33,9 +33,9 @@ PICKUP  = 16
 # = 32768
 EVERYTHING = 65535 # max short
 
-$pickup_collides_with = [UNKNOWN,LEVEL,PLAYER,PICKUP]
+$pickup_collides_with = [UNKNOWN,LEVEL,PLAYER]
 $bullet_collides_with = $pickup_collides_with
-$player_collides_with = $pickup_collides_with + [BULLET]
+$player_collides_with = $pickup_collides_with + [PICKUP,BULLET]
 $level_collides_with = [EVERYTHING]
 
 ####################################
