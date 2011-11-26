@@ -1,5 +1,5 @@
 class Model
-	attr_accessor :mesh, :body, :debug
+	attr_accessor :mesh, :pos, :body, :debug
 	def initialize s
 
 		@pos = s[:pos] unless s[:pos].nil?
