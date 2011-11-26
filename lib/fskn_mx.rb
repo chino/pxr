@@ -24,13 +24,13 @@ class FsknMx
 		vert_offset = 0
 		@groups = read_short
 		@groups.times {|g|
-			read_short.times {|e|
+			(read_short||0).times {|e|
 				exec_verts = 0
 				exec_size = read_short
 				exec_type = read_short
 				has_transparencies = exec_type & 0x001 == 1
 				@transparencies = true if has_transparencies
-				read_short.times {|v|
+				(read_short||0).times {|v|
 					vert = [ read_float, read_float, read_float ]
 					reserved = read_int
 					blue, green, red, alpha = read_char, read_char, read_char, read_char 
@@ -44,7 +44,7 @@ class FsknMx
 						:transparencies => has_transparencies
 					}
 				}
-				read_short.times {|t|
+				(read_short||0).times {|t|
 					texture_type, start_vert, nverts, texture = read_short, read_short, read_short, read_short
 					read_short.times {|tr|
 						v = [
