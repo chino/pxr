@@ -2,7 +2,7 @@
 
 Started off as an experiment in using OpenGL with Ruby but quickly grew into a little game engine of it's own.
 
-Very easy to create a custom scene of your liking and play around with different concepts.
+It's very easy to create a custom scene of your liking and play around with different concepts.
 
 
 # PXWGL (webgl)
