@@ -1,6 +1,6 @@
 # Description
 
-Started off as a Ruby OpenGL experiment but quickly grew into a little game engine of it's own.
+Started off as an experiment in using OpenGL with Ruby but quickly grew into a little game engine of it's own.
 
 Very easy to create a custom scene of your liking and play around with different concepts.
 
