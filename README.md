@@ -35,6 +35,10 @@ Currently just a very simple implementation on top of Ruby's UdpSocket just to g
 
 =Directories=
 
+Conf:
+
+	Configure your settings here.
+
 Lib:
 
 	The main body of code that runs the engine.
