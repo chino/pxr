@@ -1,5 +1,12 @@
-# so things don't break
-#$window  = Window.new("Model Viewer", $options[:width], $options[:height], $options[:fullscreen])
+#!/usr/bin/env ruby
+#puts "Ruby #{VERSION} (#{RUBY_RELEASE_DATE })"
+$: << "#{File.dirname(__FILE__)}/../lib"
+$: << "#{File.dirname(__FILE__)}/../conf"
+require "rubygems"
+require "physics.rb"
+require "model.rb"
+require "fskn_mx.rb"
+require "render"
 
 # data
 $model = Model.new({:file => "ship.mxv"}).mesh
