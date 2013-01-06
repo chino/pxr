@@ -23,7 +23,7 @@ The level loaders build up a ruby object in a simple format that the renderer ca
 
 Initially we put together a pure ruby implementation that provides simple sphere based collisions but it can be rather slow.  There is also some work done to port the level collisions to ruby using bounding-bsp tree which works but is a bit buggy.
 
-Later I put together a small Bullet physics library c-wrapper to make it easy to bind to Ruby via FFI (since Bullet is mainly written in c++ it can be much more complicated to bind).  Bullet in this case also handles level collisions using a bounding-volume-heirarchy (BVH) tree which works rather nice and fast without any requirement of a bsp tree.
+Later I put together a small Bullet physics library c-wrapper to make it easy to bind to Ruby via FFI (since Bullet is mainly written in c++ it can be much more complicated to bind).  Bullet in this case also handles level collisions using a bounding-volume-heirarchy (BVH) tree which works rather nice and fast without the requirement of building your own bsp tree.
 
 Both the pure ruby and Bullet backends are compatible interfaces allowing a scene to switch between either one.
 
