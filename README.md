@@ -11,6 +11,8 @@ At this point the engine is mainly using Forsaken models/levels/textures and has
 
 See the [ForsakenX Group](https://github.com/ForsakenX) for more information on Forsaken.
 
+PXR stands for ProjectX Ruby where ProjectX is the original code name of Forsaken before licenseing issues.
+
 
 # PXWGL (webgl)
 
