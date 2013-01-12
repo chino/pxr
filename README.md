@@ -1,17 +1,10 @@
 # Description
 
-Started off as an experiment in using OpenGL with Ruby but quickly grew into a little game engine of it's own.
+PXR stand for ProjectX Ruby where ProjectX is the original code name of [Forsaken](https://github.com/ForsakenX/forsaken).
 
-It's very easy to create a custom scene of your liking and play around with different concepts.
+It started off as an experiment in using OpenGL with Ruby but quickly grew into a little game engine that can render Forsaken levels/models perfectly and some support for Descent levels as well.
 
-
-# Forsaken / Descent
-
-At this point the engine is mainly using Forsaken models/levels/textures and has some support for loading Descent levels as well.
-
-See the [ForsakenX Group](https://github.com/ForsakenX) for more information on Forsaken.
-
-PXR stands for ProjectX Ruby where ProjectX is the original code name of Forsaken before licenseing issues.
+It's very easy to create custom scenes and play around with different concepts.
 
 
 # PXWGL (webgl)
@@ -19,6 +12,22 @@ PXR stands for ProjectX Ruby where ProjectX is the original code name of Forsake
 https://github.com/chino/pxwgl-net
 
 PXR and PXWGL are mostly ported between one another.  Each one though lives in different architectures (native vs browser), languages (ruby vs js), rendering apis (webgl vs opengl) etc..  They can serve as an example of the differences between using each language/environment for writing games.  One of the biggest pain points I found was javascript's lack of operator overloading made physics.js rather ugly in comparrison.
+
+
+# Levels
+
+Currently supports loading and rendering Forsaken levels perfectly.
+
+There is support for Descent levels as well minus texturing.
+
+
+# Pickups
+
+It supports loading Forsaken level pickup lists.
+
+The pickups spin in their location just like in Forsaken and can also be collected.
+
+After a timeout they are added back to their original location.
 
 
 # Rendering
@@ -42,13 +51,54 @@ Both the pure ruby and Bullet backends are compatible interfaces allowing a scen
 Currently just a very simple implementation on top of Ruby's UdpSocket just to get something out the door.  In the future I would like to bind to Forsaken's p2p library that I wrote which uses Enet as a transport layer.  And potentionally use Forsaken's higher level protocol as well so you could join a real Forsaken game.
 
 
-# Directories
+# Multiplayer
 
-## Conf
+You can shoot sphers and hit others to register points.
+
+
+# UI
+
+It supports a basic user interface:
+
+* player list with scores
+* chat entry which doubles as a command line
+* optional 3d inventory which renders using the real weapon models
+
+# scenes/
+
+When you run PXR it loads scenes/default.rb unless you specify another file.
+
+A scene has full control over what happens since nothing is done for you.
+
+You add and mix together what you want from the lib/* folder and implement new things.
+
+The default scene loads up:
+
+* one of the physics backends
+* the renderer
+* score
+* chat
+* networking 
+* ship level
+* 2 player models
+* inputs
+* allows you to shoot projectiles
+
+Over time I played around with many ideas like:
+
+* 3rd person view
+* fps style on screen weapon
+* random opengl experiments like a waving mesh
+
+As the engine evolved very quickly many of the scenes need to be updated.
+
+
+# conf/
 
 Configure your settings here.
 
-## Lib
+
+# lib/
 
 The main body of code that runs the engine.
 
@@ -66,17 +116,10 @@ File parsers, renderer, physics, ui, networking etc..
 
 * d1rdl.rb, fskn_*.rb - Descent and Forsaken file parsers.
 
-## Data
+
+# data/
 
 The data directory contains models, textures and other resources.
-
-## Scenes
-
-As the name implies defines what should be loaded up into any given scene.
-
-Over time I played around with many ideas from 3rd person view to fps style visible guns.
-
-As the engine evolved very quickly many of the scenes won't run without being updated.
 
 Two main files:
 
