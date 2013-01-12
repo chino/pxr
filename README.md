@@ -5,6 +5,13 @@ Started off as an experiment in using OpenGL with Ruby but quickly grew into a l
 It's very easy to create a custom scene of your liking and play around with different concepts.
 
 
+# Forsaken / Descent
+
+At this point the engine is mainly using Forsaken models/levels/textures and has some support for loading Descent levels as well.
+
+See the [ForsakenX Group](https://github.com/ForsakenX) for more information on Forsaken.
+
+
 # PXWGL (webgl)
 
 https://github.com/chino/pxwgl-net
